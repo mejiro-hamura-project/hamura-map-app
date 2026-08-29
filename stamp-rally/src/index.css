@@ -1,0 +1,115 @@
+@import "tailwindcss";
+
+@theme {
+  --color-notice: #e8524a;
+  --color-howto: #4cb37e;
+  --color-register: #f7e9a0;
+  --color-cta: #e39aa0;
+  --color-camera: #8b7ed8;
+  --color-collected: #f5a623;
+  --color-exchange-link: #e060a8;
+  --color-exchange-btn: #a9b8e8;
+  --color-exchanged: #e8524a;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: #f7f3ec;
+  font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic",
+    "Segoe UI", system-ui, sans-serif;
+  color: #2f2a24;
+}
+
+button {
+  font-family: inherit;
+}
+
+@keyframes stamp-pop-bounce {
+  0% {
+    transform: scale(0) rotate(-15deg);
+    opacity: 0;
+  }
+  55% {
+    transform: scale(1.2) rotate(4deg);
+    opacity: 1;
+  }
+  75% {
+    transform: scale(0.92) rotate(-2deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+@keyframes stamp-glow-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(245, 166, 35, 0.55), 0 0 24px 4px rgba(245, 166, 35, 0.35);
+  }
+  50% {
+    box-shadow: 0 0 0 14px rgba(245, 166, 35, 0), 0 0 40px 10px rgba(245, 166, 35, 0.5);
+  }
+}
+
+@keyframes stamp-ring-expand {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(1.9);
+    opacity: 0;
+  }
+}
+
+@keyframes stamp-title-drop {
+  0% {
+    transform: translateY(-16px) scale(0.8);
+    opacity: 0;
+  }
+  60% {
+    transform: translateY(2px) scale(1.05);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes stamp-sparkle-float {
+  0% {
+    transform: translateY(0) scale(0) rotate(0deg);
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+    transform: translateY(-6px) scale(1) rotate(20deg);
+  }
+  100% {
+    transform: translateY(-28px) scale(0.8) rotate(60deg);
+    opacity: 0;
+  }
+}
+
+.animate-stamp-pop {
+  animation: stamp-pop-bounce 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both,
+    stamp-glow-pulse 1.8s ease-in-out 0.7s infinite;
+}
+
+.animate-stamp-ring {
+  animation: stamp-ring-expand 1.6s ease-out infinite;
+}
+
+.animate-stamp-title {
+  animation: stamp-title-drop 0.5s ease-out both;
+}
+
+.animate-stamp-sparkle {
+  animation: stamp-sparkle-float 1.4s ease-in-out infinite;
+}

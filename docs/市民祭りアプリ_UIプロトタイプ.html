@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>市民祭りアプリ UIプロトタイプ</title>
+<style>
+  :root{
+    --bg:#f4f4f1; --card:#ffffff; --ink:#2b2f36; --sub:#8b929c; --line:#e9ebee;
+    --blue:#5b8dd6; --blue-soft:#e6eefb; --pink:#e29aa0; --purple:#8f80d6;
+    --orange:#f4a52c; --magenta:#e05fa6; --red:#e8534b; --green:#3fae86;
+    --yellow:#f7e7a0; --teal:#2fa98a;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;height:100%}
+  body{
+    font-family:"Hiragino Kaku Gothic ProN","Noto Sans JP","Noto Sans CJK JP",sans-serif;
+    background:radial-gradient(120% 120% at 50% 0%,#f0f1f4 0%,#e4e6ea 100%);
+    display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;color:var(--ink);
+  }
+  /* inner screen 360x640 (16:9) + 12px bezel = 384x664 device */
+  .phone{
+    width:384px;height:664px;max-height:calc(100vh - 20px);background:#000;border-radius:42px;
+    padding:12px;box-shadow:0 30px 60px rgba(30,36,50,.35),0 4px 12px rgba(0,0,0,.2);position:relative;flex:0 0 auto;
+  }
+  .screen-wrap{
+    background:var(--bg);border-radius:34px;height:100%;overflow:hidden;position:relative;display:flex;flex-direction:column;
+  }
+  .notch{position:absolute;top:11px;left:50%;transform:translateX(-50%);width:130px;height:26px;background:#000;border-radius:0 0 18px 18px;z-index:60}
+  .app{flex:1;overflow-y:auto;overflow-x:hidden;position:relative;-webkit-overflow-scrolling:touch;padding-top:26px}
+  .app::-webkit-scrollbar{width:0}
+  /* screens */
+  .screen{display:none;min-height:100%}
+  .screen.active{display:block}
+  /* generic header */
+  .hd{padding:20px 18px 8px;text-align:center}
+  .hd h1{font-size:18px;font-weight:800;letter-spacing:.02em;margin:0;line-height:1.35}
+  .hd .sub{font-size:11px;color:var(--sub);margin-top:2px}
+  /* bottom tab bar */
+  .tabbar{display:flex;background:#fff;border-top:1px solid var(--line);padding:8px 4px calc(10px + env(safe-area-inset-bottom))}
+  .tab{flex:1;background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:3px;color:#b7bcc4;font-size:10px;font-weight:600;padding:2px;cursor:pointer}
+  .tab svg{width:22px;height:22px}
+  .tab.on{color:var(--blue)}
+  .tab.on svg{stroke:var(--blue)}
+  /* ---------- MAP ---------- */
+  .venue{margin:10px 14px 0;background:var(--teal);color:#fff;text-align:center;font-weight:800;border-radius:12px 12px 0 0;padding:9px;font-size:15px;letter-spacing:.06em;position:relative}
+  .venue::after{content:"▾";position:absolute;right:14px;top:8px;font-size:13px;opacity:.85}
+  .map{position:relative;margin:0 14px;height:520px;background:#f7f9f4;border:1px solid #e3e8dd;border-top:0;border-radius:0 0 12px 12px;overflow:hidden}
+  .path{position:absolute;background:#efe7d6}
+  .zone{position:absolute;border-radius:9px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:9.5px;font-weight:700;color:#5c6b57;padding:2px;line-height:1.25}
+  .pin{position:absolute;transform:translate(-50%,-100%);cursor:pointer;display:flex;flex-direction:column;align-items:center;z-index:5}
+  .pin .dot{width:26px;height:26px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:var(--magenta);border:2px solid #fff;box-shadow:0 2px 5px rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center}
+  .pin .dot span{transform:rotate(45deg);color:#fff;font-size:10px;font-weight:800}
+  .pin.hit .dot{animation:bounce .6s ease infinite alternate}
+  @keyframes bounce{to{transform:rotate(-45deg) translateY(-4px)}}
+  /* popup */
+  .pop{position:absolute;z-index:30;left:50%;top:44px;transform:translateX(-50%);width:250px;background:#fff;border-radius:16px;box-shadow:0 14px 34px rgba(20,26,40,.28);padding:16px 16px 18px}
+  .pop::after{content:"";position:absolute;bottom:-13px;left:50%;transform:translateX(-50%);border:13px solid transparent;border-top-color:#fff;border-bottom:0}
+  .tag{display:inline-block;font-size:11px;font-weight:700;color:#fff;padding:3px 10px;border-radius:20px}
+  .pop h3{margin:9px 0 6px;font-size:16px;font-weight:800}
+  .pop p{margin:0 0 12px;font-size:12px;color:#6b7178;line-height:1.6}
+  .chips{display:flex;flex-wrap:wrap;gap:7px}
+  .chip{font-size:11px;font-weight:700;color:var(--blue);border:1.5px solid var(--blue);background:#fff;border-radius:20px;padding:4px 12px}
+  .popx{position:absolute;top:9px;right:9px;border:0;background:#f1f2f4;width:24px;height:24px;border-radius:50%;color:#8a9098;cursor:pointer;font-size:13px;line-height:1}
+  /* stamp-rally QR markers */
+  .qr-pin{position:absolute;transform:translate(-50%,-50%);cursor:pointer;z-index:7}
+  .qr-badge{width:30px;height:30px;border-radius:9px;background:#8f80d6;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.28);display:flex;align-items:center;justify-content:center;position:relative}
+  .qr-badge svg{width:17px;height:17px}
+  .qr-badge.done{background:#f4a52c}
+  .qr-num{position:absolute;top:-7px;right:-7px;background:#fff;color:#5b4fae;font-size:9px;font-weight:800;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+  .qr-badge.done .qr-num{color:#c6791a}
+  .map-legend{position:absolute;top:10px;left:10px;z-index:15;display:flex;gap:6px;align-items:center;background:rgba(255,255,255,.94);border:1px solid var(--line);border-radius:20px;padding:5px 11px 5px 6px;font-size:11px;font-weight:800;color:#5b4fae;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.1);user-select:none}
+  .map-legend.off{color:#aeb4bc}
+  .map-legend .sw{width:18px;height:18px;border-radius:6px;background:#8f80d6;display:flex;align-items:center;justify-content:center}
+  .map-legend.off .sw{background:#c4c9d0}
+  .map-legend .sw svg{width:11px;height:11px;stroke:#fff}
+  /* search FAB */
+  .fab-search{position:absolute;right:22px;bottom:16px;width:54px;height:54px;border-radius:50%;background:#fff;border:1px solid var(--line);box-shadow:0 8px 20px rgba(30,40,60,.18);display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:20}
+  .fab-search svg{width:24px;height:24px;stroke:var(--ink)}
+  /* search sheet */
+  .sheet{position:absolute;inset:0;background:var(--bg);z-index:40;display:none;flex-direction:column}
+  .sheet.active{display:flex}
+  .sheet-hd{display:flex;align-items:center;gap:10px;padding:16px 14px;border-bottom:1px solid var(--line);background:#fff}
+  .sheet-hd h2{font-size:16px;font-weight:800;margin:0}
+  .iconbtn{border:0;background:none;cursor:pointer;color:var(--ink);display:flex;padding:4px}
+  .sec-label{font-size:12px;font-weight:800;color:var(--sub);margin:18px 16px 8px;letter-spacing:.04em}
+  .searchbox{margin:0 16px;display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:11px 13px}
+  .searchbox input{border:0;outline:0;font-size:14px;flex:1;font-family:inherit}
+  .result{margin:8px 16px 0;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:13px;display:flex;align-items:center;gap:10px}
+  .result .mp{color:var(--magenta)}
+  /* ---------- EVENTS ---------- */
+  .cats-wrap{position:relative}
+  .cats-wrap .more{position:absolute;right:6px;top:5px;color:#c2c7cf;font-size:16px;pointer-events:none;z-index:2;animation:nudge 1.4s ease-in-out infinite}
+  @keyframes nudge{0%,100%{transform:translateX(0)}50%{transform:translateX(3px)}}
+  .cats{display:flex;gap:16px;overflow-x:auto;padding:6px 24px 0;border-bottom:1px solid var(--line);scrollbar-width:none;scroll-snap-type:x proximity;cursor:grab;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 16px,#000 calc(100% - 30px),transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 16px,#000 calc(100% - 30px),transparent 100%)}
+  .cats.drag{cursor:grabbing}
+  .cats::-webkit-scrollbar{display:none}
+  .cat{white-space:nowrap;padding:6px 0 10px;font-size:13px;font-weight:700;color:#aeb4bc;border:0;background:none;border-bottom:3px solid transparent;cursor:pointer;scroll-snap-align:center}
+  .cat.on{color:var(--ink)}
+  .list-item{display:flex;gap:12px;padding:16px;border-bottom:1px solid var(--line)}
+  .li-body{flex:1;min-width:0}
+  .li-num{font-size:12px;color:var(--sub);font-weight:700}
+  .li-name{font-size:15px;font-weight:800;margin:1px 0 4px}
+  .li-time{font-size:12px;color:var(--magenta);font-weight:700;margin-bottom:4px}
+  .li-detail{font-size:12px;color:#6b7178;line-height:1.6}
+  .li-img{width:96px;height:72px;border-radius:10px;background:#edeff2;display:flex;align-items:center;justify-content:center;color:#c2c7cf;flex-shrink:0}
+  /* ---------- STAMP ---------- */
+  .st{display:none;min-height:100%;flex-direction:column}
+  .st.active{display:flex}
+  .card-hd{margin:0 16px;color:#fff;font-weight:800;text-align:center;padding:9px;border-radius:10px;font-size:15px}
+  .panel{margin:14px 16px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px}
+  .panel p{font-size:12.5px;color:#5f656d;line-height:1.7;margin:0 0 12px}
+  .panel p:last-child{margin-bottom:0}
+  .field{margin:0 16px 14px}
+  .field label{font-size:12px;font-weight:700;color:#6b7178;display:block;margin-bottom:6px}
+  .field input,.field select{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;font-size:14px;font-family:inherit;background:#fff;outline:0}
+  .btn{display:block;width:calc(100% - 32px);margin:8px 16px;border:0;border-radius:26px;color:#fff;font-weight:800;font-size:15px;padding:14px;cursor:pointer;letter-spacing:.04em}
+  .btn.pink{background:var(--pink)}.btn.purple{background:var(--purple)}
+  .btn.orange{background:var(--orange)}.btn.magenta{background:var(--magenta)}
+  .btn.blue{background:#b5c4ea;color:#2e3d63}
+  .btn:active{filter:brightness(.95)}
+  .count{text-align:center;font-size:12px;color:var(--sub);font-weight:700;margin:2px 0 4px}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:14px 34px 6px;justify-items:center}
+  .slot{width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800}
+  .slot.empty{background:#edeef1}
+  .slot.got{border:3px solid var(--orange);color:var(--ink)}
+  .aik{margin:8px 16px 0;text-align:center}
+  .aik .lb{font-size:11px;color:var(--sub);font-weight:700;margin-bottom:6px}
+  .boxes{display:flex;justify-content:center;gap:5px}
+  .box{width:30px;height:34px;border:1.5px solid #d7dbe0;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;background:#fff}
+  /* camera */
+  .cam{position:absolute;inset:0;background:#111;z-index:50;display:none;flex-direction:column;align-items:center;justify-content:center}
+  .cam.active{display:flex}
+  .cam .frame{width:210px;height:210px;border:3px solid #fff;border-radius:16px;position:relative;cursor:pointer}
+  .cam .frame::before,.cam .frame::after{content:"";position:absolute;width:26px;height:26px;border:4px solid var(--orange)}
+  .cam .frame::before{top:-3px;left:-3px;border-right:0;border-bottom:0;border-radius:10px 0 0 0}
+  .cam .frame::after{bottom:-3px;right:-3px;border-left:0;border-top:0;border-radius:0 0 10px 0}
+  .cam .txt{color:#fff;font-size:13px;margin-top:26px;opacity:.9}
+  .cam .hint{color:#f4a52c;font-size:11px;margin-top:8px;font-weight:700}
+  .cam .close{position:absolute;top:18px;left:16px;color:#fff;background:rgba(255,255,255,.15);border:0;border-radius:50%;width:34px;height:34px;font-size:16px;cursor:pointer}
+  /* modal */
+  .modal{position:absolute;inset:0;background:rgba(20,24,34,.5);z-index:55;display:none;align-items:center;justify-content:center;padding:26px}
+  .modal.active{display:flex}
+  .modal .box2{background:#fff;border-radius:18px;padding:24px 20px;width:100%;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.3)}
+  .getchar{width:120px;height:120px;border:5px solid var(--orange);border-radius:50%;margin:6px auto 4px;display:flex;align-items:center;justify-content:center;font-size:56px;font-weight:800}
+  .modal h2{font-size:20px;font-weight:800;margin:6px 0 2px}
+  .modal .mtitle{font-size:15px;font-weight:800;color:var(--magenta)}
+  .modal p{font-size:13px;color:#5f656d;margin:8px 0 16px}
+  .modal .row{display:flex;gap:10px}
+  .modal .row button{flex:1;border:0;border-radius:24px;padding:12px;font-weight:800;font-size:14px;cursor:pointer}
+  .btn-ghost{background:#eef0f3;color:#5f656d}
+  /* prize */
+  .prize-aik{margin:16px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center;font-size:14px;font-weight:800}
+  .ticket{margin:8px 16px;background:linear-gradient(135deg,#dfe7fb,#eef2fc);border:1px dashed #9fb2e0;border-radius:16px;padding:26px 18px;text-align:center}
+  .ticket .t1{font-size:13px;color:#5b6b93;font-weight:700;line-height:1.6}
+  .ticket .redeemed{font-size:22px;font-weight:800;color:var(--red);letter-spacing:.06em}
+  /* ---------- POST ---------- */
+  .feed-item{display:flex;gap:12px;padding:16px;border-bottom:1px solid var(--line)}
+  .ava{width:42px;height:42px;border-radius:50%;background:#2b2f36;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:800}
+  .fi-body{flex:1;min-width:0}
+  .fi-top{display:flex;align-items:center;gap:8px}
+  .fi-name{font-size:13px;font-weight:800}
+  .fi-shop{font-size:11px;color:var(--blue);font-weight:700;background:var(--blue-soft);padding:2px 8px;border-radius:10px}
+  .fi-text{font-size:13px;color:#4a5057;line-height:1.65;margin:6px 0 8px}
+  .fi-img{width:100%;height:150px;border-radius:12px;background:#edeff2;display:flex;align-items:center;justify-content:center;color:#c2c7cf;margin-bottom:8px}
+  .like{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--sub);cursor:pointer;font-weight:700;user-select:none}
+  .like svg{width:18px;height:18px}
+  .like.on{color:var(--magenta)}
+  .like.on svg{fill:var(--magenta);stroke:var(--magenta)}
+  .fab{position:absolute;right:20px;bottom:16px;width:54px;height:54px;border-radius:50%;background:var(--blue);border:0;box-shadow:0 10px 22px rgba(91,141,214,.45);display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:20}
+  .fab svg{width:26px;height:26px;stroke:#fff}
+  .fab.filter{left:20px;right:auto;background:#fff}
+  .fab.filter svg{stroke:var(--ink)}
+  .fab .badge{position:absolute;top:-2px;right:-2px;background:var(--magenta);color:#fff;font-size:10px;font-weight:800;min-width:18px;height:18px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 4px}
+  /* create */
+  .cap{margin:14px 16px 6px;font-size:12px;color:var(--sub);font-weight:700}
+  .upl{margin:0 16px;height:150px;border:2px dashed #d3d7dd;border-radius:14px;display:flex;align-items:center;justify-content:center;color:#c2c7cf}
+  .addbtn{margin:14px 16px;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:#fff;border-radius:10px;padding:9px 14px;font-size:13px;font-weight:700;cursor:pointer}
+  .shop-opt{margin:6px 16px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:13px;font-weight:700;display:flex;justify-content:space-between;align-items:center;cursor:pointer}
+  .shop-opt.on{border-color:var(--blue);background:var(--blue-soft);color:var(--blue)}
+  .flt-chips{display:flex;flex-wrap:wrap;gap:9px;margin:0 16px}
+  .flt{font-size:12px;font-weight:700;color:var(--blue);border:1.5px solid var(--blue);background:#fff;border-radius:20px;padding:7px 15px;cursor:pointer}
+  .flt.on{background:var(--blue);color:#fff}
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="notch"></div>
+  <div class="screen-wrap">
+    <div class="app" id="app">
+
+      <!-- ============ HOME / MAP ============ -->
+      <section id="s-home" class="screen active">
+        <div class="venue">第1会場</div>
+        <div class="map" id="map">
+          <div class="map-legend" id="qr-legend" onclick="toggleQR(event)">
+            <span class="sw"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3M17 20h4M20 17v4" stroke-linecap="round"/></svg></span>
+            スタンプQRの場所
+          </div>
+          <!-- paths -->
+          <div class="path" style="left:0;top:52%;width:100%;height:16px"></div>
+          <div class="path" style="left:46%;top:0;width:14px;height:100%"></div>
+          <!-- zones -->
+          <div class="zone" style="left:4%;top:4%;width:32%;height:16%;background:#e7f0d9">農業展</div>
+          <div class="zone" style="left:40%;top:4%;width:34%;height:12%;background:#fbe7cf">商品販売コーナー</div>
+          <div class="zone" style="left:40%;top:20%;width:42%;height:22%;background:#dff1e5">プレイランド</div>
+          <div class="zone" style="left:4%;top:24%;width:30%;height:22%;background:#e7f0d9">ラダーゲッター<br>／モルック</div>
+          <div class="zone" style="left:6%;top:56%;width:26%;height:12%;background:#f1e6f2">紹介PRコーナー</div>
+          <div class="zone" style="left:36%;top:58%;width:40%;height:14%;background:#f6dfe6">メインステージ</div>
+          <div class="zone" style="left:6%;top:72%;width:24%;height:20%;background:#fde3e0">飲食スペース</div>
+          <div class="zone" style="left:34%;top:74%;width:44%;height:20%;background:#fbe7cf">グルメコーナー</div>
+          <!-- pins -->
+          <div class="pin" style="left:20%;top:34%" data-spot="U"><div class="dot" style="background:#3fae86"><span>U</span></div></div>
+          <div class="pin" style="left:58%;top:30%" data-spot="P"><div class="dot" style="background:#5b8dd6"><span>P</span></div></div>
+          <div class="pin" style="left:56%;top:64%" data-spot="11"><div class="dot" style="background:#e05fa6"><span>11</span></div></div>
+          <div class="pin" style="left:20%;top:80%" data-spot="D"><div class="dot" style="background:#f4a52c"><span>D</span></div></div>
+          <div class="pin" style="left:60%;top:86%" data-spot="7"><div class="dot" style="background:#e05fa6"><span>7</span></div></div>
+          <!-- stamp QR layer -->
+          <div id="qr-layer"></div>
+          <!-- popup mount -->
+          <div id="pop-mount"></div>
+        </div>
+        <div class="fab-search" onclick="openSearch()" title="検索">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        </div>
+
+        <!-- SEARCH SHEET -->
+        <div class="sheet" id="search-sheet">
+          <div class="sheet-hd">
+            <button class="iconbtn" onclick="closeSearch()">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>
+            </button>
+            <h2>検索</h2>
+          </div>
+          <div class="sec-label">フィルター検索</div>
+          <div class="flt-chips" id="map-filters"></div>
+          <div class="sec-label">店名・イベント名で検索</div>
+          <div class="searchbox">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#b7bcc4" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+            <input id="map-search" placeholder="前方一致で検索（例：や）" oninput="runSearch()">
+          </div>
+          <div id="search-results"></div>
+        </div>
+      </section>
+
+      <!-- ============ EVENTS ============ -->
+      <section id="s-events" class="screen">
+        <div class="hd"><h1>イベント一覧</h1></div>
+        <div class="cats-wrap"><div class="cats" id="cats"></div><span class="more">›</span></div>
+        <div id="event-list"></div>
+      </section>
+
+      <!-- ============ STAMP RALLY ============ -->
+      <section id="s-stamp" class="screen">
+        <!-- notice -->
+        <div class="st active" data-st="notice">
+          <div class="hd"><h1>お祭り<br>スタンプラリー</h1></div>
+          <div class="card-hd" style="background:var(--red)">注意事項</div>
+          <div class="panel">
+            <p><b>個人情報について</b></p>
+            <p>本アプリで取得したニックネーム等は、スタンプラリーの進行にのみ利用します。（※文言は仮）</p>
+          </div>
+          <button class="btn pink" onclick="stTo('howto')">スタート</button>
+        </div>
+        <!-- howto -->
+        <div class="st" data-st="howto">
+          <div class="hd"><h1>お祭り<br>スタンプラリー</h1></div>
+          <div class="card-hd" style="background:var(--green)">遊び方</div>
+          <div class="panel">
+            <p>① 会場のQRコードを探そう！</p>
+            <p>② カメラでQRコードを撮ろう</p>
+            <p>③ 文字を集めて「合言葉」を完成させよう</p>
+            <p>④ 全部集めたら景品と交換！（※文言は仮）</p>
+          </div>
+          <button class="btn pink" onclick="stTo('register')">スタート</button>
+        </div>
+        <!-- register -->
+        <div class="st" data-st="register">
+          <div class="hd"><h1>お祭り<br>スタンプラリー</h1></div>
+          <div class="card-hd" style="background:var(--yellow);color:#8a7414">参加登録</div>
+          <div style="height:8px"></div>
+          <div class="field"><label>ニックネーム（任意）</label><input placeholder="はむらん"></div>
+          <div class="field"><label>性別</label><select><option>選択してください</option><option>男性</option><option>女性</option><option>回答しない</option></select></div>
+          <div class="field"><label>年代</label><select><option>選択してください</option><option>10代</option><option>20代</option><option>30代</option><option>40代</option><option>50代以上</option></select></div>
+          <button class="btn pink" onclick="stTo('main')">参加する</button>
+        </div>
+        <!-- main -->
+        <div class="st" data-st="main">
+          <div class="hd"><h1>お祭り<br>スタンプラリー</h1></div>
+          <div class="count" id="st-count">現在のスタンプ数：0/7</div>
+          <div class="grid" id="st-grid"></div>
+          <div class="aik">
+            <div class="lb">合言葉</div>
+            <div class="boxes" id="st-boxes"></div>
+          </div>
+          <div style="height:14px"></div>
+          <button class="btn purple" onclick="openCam()">
+            <span style="display:inline-flex;align-items:center;gap:8px;justify-content:center">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              カメラを起動する
+            </span>
+          </button>
+        </div>
+        <!-- prize -->
+        <div class="st" data-st="prize">
+          <div class="hd"><h1>お祭り<br>スタンプラリー</h1></div>
+          <div class="prize-aik">合言葉：はむらおしかつ</div>
+          <div class="ticket" id="ticket">
+            <div class="t1">スタンプラリー<br>コンプリート景品交換券</div>
+          </div>
+          <div id="prize-action">
+            <button class="btn blue" onclick="askRedeem()">交換する</button>
+          </div>
+          <p style="text-align:center;font-size:11px;color:#aab0b8;margin-top:2px">※景品交換所でこの画面を見せてください</p>
+        </div>
+      </section>
+
+      <!-- ============ POST ============ -->
+      <section id="s-post" class="screen">
+        <div id="feed"></div>
+        <div class="fab filter" onclick="openPostFilter()">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 3H2l8 9.5V19l4 2v-8.5z"/></svg>
+          <span class="badge" id="flt-badge" style="display:none">0</span>
+        </div>
+        <div class="fab" onclick="openCreate()">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        </div>
+
+        <!-- post filter sheet -->
+        <div class="sheet" id="post-filter">
+          <div class="sheet-hd">
+            <button class="iconbtn" onclick="closePostFilter()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+            <h2>フィルター</h2>
+          </div>
+          <div class="sec-label">ジャンルで絞り込み</div>
+          <div class="flt-chips" id="post-filters"></div>
+          <div class="sec-label">店名で絞り込み</div>
+          <div id="post-shop-list"></div>
+          <button class="btn blue" style="margin-top:18px" onclick="closePostFilter()">この条件で表示</button>
+        </div>
+
+        <!-- create sheet -->
+        <div class="sheet" id="post-create">
+          <div class="sheet-hd">
+            <button class="iconbtn" onclick="closeCreate()"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+            <h2>投稿する</h2>
+          </div>
+          <div class="sec-label">店・イベントを選ぶ（前方一致）</div>
+          <div class="searchbox">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#b7bcc4" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+            <input id="create-search" placeholder="店名を入力（例：や）" oninput="filterCreateShops()">
+          </div>
+          <div id="create-shop-list" style="margin-top:8px"></div>
+          <div class="cap">キャプション</div>
+          <div class="field"><input placeholder="感想を書く…"></div>
+          <div class="upl">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.6"/><path d="M21 15l-5-5L5 21"/></svg>
+          </div>
+          <button class="addbtn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>追加する</button>
+          <button class="btn blue" onclick="submitPost()">投稿する</button>
+        </div>
+      </section>
+
+    </div><!-- /app -->
+
+    <!-- camera overlay (covers app, above nav) -->
+    <div class="cam" id="cam">
+      <button class="close" onclick="closeCam()">✕</button>
+      <div class="frame" id="cam-frame" onclick="simulateScan()"></div>
+      <div class="txt">QRコードを写してください</div>
+      <div class="hint">（枠をタップでスキャンを体験）</div>
+    </div>
+
+    <!-- shared modal -->
+    <div class="modal" id="modal"><div class="box2" id="modal-box"></div></div>
+
+    <!-- bottom nav -->
+    <nav class="tabbar">
+      <button class="tab on" data-tab="s-home" onclick="go('s-home',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5L12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg>ホーム
+      </button>
+      <button class="tab" data-tab="s-events" onclick="go('s-events',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>イベント一覧
+      </button>
+      <button class="tab" data-tab="s-stamp" onclick="go('s-stamp',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3l2.6 5.6 6 .8-4.4 4.2 1.1 6L12 17l-5.3 2.6 1.1-6L3.4 9.4l6-.8z"/></svg>スタンプラリー
+      </button>
+      <button class="tab" data-tab="s-post" onclick="go('s-post',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-6 8-6s8 2 8 6"/></svg>投稿
+      </button>
+    </nav>
+
+  </div>
+</div>
+
+<script>
+/* ---------- data ---------- */
+const SPOTS = {
+  U:{cat:'団体',color:'#3fae86',name:'U：はむら太鼓の会',detail:'はむらで活動する和太鼓団体。ステージ発表も予定。',tags:[]},
+  P:{cat:'プレイランド',color:'#5b8dd6',name:'P：公園遊具体験',detail:'お子さま向けの大型遊具コーナー。',tags:['ワークショップ']},
+  11:{cat:'グルメ',color:'#e05fa6',name:'11：焼きそば横丁',detail:'定番の屋台グルメ。ドリンクもあります。',tags:['ドリンク','肉','オススメ']},
+  D:{cat:'飲食',color:'#f4a52c',name:'D：クラフトドリンク店',detail:'地ビール・ソフトドリンクを提供。',tags:['ドリンク']},
+  7:{cat:'グルメ',color:'#e05fa6',name:'7：炭火焼き鳥',detail:'炭火でじっくり焼き上げる焼き鳥。',tags:['肉','オススメ']},
+};
+const MAP_FILTERS = ['グルメ','ドリンク','肉','ワークショップ','オススメ'];
+const EVENT_CATS = ['グルメ','紹介PR','商品販売','メインステージ','プレイランド','特産品販売コーナー'];
+const EVENTS = {
+  'グルメ':[{n:'11：焼きそば横丁',d:'定番の屋台グルメ。'},{n:'7：炭火焼き鳥',d:'炭火で焼く焼き鳥。'}],
+  '紹介PR':[{n:'はむらまちゼミ',d:'地域団体による活動紹介。'},{n:'消防車の展示',d:'子ども向け展示コーナー。'}],
+  '商品販売':[{n:'特産品ワゴン',d:'地元の特産品を販売。'},{n:'雑貨マーケット',d:'ハンドメイド雑貨。'}],
+  'メインステージ':[{n:'和太鼓演奏',d:'はむら太鼓の会',t:'11:00〜'},{n:'キッズダンス',d:'地元ダンススクール',t:'12:00〜'}],
+  'プレイランド':[{n:'ふわふわ遊具',d:'空気で膨らむ大型遊具。'},{n:'恐竜キャラクターパーク',d:'記念撮影スポット。'}],
+  '特産品販売コーナー':[{n:'農産物直売',d:'採れたて野菜を直売。'},{n:'銘菓コーナー',d:'地元銘菓の詰め合わせ。'}],
+};
+const POST_FILTERS = ['グルメ','ワークショップ','ドリンク'];
+const SHOPS = ['1：焼きそば横丁','2：炭火焼き鳥','3：クラフトドリンク店','4：ふわふわ遊具'];
+let FEED = [
+  {u:'はむらん',s:'11：焼きそば横丁',t:'ソースが濃くて最高でした！行列必至。',img:true,likes:12,liked:false},
+  {u:'たろう',s:'D：クラフトドリンク店',t:'地ビールがうまい。暑い日にぴったり。',img:false,likes:8,liked:false},
+  {u:'みか',s:'メインステージ',t:'和太鼓の演奏、迫力がすごかった👏',img:true,likes:23,liked:false},
+];
+/* stamp checkpoints: grid order = か む し つ お は ら ; 合言葉 = はむらおしかつ */
+const CHK = [
+  {id:1,char:'か',pi:5},{id:2,char:'む',pi:1},{id:3,char:'し',pi:4},
+  {id:4,char:'つ',pi:6},{id:5,char:'お',pi:3},{id:6,char:'は',pi:0},{id:7,char:'ら',pi:2},
+];
+let collected = []; // ids
+
+/* ---------- nav ---------- */
+function go(id,el){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  el.classList.add('on');
+  document.getElementById('app').scrollTop=0;
+  if(id==='s-home')renderQR();
+}
+/* ---------- map popup ---------- */
+document.getElementById('map').addEventListener('click',e=>{
+  const q=e.target.closest('.qr-pin'); if(q){showQR(+q.dataset.n);return;}
+  const pin=e.target.closest('.pin'); if(!pin)return; showSpot(pin.dataset.spot);
+});
+function showSpot(id){
+  const s=SPOTS[id]; const m=document.getElementById('pop-mount');
+  m.innerHTML=`<div class="pop">
+    <button class="popx" onclick="closeSpot()">✕</button>
+    <span class="tag" style="background:${s.color}">${s.cat}</span>
+    <h3>${s.name}</h3><p>${s.detail}</p>
+    <div class="chips">${s.tags.map(t=>`<span class="chip">${t}</span>`).join('')||'<span style="font-size:12px;color:#aab0b8">タグなし</span>'}</div>
+  </div>`;
+}
+function closeSpot(){document.getElementById('pop-mount').innerHTML='';}
+/* ---------- stamp-rally QR locations on the map ---------- */
+const QR_POINTS=[
+  {n:1,x:13,y:15},{n:2,x:67,y:10},{n:3,x:82,y:30},{n:4,x:9,y:52},
+  {n:5,x:42,y:47},{n:6,x:83,y:64},{n:7,x:46,y:90},
+];
+const QR_ICON='<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3M17 20h4M20 17v4" stroke-linecap="round"/></svg>';
+let qrOn=true;
+function renderQR(){
+  const layer=document.getElementById('qr-layer'); if(!layer)return;
+  layer.innerHTML=QR_POINTS.map(p=>{
+    const done=collected.includes(p.n);
+    return `<div class="qr-pin" data-n="${p.n}" style="left:${p.x}%;top:${p.y}%">
+      <div class="qr-badge ${done?'done':''}">${QR_ICON}<span class="qr-num">${done?'✓':p.n}</span></div>
+    </div>`;
+  }).join('');
+}
+function toggleQR(e){e&&e.stopPropagation();qrOn=!qrOn;
+  document.getElementById('qr-layer').style.display=qrOn?'block':'none';
+  document.getElementById('qr-legend').classList.toggle('off',!qrOn);
+  if(!qrOn)closeSpot();
+}
+function showQR(n){
+  const done=collected.includes(n); const c=CHK.find(x=>x.id===n);
+  document.getElementById('pop-mount').innerHTML=`<div class="pop">
+    <button class="popx" onclick="closeSpot()">✕</button>
+    <span class="tag" style="background:#8f80d6">スタンプQR</span>
+    <h3>QRポイント ${n} / 7</h3>
+    <p>${done
+      ? `読み取り済み（獲得文字：<b style="color:#e8890b">${c.char}</b>）`
+      : 'まだ読み取っていません。ここでQRコードを探して読み取ろう。'}</p>
+    <button class="btn purple" style="width:100%;margin:0" onclick="goStampCam()">カメラで読み取る</button>
+  </div>`;
+}
+function goStampCam(){
+  closeSpot();
+  document.querySelector('[data-tab="s-stamp"]').click();
+  stTo('main'); openCam();
+}
+/* ---------- search ---------- */
+function openSearch(){buildMapFilters();document.getElementById('search-sheet').classList.add('active');}
+function closeSearch(){document.getElementById('search-sheet').classList.remove('active');}
+let activeMapFilter=null;
+function buildMapFilters(){
+  const c=document.getElementById('map-filters');
+  c.innerHTML=MAP_FILTERS.map(f=>`<span class="flt ${activeMapFilter===f?'on':''}" onclick="toggleMapFilter('${f}')">${f}</span>`).join('');
+}
+function toggleMapFilter(f){activeMapFilter=activeMapFilter===f?null:f;buildMapFilters();showFilterResults(f);}
+function showFilterResults(f){
+  if(activeMapFilter!==f){document.getElementById('search-results').innerHTML='';return;}
+  const hits=Object.entries(SPOTS).filter(([k,s])=>s.cat===f||s.tags.includes(f));
+  document.getElementById('search-results').innerHTML=hits.length
+    ? hits.map(([k,s])=>resultRow(s.name)).join('')+`<p style="font-size:11px;color:#aab0b8;margin:10px 16px">↑ 該当${hits.length}件を地図上でハイライトします</p>`
+    : `<p style="font-size:12px;color:#aab0b8;margin:10px 16px">該当なし</p>`;
+}
+function runSearch(){
+  const q=document.getElementById('map-search').value.trim();
+  const box=document.getElementById('search-results');
+  if(!q){box.innerHTML='';return;}
+  const hits=Object.values(SPOTS).filter(s=>s.name.replace(/^[0-9A-Z]+：/,'').startsWith(q)).slice(0,3);
+  box.innerHTML=hits.length?hits.map(s=>resultRow(s.name)).join(''):`<p style="font-size:12px;color:#aab0b8;margin:10px 16px">「${q}」に一致する候補はありません</p>`;
+}
+function resultRow(name){return `<div class="result"><span class="mp">📍</span>${name}</div>`;}
+/* ---------- events ---------- */
+let activeCat=EVENT_CATS[0];
+function buildCats(){
+  document.getElementById('cats').innerHTML=EVENT_CATS.map(c=>{
+    const color=c==='紹介PR'?'#5b8dd6':c==='商品販売'?'#3fae86':c==='メインステージ'?'#f4a52c':c==='プレイランド'?'#3fae86':'#e05fa6';
+    return `<button class="cat ${c===activeCat?'on':''}" style="${c===activeCat?`border-bottom-color:${color}`:''}" onclick="selCat('${c}')">${c}</button>`;
+  }).join('');
+}
+function selCat(c){activeCat=c;buildCats();buildEventList();const el=[...document.querySelectorAll('#cats .cat')].find(b=>b.textContent===c);if(el)el.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});}
+function buildEventList(){
+  const items=EVENTS[activeCat]||[];
+  document.getElementById('event-list').innerHTML=items.map((it,i)=>`
+    <div class="list-item">
+      <div class="li-body">
+        <div class="li-num">${i+1}</div>
+        <div class="li-name">${it.n}</div>
+        ${it.t?`<div class="li-time">${it.t}</div>`:''}
+        <div class="li-detail">${it.d}</div>
+      </div>
+      <div class="li-img"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.6"/><path d="M21 15l-5-5L5 21"/></svg></div>
+    </div>`).join('');
+}
+/* ---------- stamp ---------- */
+function stTo(step){
+  document.querySelectorAll('#s-stamp .st').forEach(s=>s.classList.remove('active'));
+  document.querySelector(`#s-stamp .st[data-st="${step}"]`).classList.add('active');
+  document.getElementById('app').scrollTop=0;
+  if(step==='main')renderStamp();
+}
+function renderStamp(){
+  document.getElementById('st-count').textContent=`現在のスタンプ数：${collected.length}/7`;
+  document.getElementById('st-grid').innerHTML=CHK.map(c=>{
+    const got=collected.includes(c.id);
+    return `<div class="slot ${got?'got':'empty'}">${got?c.char:''}</div>`;
+  }).join('');
+  const boxes=Array(7).fill('');
+  CHK.forEach(c=>{if(collected.includes(c.id))boxes[c.pi]=c.char;});
+  document.getElementById('st-boxes').innerHTML=boxes.map(ch=>`<div class="box">${ch}</div>`).join('');
+}
+function openCam(){document.getElementById('cam').classList.add('active');}
+function closeCam(){document.getElementById('cam').classList.remove('active');}
+function simulateScan(){
+  const next=CHK.filter(c=>!collected.includes(c.id)).sort((a,b)=>a.pi-b.pi)[0];
+  if(!next){closeCam();return;}
+  collected.push(next.id); renderStamp(); renderQR(); closeCam(); showGet(next.char);
+}
+function showGet(ch){
+  openModal(`<div class="getchar">${ch}</div><h2>文字ゲット！</h2>
+    <button class="btn orange" style="width:100%;margin:14px 0 0" onclick="afterGet()">閉じる</button>`);
+}
+function afterGet(){
+  closeModal();
+  if(collected.length===7){
+    openModal(`<h2 style="color:var(--magenta)">コンプリート！<br>おめでとう🎉</h2>
+      <button class="btn magenta" style="width:100%;margin:16px 0 0" onclick="toPrize()">景品交換へ進む</button>`);
+  }
+}
+function toPrize(){closeModal();resetTicket();stTo('prize');}
+function resetTicket(){
+  document.getElementById('ticket').innerHTML=`<div class="t1">スタンプラリー<br>コンプリート景品交換券</div>`;
+  document.getElementById('prize-action').innerHTML=`<button class="btn blue" onclick="askRedeem()">交換する</button>`;
+}
+function askRedeem(){
+  openModal(`<div class="mtitle">スタンプラリー景品交換</div>
+    <p>本当に引き換えますか？</p>
+    <div class="row"><button class="btn-ghost" onclick="closeModal()">キャンセル</button>
+    <button style="background:var(--blue);color:#fff" onclick="doRedeem()">OK</button></div>`);
+}
+function doRedeem(){
+  closeModal();
+  document.getElementById('ticket').innerHTML=`<div class="redeemed">交換済み</div>`;
+  document.getElementById('prize-action').innerHTML=`<p style="text-align:center;font-size:13px;color:var(--sub);font-weight:700;margin:14px 0 0">景品と交換しました</p>`;
+}
+/* ---------- modal ---------- */
+function openModal(html){document.getElementById('modal-box').innerHTML=html;document.getElementById('modal').classList.add('active');}
+function closeModal(){document.getElementById('modal').classList.remove('active');}
+/* ---------- post ---------- */
+function buildFeed(){
+  document.getElementById('feed').innerHTML=FEED.map((p,i)=>`
+    <div class="feed-item">
+      <div class="ava">${p.u[0]}</div>
+      <div class="fi-body">
+        <div class="fi-top"><span class="fi-name">${p.u}</span><span class="fi-shop">${p.s}</span></div>
+        <div class="fi-text">${p.t}</div>
+        ${p.img?`<div class="fi-img"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.6"/><path d="M21 15l-5-5L5 21"/></svg></div>`:''}
+        <div class="like ${p.liked?'on':''}" onclick="toggleLike(${i})">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5 5 0 0 0-7 0L12 6.3l-1.8-1.7a5 5 0 1 0-7 7L12 21l8.8-9.4a5 5 0 0 0 0-7z"/></svg>
+          ${p.likes}
+        </div>
+      </div>
+    </div>`).join('');
+}
+function toggleLike(i){FEED[i].liked=!FEED[i].liked;FEED[i].likes+=FEED[i].liked?1:-1;buildFeed();}
+let postFilters=new Set();
+function openPostFilter(){buildPostFilters();document.getElementById('post-filter').classList.add('active');}
+function closePostFilter(){document.getElementById('post-filter').classList.remove('active');updateFltBadge();}
+function buildPostFilters(){
+  document.getElementById('post-filters').innerHTML=POST_FILTERS.map(f=>`<span class="flt ${postFilters.has(f)?'on':''}" onclick="togglePostFilter('${f}')">${f}</span>`).join('');
+  document.getElementById('post-shop-list').innerHTML=SHOPS.map(s=>`<div class="shop-opt" onclick="this.classList.toggle('on')">${s}<span>＋</span></div>`).join('');
+}
+function togglePostFilter(f){postFilters.has(f)?postFilters.delete(f):postFilters.add(f);buildPostFilters();}
+function updateFltBadge(){const b=document.getElementById('flt-badge');const n=postFilters.size;b.style.display=n?'flex':'none';b.textContent=n;}
+/* create */
+function openCreate(){buildCreateShops(SHOPS);document.getElementById('post-create').classList.add('active');}
+function closeCreate(){document.getElementById('post-create').classList.remove('active');}
+function buildCreateShops(list){
+  document.getElementById('create-shop-list').innerHTML=list.map(s=>`<div class="shop-opt" onclick="pickShop(this,'${s}')">${s}<span>選ぶ</span></div>`).join('');
+}
+let pickedShop=null;
+function pickShop(el,s){document.querySelectorAll('#create-shop-list .shop-opt').forEach(o=>o.classList.remove('on'));el.classList.add('on');pickedShop=s;}
+function filterCreateShops(){
+  const q=document.getElementById('create-search').value.trim();
+  const list=SHOPS.filter(s=>s.replace(/^[0-9]+：/,'').startsWith(q)||!q);
+  buildCreateShops(list);
+}
+function submitPost(){
+  openModal(`<h2 style="font-size:18px">投稿しました</h2><p>${pickedShop?pickedShop+' への口コミ':'口コミ'}をフィードに追加しました（デモ）</p><button class="btn blue" style="width:100%;margin:6px 0 0" onclick="closeModal();closeCreate()">OK</button>`);
+  if(pickedShop){FEED.unshift({u:'あなた',s:pickedShop,t:'（入力したキャプションがここに入ります）',img:true,likes:0,liked:false});buildFeed();}
+}
+/* ---------- horizontal scroll helper for tabs ---------- */
+function enableHScroll(el){
+  el.addEventListener('wheel',e=>{if(Math.abs(e.deltaY)>Math.abs(e.deltaX)){el.scrollLeft+=e.deltaY;e.preventDefault();}},{passive:false});
+  let down=false,sx=0,sl=0,moved=false;
+  el.addEventListener('pointerdown',e=>{down=true;moved=false;sx=e.clientX;sl=el.scrollLeft;el.classList.add('drag');});
+  el.addEventListener('pointermove',e=>{if(!down)return;const dx=e.clientX-sx;if(Math.abs(dx)>5)moved=true;el.scrollLeft=sl-dx;});
+  const end=()=>{down=false;el.classList.remove('drag');};
+  el.addEventListener('pointerup',end);el.addEventListener('pointerleave',end);
+  el.addEventListener('click',e=>{if(moved){e.stopPropagation();e.preventDefault();moved=false;}},true);
+  el.addEventListener('scroll',()=>{const w=el.parentElement.querySelector('.more');if(w)w.style.opacity=(el.scrollLeft+el.clientWidth>=el.scrollWidth-4)?'0':'1';},{passive:true});
+}
+/* ---------- init ---------- */
+buildCats();buildEventList();buildFeed();renderStamp();renderQR();
+enableHScroll(document.getElementById('cats'));
+</script>
+</body>
+</html>

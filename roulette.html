@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ルーレット</title>
+<style>
+  :root {
+    --bg-a: #2b1055;
+    --bg-b: #7597de;
+    --panel: #1c1c28;
+    --panel-light: #26263a;
+    --text: #f5f5f7;
+    --sub-text: #a0a0b2;
+    --accent: #ff5c8a;
+    --accent-hover: #ff789e;
+    --pointer: #ffd23f;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle at top, var(--bg-b) 0%, var(--bg-a) 65%);
+    font-family: "Segoe UI", "Hiragino Sans", "Yu Gothic", sans-serif;
+    padding: 24px;
+  }
+
+  .app {
+    width: 360px;
+    max-width: 100%;
+    text-align: center;
+  }
+
+  h1 {
+    color: #fff;
+    letter-spacing: 0.2em;
+    font-size: 28px;
+    margin: 0 0 4px;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  }
+
+  .subtitle {
+    color: rgba(255,255,255,0.7);
+    font-size: 13px;
+    margin-bottom: 24px;
+    letter-spacing: 0.08em;
+  }
+
+  .wheel-wrap {
+    position: relative;
+    width: 280px;
+    height: 280px;
+    margin: 0 auto 20px;
+  }
+
+  .pointer {
+    position: absolute;
+    top: -6px;
+    left: 50%;
+    width: 0;
+    height: 0;
+    transform: translateX(-50%);
+    border-left: 14px solid transparent;
+    border-right: 14px solid transparent;
+    border-top: 24px solid var(--pointer);
+    filter: drop-shadow(0 3px 4px rgba(0,0,0,0.4));
+    z-index: 3;
+  }
+
+  canvas#wheel {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    box-shadow: 0 16px 40px rgba(0,0,0,0.45), 0 0 0 6px rgba(255,255,255,0.08);
+    transition: transform 4.2s cubic-bezier(0.15, 0.85, 0.25, 1);
+  }
+
+  .spin-btn {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    padding: 13px 40px;
+    border-radius: 999px;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    cursor: pointer;
+    box-shadow: 0 8px 20px rgba(255, 92, 138, 0.4);
+    transition: background 0.2s ease, transform 0.05s ease, opacity 0.2s ease;
+  }
+
+  .spin-btn:hover:not(:disabled) {
+    background: var(--accent-hover);
+  }
+
+  .spin-btn:active:not(:disabled) {
+    transform: scale(0.97);
+  }
+
+  .spin-btn:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+
+  .result {
+    margin-top: 18px;
+    min-height: 32px;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--pointer);
+    letter-spacing: 0.1em;
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+  }
+
+  .result.show {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .items-panel {
+    margin-top: 26px;
+    background: var(--panel);
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 10px 24px rgba(0,0,0,0.35);
+  }
+
+  .items-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 180px;
+    overflow-y: auto;
+    margin-bottom: 12px;
+  }
+
+  .items-list:empty::before {
+    content: "項目を追加してください";
+    color: var(--sub-text);
+    font-size: 13px;
+  }
+
+  .item-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--panel-light);
+    border-radius: 10px;
+    padding: 8px 10px 8px 14px;
+  }
+
+  .item-row .swatch {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 10px;
+    flex-shrink: 0;
+  }
+
+  .item-row .label {
+    flex: 1;
+    text-align: left;
+    color: var(--text);
+    font-size: 14px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .item-row .del {
+    background: none;
+    border: none;
+    color: var(--sub-text);
+    font-size: 16px;
+    cursor: pointer;
+    padding: 2px 6px;
+    line-height: 1;
+  }
+
+  .item-row .del:hover {
+    color: var(--accent);
+  }
+
+  .add-row {
+    display: flex;
+    gap: 8px;
+  }
+
+  .add-row input {
+    flex: 1;
+    min-width: 0;
+    background: var(--panel-light);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    padding: 10px 12px;
+    color: var(--text);
+    font-size: 14px;
+  }
+
+  .add-row input:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+
+  .add-row button {
+    background: var(--panel-light);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: var(--text);
+    border-radius: 10px;
+    padding: 10px 16px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+
+  .add-row button:hover {
+    background: #33334a;
+  }
+
+  .hint {
+    color: var(--sub-text);
+    font-size: 12px;
+    margin-top: 8px;
+    min-height: 14px;
+  }
+</style>
+</head>
+<body>
+  <div class="app">
+    <h1>ルーレット</h1>
+    <div class="subtitle">項目を追加してルーレットを回そう</div>
+
+    <div class="wheel-wrap">
+      <div class="pointer"></div>
+      <canvas id="wheel" width="280" height="280"></canvas>
+    </div>
+
+    <button class="spin-btn" id="spinBtn">回す！</button>
+    <div class="result" id="result"></div>
+    <div class="hint" id="hint"></div>
+
+    <div class="items-panel">
+      <div class="items-list" id="itemsList"></div>
+      <div class="add-row">
+        <input type="text" id="newItem" placeholder="項目を入力" maxlength="20">
+        <button id="addBtn">追加</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+  const palette = ["#ff5c8a", "#ffb347", "#ffe066", "#6bcB77", "#4d96ff", "#a06cd5", "#ff8fab", "#38b6ff"];
+
+  let items = ["ピザ", "寿司", "から揚げ", "ラーメン", "カレー", "焼肉"];
+  let rotation = 0;
+  let spinning = false;
+
+  const canvas = document.getElementById("wheel");
+  const ctx = canvas.getContext("2d");
+  const spinBtn = document.getElementById("spinBtn");
+  const resultEl = document.getElementById("result");
+  const hintEl = document.getElementById("hint");
+  const itemsListEl = document.getElementById("itemsList");
+  const newItemInput = document.getElementById("newItem");
+  const addBtn = document.getElementById("addBtn");
+
+  function drawWheel() {
+    const n = items.length;
+    const cx = canvas.width / 2;
+    const cy = canvas.height / 2;
+    const r = cx - 4;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    if (n === 0) {
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.fillStyle = "#3a3a4e";
+      ctx.fill();
+      return;
+    }
+
+    const segAngle = (Math.PI * 2) / n;
+
+    for (let i = 0; i < n; i++) {
+      const start = -Math.PI / 2 + i * segAngle;
+      const end = start + segAngle;
+
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.arc(cx, cy, r, start, end);
+      ctx.closePath();
+      ctx.fillStyle = palette[i % palette.length];
+      ctx.fill();
+      ctx.strokeStyle = "rgba(255,255,255,0.55)";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(start + segAngle / 2);
+      ctx.textAlign = "right";
+      ctx.fillStyle = "#fff";
+      ctx.font = "bold 15px 'Segoe UI', 'Hiragino Sans', sans-serif";
+      ctx.shadowColor = "rgba(0,0,0,0.45)";
+      ctx.shadowBlur = 3;
+      let label = items[i];
+      if (label.length > 8) label = label.slice(0, 7) + "…";
+      ctx.fillText(label, r - 16, 5);
+      ctx.restore();
+    }
+
+    ctx.beginPath();
+    ctx.arc(cx, cy, 18, 0, Math.PI * 2);
+    ctx.fillStyle = "#fff";
+    ctx.fill();
+    ctx.strokeStyle = "rgba(0,0,0,0.15)";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+
+  function renderItemsList() {
+    itemsListEl.innerHTML = items.map((item, i) => `
+      <div class="item-row">
+        <span class="swatch" style="background:${palette[i % palette.length]}"></span>
+        <span class="label">${escapeHtml(item)}</span>
+        <button class="del" data-index="${i}" aria-label="削除">×</button>
+      </div>
+    `).join("");
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement("div");
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  function updateSpinAvailability() {
+    const canSpin = items.length >= 2 && !spinning;
+    spinBtn.disabled = !canSpin;
+    hintEl.textContent = items.length < 2 ? "2つ以上の項目を追加してください" : "";
+  }
+
+  function refresh() {
+    renderItemsList();
+    drawWheel();
+    updateSpinAvailability();
+  }
+
+  function addItem() {
+    const value = newItemInput.value.trim();
+    if (!value) return;
+    items.push(value);
+    newItemInput.value = "";
+    resultEl.classList.remove("show");
+    refresh();
+  }
+
+  function removeItem(index) {
+    items.splice(index, 1);
+    resultEl.classList.remove("show");
+    refresh();
+  }
+
+  function spin() {
+    if (spinning || items.length < 2) return;
+    spinning = true;
+    resultEl.classList.remove("show");
+    updateSpinAvailability();
+
+    const extraSpins = 5 + Math.floor(Math.random() * 3);
+    const randomOffset = Math.random() * 360;
+    rotation += extraSpins * 360 + randomOffset;
+    canvas.style.transform = `rotate(${rotation}deg)`;
+
+    setTimeout(() => {
+      const segAngle = 360 / items.length;
+      const normalized = ((360 - (rotation % 360)) % 360 + 360) % 360;
+      const winnerIndex = Math.floor(normalized / segAngle) % items.length;
+      resultEl.textContent = `結果: ${items[winnerIndex]}`;
+      resultEl.classList.add("show");
+      spinning = false;
+      updateSpinAvailability();
+    }, 4300);
+  }
+
+  itemsListEl.addEventListener("click", (e) => {
+    const btn = e.target.closest(".del");
+    if (!btn) return;
+    removeItem(Number(btn.dataset.index));
+  });
+
+  addBtn.addEventListener("click", addItem);
+  newItemInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") addItem();
+  });
+  spinBtn.addEventListener("click", spin);
+
+  refresh();
+</script>
+</body>
+</html>

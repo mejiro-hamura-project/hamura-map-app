@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>電卓</title>
+<style>
+  :root {
+    --bg: #0f0f14;
+    --calc-bg: #1c1c24;
+    --display-bg: #12121a;
+    --text: #f5f5f7;
+    --sub-text: #8a8a9a;
+    --btn-bg: #2b2b36;
+    --btn-hover: #383845;
+    --btn-op-bg: #ff9f43;
+    --btn-op-hover: #ffb163;
+    --btn-eq-bg: #4d7dff;
+    --btn-eq-hover: #6b93ff;
+    --btn-clear-bg: #4a4a58;
+    --btn-clear-hover: #5a5a6a;
+    --error: #ff5c5c;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg);
+    font-family: "Segoe UI", "Hiragino Sans", "Yu Gothic", sans-serif;
+  }
+
+  .calculator {
+    width: 320px;
+    background: var(--calc-bg);
+    border-radius: 24px;
+    padding: 20px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  }
+
+  .display {
+    background: var(--display-bg);
+    border-radius: 16px;
+    padding: 20px 16px;
+    margin-bottom: 16px;
+    text-align: right;
+    overflow: hidden;
+  }
+
+  .history {
+    min-height: 20px;
+    color: var(--sub-text);
+    font-size: 14px;
+    white-space: nowrap;
+    overflow-x: auto;
+    margin-bottom: 6px;
+  }
+
+  .history::-webkit-scrollbar {
+    display: none;
+  }
+
+  .current {
+    color: var(--text);
+    font-size: 40px;
+    font-weight: 500;
+    word-break: break-all;
+    min-height: 48px;
+  }
+
+  .current.error {
+    color: var(--error);
+    font-size: 22px;
+  }
+
+  .log {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.25s ease;
+  }
+
+  .log.open {
+    max-height: 160px;
+    overflow-y: auto;
+  }
+
+  .log-entry {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    color: var(--sub-text);
+    font-size: 13px;
+    padding: 4px 2px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .log-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--sub-text);
+    font-size: 12px;
+    cursor: pointer;
+    padding: 2px;
+    user-select: none;
+  }
+
+  .log-header:hover {
+    color: var(--text);
+  }
+
+  .buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+
+  button {
+    border: none;
+    border-radius: 14px;
+    background: var(--btn-bg);
+    color: var(--text);
+    font-size: 20px;
+    padding: 18px 0;
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.05s ease;
+  }
+
+  button:hover {
+    background: var(--btn-hover);
+  }
+
+  button:active {
+    transform: scale(0.95);
+  }
+
+  button.op {
+    background: var(--btn-op-bg);
+    color: #1c1c24;
+    font-weight: 600;
+  }
+
+  button.op:hover {
+    background: var(--btn-op-hover);
+  }
+
+  button.equal {
+    background: var(--btn-eq-bg);
+    grid-column: span 2;
+    font-weight: 600;
+  }
+
+  button.equal:hover {
+    background: var(--btn-eq-hover);
+  }
+
+  button.clear,
+  button.backspace {
+    background: var(--btn-clear-bg);
+  }
+
+  button.clear:hover,
+  button.backspace:hover {
+    background: var(--btn-clear-hover);
+  }
+
+  button.zero {
+    grid-column: span 2;
+  }
+
+  button.key-active {
+    background: var(--btn-hover);
+    transform: scale(0.95);
+  }
+</style>
+</head>
+<body>
+
+<div class="calculator">
+  <div class="display">
+    <div class="log-header" id="logToggle">
+      <span>履歴</span>
+      <span id="logArrow">▾</span>
+    </div>
+    <div class="log" id="log"></div>
+    <div class="history" id="history">&nbsp;</div>
+    <div class="current" id="current">0</div>
+  </div>
+
+  <div class="buttons">
+    <button class="clear" data-action="clear">C</button>
+    <button class="backspace" data-action="backspace">⌫</button>
+    <button class="op" data-action="percent">%</button>
+    <button class="op" data-action="divide">÷</button>
+
+    <button data-num="7">7</button>
+    <button data-num="8">8</button>
+    <button data-num="9">9</button>
+    <button class="op" data-action="multiply">×</button>
+
+    <button data-num="4">4</button>
+    <button data-num="5">5</button>
+    <button data-num="6">6</button>
+    <button class="op" data-action="subtract">−</button>
+
+    <button data-num="1">1</button>
+    <button data-num="2">2</button>
+    <button data-num="3">3</button>
+    <button class="op" data-action="add">+</button>
+
+    <button class="zero" data-num="0">0</button>
+    <button data-action="decimal">.</button>
+    <button class="equal" data-action="equal">=</button>
+  </div>
+</div>
+
+<script>
+  const currentEl = document.getElementById('current');
+  const historyEl = document.getElementById('history');
+  const logEl = document.getElementById('log');
+  const logToggle = document.getElementById('logToggle');
+  const logArrow = document.getElementById('logArrow');
+
+  let current = '0';
+  let previous = null;
+  let operator = null;
+  let overwrite = true;
+  let isError = false;
+  const historyLog = [];
+
+  const opSymbol = { add: '+', subtract: '−', multiply: '×', divide: '÷' };
+
+  function updateDisplay() {
+    currentEl.textContent = current;
+    currentEl.classList.toggle('error', isError);
+    historyEl.textContent = previous !== null && operator
+      ? `${previous} ${opSymbol[operator]}`
+      : ' ';
+  }
+
+  function inputNumber(num) {
+    if (isError) resetAll();
+    if (overwrite) {
+      current = num === '.' ? '0.' : num;
+      overwrite = false;
+      return;
+    }
+    if (num === '.' ) {
+      if (!current.includes('.')) current += '.';
+      return;
+    }
+    current = current === '0' ? num : current + num;
+  }
+
+  function chooseOperator(action) {
+    if (isError) return;
+    if (operator !== null && !overwrite) {
+      compute();
+    }
+    previous = current;
+    operator = action;
+    overwrite = true;
+  }
+
+  function compute() {
+    const prev = parseFloat(previous);
+    const curr = parseFloat(current);
+    if (previous === null || operator === null || isNaN(prev) || isNaN(curr)) return;
+
+    let result;
+    switch (operator) {
+      case 'add': result = prev + curr; break;
+      case 'subtract': result = prev - curr; break;
+      case 'multiply': result = prev * curr; break;
+      case 'divide':
+        if (curr === 0) {
+          showError('0で割ることはできません');
+          return;
+        }
+        result = prev / curr;
+        break;
+      default: return;
+    }
+
+    result = Math.round((result + Number.EPSILON) * 1e10) / 1e10;
+
+    const expression = `${previous} ${opSymbol[operator]} ${current}`;
+    addLogEntry(expression, String(result));
+
+    current = String(result);
+    previous = null;
+    operator = null;
+    overwrite = true;
+  }
+
+  function percent() {
+    if (isError) return;
+    current = String(parseFloat(current) / 100);
+    overwrite = false;
+  }
+
+  function backspace() {
+    if (isError) {
+      resetAll();
+      return;
+    }
+    if (overwrite) return;
+    current = current.length > 1 ? current.slice(0, -1) : '0';
+    if (current === '-') current = '0';
+  }
+
+  function resetAll() {
+    current = '0';
+    previous = null;
+    operator = null;
+    overwrite = true;
+    isError = false;
+  }
+
+  function showError(message) {
+    current = message;
+    isError = true;
+    previous = null;
+    operator = null;
+    overwrite = true;
+  }
+
+  function addLogEntry(expression, result) {
+    historyLog.unshift({ expression, result });
+    if (historyLog.length > 20) historyLog.pop();
+    renderLog();
+  }
+
+  function renderLog() {
+    logEl.innerHTML = historyLog.map(entry => `
+      <div class="log-entry">
+        <span>${entry.expression} =</span>
+        <span>${entry.result}</span>
+      </div>
+    `).join('');
+  }
+
+  function flashKey(el) {
+    if (!el) return;
+    el.classList.add('key-active');
+    setTimeout(() => el.classList.remove('key-active'), 100);
+  }
+
+  document.querySelectorAll('[data-num]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      inputNumber(btn.dataset.num);
+      updateDisplay();
+    });
+  });
+
+  document.querySelectorAll('[data-action]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const action = btn.dataset.action;
+      switch (action) {
+        case 'clear': resetAll(); break;
+        case 'backspace': backspace(); break;
+        case 'decimal': inputNumber('.'); break;
+        case 'percent': percent(); break;
+        case 'equal': compute(); break;
+        default: chooseOperator(action);
+      }
+      updateDisplay();
+    });
+  });
+
+  logToggle.addEventListener('click', () => {
+    logEl.classList.toggle('open');
+    logArrow.textContent = logEl.classList.contains('open') ? '▴' : '▾';
+  });
+
+  const keyMap = {
+    '+': 'add',
+    '-': 'subtract',
+    '*': 'multiply',
+    '/': 'divide',
+    'Enter': 'equal',
+    '=': 'equal',
+    'Backspace': 'backspace',
+    'Escape': 'clear',
+    '.': 'decimal',
+    '%': 'percent'
+  };
+
+  window.addEventListener('keydown', (e) => {
+    if (e.key >= '0' && e.key <= '9') {
+      inputNumber(e.key);
+      updateDisplay();
+      flashKey(document.querySelector(`[data-num="${e.key}"]`));
+      return;
+    }
+    const action = keyMap[e.key];
+    if (!action) return;
+    e.preventDefault();
+    if (action === 'clear') resetAll();
+    else if (action === 'backspace') backspace();
+    else if (action === 'decimal') inputNumber('.');
+    else if (action === 'percent') percent();
+    else if (action === 'equal') compute();
+    else chooseOperator(action);
+    updateDisplay();
+    flashKey(document.querySelector(`[data-action="${action}"]`));
+  });
+
+  updateDisplay();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,54 @@
+@import "tailwindcss";
+
+/*
+ * 共通デザイントークン。
+ * docs/市民祭りアプリ_UIプロトタイプ.html の配色（:root の CSS変数）と対応させている。
+ * 色を変えたいときはここだけ直せば全画面に反映される。
+ */
+@theme {
+  --color-bg: #f4f4f1;
+  --color-card: #ffffff;
+  --color-ink: #2b2f36;
+  --color-sub: #8b929c;
+  --color-line: #e9ebee;
+
+  --color-brand-blue: #5b8dd6;
+  --color-brand-blue-soft: #e6eefb;
+  --color-brand-pink: #e29aa0;
+  --color-brand-purple: #8f80d6;
+  --color-brand-orange: #f4a52c;
+  --color-brand-magenta: #e05fa6;
+  --color-brand-red: #e8534b;
+  --color-brand-green: #3fae86;
+  --color-brand-yellow: #f7e7a0;
+  --color-brand-teal: #2fa98a;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic",
+    "Segoe UI", system-ui, sans-serif;
+}
+
+button {
+  font-family: inherit;
+}
+
+/* 横スクロールタブの「まだ続きがあります」の矢印を揺らすアニメーション */
+@keyframes nudge {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(3px);
+  }
+}
