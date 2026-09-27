@@ -1,3 +1,12 @@
+## スマートフォンでの確認
+
+検証用環境をCloudflare Workersで公開しています。
+
+https://festival-stamp-rally.h-togo.workers.dev/
+
+`main` ブランチへのpush後、Cloudflare Workers Buildsによって
+自動的にビルド・デプロイされます。
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.

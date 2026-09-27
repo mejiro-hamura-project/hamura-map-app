@@ -1,16 +1,44 @@
-# 参加者登録をGoogleスプレッドシートに連携する
+# 参加者情報をGoogleスプレッドシートへリアルタイム記録する
 
-登録画面（③）で「参加する」を押した瞬間に、ニックネーム・性別・年代・登録日時を1行として
-Googleスプレッドシートに送信します。バックエンドサーバーは使わず、**Google Apps Script を
-「ウェブアプリ」として公開する**方法で実現しています。
+> ℹ️ **このアプリは、このスプレッドシート連携を設定しなくても単体で正常に動作します。**
+> 参加者登録・スタンプ取得・景品交換は、常にまず **localStorage（端末内）に保存**され、
+> それだけで完結します。Googleスプレッドシートへの送信は、
+> `VITE_SHEET_WEBHOOK_URL` が設定されている場合だけ行われる**あくまでおまけの機能**で、
+> 未設定であっても失敗しても、参加登録やスタンプラリーの利用がブロックされたり、
+> 画面にエラーが表示されたりすることはありません。
+> スプレッドシート連携を有効にしたいのに反映されない場合だけ、
+> 一番下の「トラブルシューティング：スプレッドシートに反映されない」を読んでください。
 
-送信は失敗してもアプリの動作をブロックしません（電波が悪い境内でも、参加者側の進行は
-localStorageにローカル保存されるのでアプリは通常通り遊べます。スプレッドシートへの反映が
-ベストエフォートになるだけです）。
+参加者登録のタイミングで、参加者ごとの情報を1行として **Googleスプレッドシートへ
+リアルタイムに記録**します（任意機能）。Excelファイルは生成しません。バックエンドサーバーは
+使わず、**Google Apps Script を「ウェブアプリ」として公開する**方法で実現しています
+（本アプリは静的サイトとして配信されており、APIキーやアクセストークンのような
+フロントエンドに置いてはいけない秘密情報を必要としない方式です）。
+
+参加登録は、**まずlocalStorageに保存され、それだけで完了します。** Googleスプレッドシートへの
+送信は、`VITE_SHEET_WEBHOOK_URL` が設定されている場合にだけ行われる **ベストエフォート
+（送れれば送る）の追加動作**です。URLが未設定の場合はそもそも送信を試みず、設定されていても
+通信に失敗した場合は端末内に控えを残して後で自動的に再送を試みるだけで、いずれの場合も
+参加登録そのものの成否には一切影響しません。画面にエラーが表示されることもありません。
+
+## 記録される内容（列の並び）
+
+参加者登録時に入力・決定される情報のうち、以下の5項目だけを記録します（ニックネーム・
+参加コース・スタンプ取得状況・お題（キーワード）・景品交換状況は送信しません）。
+
+| 列 | 内容 |
+|---|---|
+| A | 参加者番号（アプリがこの端末のlocalStorageだけで1から発行する番号。Apps Script側では発行・変更しない） |
+| B | 性別（登録画面の表示どおり：男性／女性／その他） |
+| C | 年齢 |
+| D | 学生（はい／いいえ） |
+| E | 学生の区分（小学生／中学生／高校生／大学生。学生でない場合は空欄） |
+
+参加者が登録するたびに、**シートの最終行の次へ新しい1行を追加**します（既存行の更新はしません）。
 
 ## 1. スプレッドシートを用意する
 
-1. https://sheets.google.com で新しいスプレッドシートを作成（例：「スタンプラリー参加者登録」）
+1. https://sheets.google.com で新しいスプレッドシートを作成（例：「スタンプラリー参加者記録」）
 
 ## 2. Apps Script を貼り付ける
 
@@ -19,30 +47,42 @@ localStorageにローカル保存されるのでアプリは通常通り遊べ�
 
 ```javascript
 function doPost(e) {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('参加者登録')
-    || SpreadsheetApp.getActiveSpreadsheet().insertSheet('参加者登録');
+  try {
+    var data = JSON.parse(e.postData.contents);
 
-  if (sheet.getLastRow() === 0) {
-    sheet.appendRow(['登録日時', 'ニックネーム', '性別', '年代']);
+    // 参加者登録以外（旧仕様の進行状況・景品交換イベントなど）は何もせず正常応答だけ返す。
+    // participantNumber が無いリクエストは登録イベントとして扱わない。
+    if (typeof data.participantNumber === 'undefined') {
+      return jsonOut(200, { success: true });
+    }
+
+    // 新しいシートは作らず、このスプレッドシートの最初の（既存の）シートを使う。
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
+
+    if (sheet.getLastRow() === 0) {
+      sheet.appendRow(['参加者番号', '性別', '年齢', '学生', '学生の区分']);
+    }
+
+    sheet.appendRow([
+      data.participantNumber,
+      data.gender || '',
+      typeof data.age === 'number' ? data.age : '',
+      data.student || '',
+      data.studentCategory || '',
+    ]);
+
+    return jsonOut(200, { success: true });
+  } catch (err) {
+    // Apps Script のウェブアプリは仕様上つねにHTTP 200で応答するため、失敗時も
+    // ステータスコード自体は200のままですが、レスポンス本文は success:false にします。
+    return jsonOut(500, { success: false });
   }
+}
 
-  var data = JSON.parse(e.postData.contents);
-
-  var genderLabel = { male: '男性', female: '女性', other: 'その他' }[data.gender] || data.gender;
-  var ageLabel = {
-    student: '学生', '10s': '10代', '20s': '20代', '30s': '30代',
-    '40s': '40代', '50s': '50代', '60plus': '60代以上'
-  }[data.ageGroup] || data.ageGroup;
-
-  sheet.appendRow([
-    new Date(data.timestamp || Date.now()),
-    data.nickname || '',
-    genderLabel,
-    ageLabel,
-  ]);
-
-  return ContentService.createTextOutput(JSON.stringify({ result: 'ok' }))
-    .setMimeType(ContentService.MimeType.JSON);
+function jsonOut(statusCode, obj) {
+  // ContentService は任意のHTTPステータスコードを設定できない（Apps Scriptの
+  // ウェブアプリは常に200を返す仕様）ため、statusCode はレスポンス本文の参考用。
+  return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
 }
 ```
 
@@ -61,16 +101,120 @@ function doPost(e) {
    （これは自分自身が書いた未公開スクリプトだから出る警告で、Googleに未申請なだけです。問題ありません）
 6. 発行された **ウェブアプリのURL**（`https://script.google.com/macros/s/.../exec` の形）をコピー
 
-## 4. アプリ側にURLを設定する
+> ⚠️ **以前のバージョンのコードをデプロイ済みの場合**は、上記コードに貼り替えた後
+> 「デプロイを管理 → 編集（鉛筆アイコン）→ 新しいバージョン → デプロイ」から
+> **再デプロイ**してください。コードを保存しただけでは、公開中のURLには反映されません。
+> **列構成も変わっています**（A〜E列＝参加者番号・性別・年齢・学生・学生の区分の5列のみ。
+> 進行状況・景品交換済み・参加者IDの列は使わなくなりました）。既存シートを使い続ける場合は、
+> 1行目のヘッダーとデータ列をこの新しい並びに手動で合わせるか、シートの中身を一度クリアして
+> 空の状態から使い直してください（シート自体を作り直す必要はありません）。
 
-1. `stamp-rally/.env.example` を `stamp-rally/.env` としてコピー
+## 4. アプリ側にURLを設定する（環境変数）
+
+1. `.env.example` を `.env` としてコピー
 2. `.env` の中の `VITE_SHEET_WEBHOOK_URL=` に、3.で発行したURLを貼り付け
 3. 開発サーバーを再起動（`npm run dev`）— 環境変数は起動時にしか読み込まれません
-4. アプリの参加者登録画面から実際に登録して、スプレッドシートに1行増えるか確認
+4. 本番デプロイ（Cloudflare Workers Builds）でも、同じ環境変数 `VITE_SHEET_WEBHOOK_URL` を
+   デプロイ環境の環境変数として設定してください（Cloudflareダッシュボードの
+   Workers/Pages プロジェクト設定 → 環境変数）。フロントエンドにURLをハードコードしないためです。
+5. アプリを実際に操作して、参加者登録後にスプレッドシートへ1行追加されるか確認する
+   （参加者番号・性別・年齢・学生・学生の区分の5列が、入力した内容どおりに入っているか）
+
+## 通信方式について
+
+参加者登録は、結果を読む必要が無い **fire-and-forget** として送信しています。
+`mode: 'no-cors'` で送信しており（レスポンスは読めませんが、その代わりCORSの
+プリフライト(OPTIONS)が発生しません。Apps Script はプリフライトに正しく応答できないため）、
+アプリ側は送信結果（成功したか・何が返ってきたか）を一切見ません。
+
+参加登録は、送信より前にすでに **localStorageへの保存だけで完了扱い**になっています。
+スプレッドシートへの送信はその後に「ついでに」試みられるだけなので、通信が失敗しても
+（Webhook URLが未設定・誤り・一時的な通信エラーなど、理由を問わず）画面上の動作や表示には
+一切影響しません。送信に失敗した場合は、その内容をlocalStorage上の再送キュー
+（`stampRally.sheetSyncQueue.v1`）に控えておき、次回アプリ起動時やオンライン復帰時に
+自動的に再送を試みます。
+
+そのため、スプレッドシート連携が実際に機能しているかどうかは、**画面の動作からは
+判断できません**（連携が完全に止まっていても、参加登録自体は正常に見えます）。本番の
+Webhook URL を設定・変更したときは、必ず実際に登録操作を行って、スプレッドシート側に
+反映されるかを直接確認してください。
+
+## 個人情報の削除（イベント終了後）
+
+イベント終了後、必要な保存期間が過ぎたら以下のいずれかの方法で削除してください。
+
+- スプレッドシートの該当シートの内容を削除する
+- スプレッドシート自体をゴミ箱に移動する（Googleドライブ）
+- 不要になった場合は Apps Script のデプロイを無効化する（デプロイを管理 → アーカイブ）
+  ことで、以後の書き込みを受け付けないようにできる
 
 ## 補足
 
 - Apps Scriptのコードを編集したら、**必ず「デプロイを管理」から新しいバージョンとして再デプロイ**してください。編集しただけでは公開中のURLには反映されません。
 - 送信できているか怪しいときは、Apps Scriptエディタの左側「実行数」からログ・エラーを確認できます。
-- 「アクセスできるユーザー: 全員」にしているため、理論上はこのURLを知っていれば誰でも行を追加できてしまいます（削除や既存データの閲覧はできません）。荒らし対策をしたい場合は合言葉のようなトークンチェックを追加できるので、必要であれば声をかけてください。
-- 今回同期しているのは「登録した瞬間」のデータのみです。「7つ集め終わった」「景品交換した」といった後続イベントも記録したい場合は追加実装できます。
+- 「アクセスできるユーザー: 全員」にしているため、理論上はこのURLを知っていれば誰でも行を追加できてしまいます。荒らし対策をしたい場合は合言葉のようなトークンチェックを Apps Script 側に追加できます。
+- Apps Script のウェブアプリは仕様上、レスポンスのHTTPステータスコードを自由に設定できません（常に200を返します）。失敗時は本文の`success`フィールドが`false`になりますが、アプリ側は`mode:'no-cors'`のためどのみレスポンスを読めず、この違いを画面で判別することはありません。
+
+## トラブルシューティング：スプレッドシートに反映されない
+
+**アプリの参加登録・スタンプラリー・景品交換自体は、この連携が動いていなくても
+正常に使えます。** ここでは「アプリの動作としては問題ないのに、Googleスプレッドシートに
+行が増えない／更新されない」場合の原因を切り分けます。
+
+### 原因：`VITE_SHEET_WEBHOOK_URL` がビルド時に読み込まれていない
+
+このアプリは Vite で静的サイトとしてビルドされています。`import.meta.env.VITE_SHEET_WEBHOOK_URL`
+のような `VITE_*` 環境変数は、**`vite build` を実行したその瞬間にコードへ直接埋め込まれる値**で、
+Webサーバーやブラウザが実行時に読みに行くものではありません。そのため、
+
+- この値がビルド時に空だと、そのビルドはスプレッドシートへの送信を一切試みない
+  「スタンドアロンモード」として固定化され、**あとから環境変数の設定を変えても、
+  そのビルド（＝今デプロイされているファイル）には絶対に反映されません。**
+- 直すには、**ビルドを実行する環境（Cloudflare Workers Builds）側にこの環境変数を設定した上で、
+  もう一度ビルド（＝再デプロイ）する**必要があります。
+
+### 確認・対応手順
+
+1. **Cloudflare ダッシュボード**で、このプロジェクトの
+   **Settings → Environment variables（環境変数）** を開く。
+2. **Production**（本番）環境に `VITE_SHEET_WEBHOOK_URL` が登録されているか確認する。
+   - 登録されていない → 追加する。
+   - 登録されているが **Preview 環境にしか設定していない** → Production 環境にも追加する
+     （CloudflareはProduction/Previewを別々に管理するため、片方にしか無いということがよくあります）。
+   - 登録されている値が、実際に発行した Apps Script の URL
+     （`https://script.google.com/macros/s/.../exec` の形）と一致しているか確認する。
+     ダミー値や書きかけの値のままだと、アプリ側でも「それらしい形ではない」として
+     未設定扱いになります（本ファイルの `isPlausibleAppsScriptUrl` によるチェック）。
+3. 環境変数を追加・修正したら、**そのままでは反映されません**。Cloudflare の
+   **Deployments** タブから最新のデプロイを選び、**Retry deployment**（または
+   新しいコミットをpushして再ビルド）を実行し、新しいビルドを作り直してください。
+4. デプロイ完了後、本番URLで実際に参加者登録を行い、
+   - 登録操作自体は（連携の設定有無にかかわらず）問題なく完了して `/rally` 画面に
+     進めること
+   - Googleスプレッドシートに新しい行が追加されること
+   の両方を確認してください。1つ目が失敗する場合はスプレッドシート連携とは
+   無関係の不具合なので、この章の手順では直りません。
+5. それでも反映されない場合は、本番サイトをブラウザで開いた状態で開発者ツールの
+   コンソールを確認してください。このアプリは、URLの値そのものは一切出さずに、
+   次のいずれかを必ず出力します（本番ビルドでも出力されます。個人情報やURLそのものは
+   含みません）。
+   - `console.info`: `[sheetApi] VITE_SHEET_WEBHOOK_URL is not set. Running in standalone mode...`
+     → ビルド時にこの環境変数が空だったということなので、上記1〜3を確認
+   - `console.error`: `[sheetApi] VITE_SHEET_WEBHOOK_URL is set but does not look like a Google Apps Script web app URL...`
+     → 設定した値の形式（`https://script.google.com/...`）が正しいか確認
+   - どちらも出ていない（＝URLは正しく設定されている）のに反映されない場合は、
+     Apps Script 側のデプロイ設定（アクセスできるユーザーが「全員」になっているか等）や、
+     Apps Script エディタの「実行数」からのログ・エラーを確認してください。
+     送信は `mode: 'no-cors'` のfire-and-forgetなので、アプリ側のコンソールには
+     Apps Script 側のエラーは表示されません。
+
+なお、`npm run build`（`vite build`）をローカルで実行したとき、`VITE_SHEET_WEBHOOK_URL` が
+未設定だとビルドログに次の案内が出るようにしてあります。Cloudflare のビルドログでも
+同じ案内が出ていないか確認すると、原因の切り分けに役立ちます。
+
+```
+ℹ️  [build] VITE_SHEET_WEBHOOK_URL is not set for this build.
+    The app will work fully standalone (registration / stamps / prize exchange all
+    saved to localStorage only); nothing will be sent to Google Sheets.
+    If Sheets sync was intended for this deployment, set the env var and rebuild.
+```
