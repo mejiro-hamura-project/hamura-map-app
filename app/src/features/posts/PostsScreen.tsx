@@ -71,13 +71,13 @@ export default function PostsScreen() {
     });
   }
 
-  function handleCreatePost(input: { spotId: string; caption: string; imageUrl: string | null }) {
+  function handleCreatePost(input: { spotId: string; caption: string }) {
     const newPost: Post = {
       id: `post-${Date.now()}`,
       userId: CURRENT_USER_ID,
       spotId: input.spotId,
       caption: input.caption,
-      images: input.imageUrl ? [input.imageUrl] : [],
+      images: [],
       likeCount: 0,
       createdAt: new Date().toISOString(),
     };

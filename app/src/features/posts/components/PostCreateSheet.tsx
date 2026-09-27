@@ -1,10 +1,10 @@
-import { useEffect, useState, type ChangeEvent } from 'react';
+import { useState } from 'react';
 import type { Spot } from '../../../shared/types';
 import { matchesSpotQuery, spotDisplayName } from '../../../shared/utils/spotSearch';
 
 type PostCreateSheetProps = {
   shops: Spot[];
-  onSubmit: (input: { spotId: string; caption: string; imageUrl: string | null }) => void;
+  onSubmit: (input: { spotId: string; caption: string }) => void;
   onClose: () => void;
 };
 
@@ -12,29 +12,14 @@ export default function PostCreateSheet({ shops, onSubmit, onClose }: PostCreate
   const [query, setQuery] = useState('');
   const [selectedSpotId, setSelectedSpotId] = useState<string | null>(null);
   const [caption, setCaption] = useState('');
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-
-  // 選んだ画像のプレビュー用URLは、使い終わったら解放してメモリに残さないようにする
-  useEffect(() => {
-    return () => {
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
-    };
-  }, [previewUrl]);
 
   const filteredShops = query.trim() ? shops.filter((shop) => matchesSpotQuery(shop, query.trim())) : shops;
   const selectedShop = shops.find((shop) => shop.id === selectedSpotId) ?? null;
   const canSubmit = Boolean(selectedSpotId) && caption.trim().length > 0;
 
-  function handleFileChange(e: ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (previewUrl) URL.revokeObjectURL(previewUrl);
-    setPreviewUrl(URL.createObjectURL(file));
-  }
-
   function handleSubmit() {
     if (!selectedSpotId || !canSubmit) return;
-    onSubmit({ spotId: selectedSpotId, caption: caption.trim(), imageUrl: previewUrl });
+    onSubmit({ spotId: selectedSpotId, caption: caption.trim() });
     onClose();
   }
 
@@ -93,22 +78,6 @@ export default function PostCreateSheet({ shops, onSubmit, onClose }: PostCreate
             className="w-full rounded-xl border border-line bg-card px-3 py-2.5 text-sm outline-none"
           />
         </div>
-
-        <label className="mx-4 mt-3 flex h-[150px] cursor-pointer flex-col items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-[#d3d7dd] text-[#c2c7cf]">
-          {previewUrl ? (
-            <img src={previewUrl} alt="" className="h-full w-full object-cover" />
-          ) : (
-            <>
-              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
-                <rect x="3" y="3" width="18" height="18" rx="3" />
-                <circle cx="8.5" cy="8.5" r="1.6" />
-                <path d="M21 15l-5-5L5 21" />
-              </svg>
-              <span className="mt-2 text-xs">画像を選ぶ（任意）</span>
-            </>
-          )}
-          <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
-        </label>
 
         {selectedShop && <p className="mx-4 mt-3 text-xs text-sub">投稿先：{spotDisplayName(selectedShop.name)}</p>}
       </div>

@@ -24,9 +24,6 @@ export default function FeedItem({ post, authorNickname, spotName, liked, onTogg
           )}
         </div>
         <p className="my-1.5 text-[13px] leading-relaxed text-[#4a5057]">{post.caption}</p>
-        {post.images.length > 0 && (
-          <img src={post.images[0]} alt="" className="mb-2 h-[150px] w-full rounded-xl object-cover" />
-        )}
         <button
           type="button"
           onClick={onToggleLike}
