@@ -1,3 +1,5 @@
+import type { StageKey } from './timetable';
+
 /**
  * 地図上の1点。出店・団体・ステージ・エリアなどを表す中核エンティティ。
  * スタンプラリーのQR設置場所も、専用の型は作らずこの Spot（stampCheckpointId 付き）として扱う。
@@ -9,10 +11,14 @@ export interface Spot {
   reading?: string;
   categoryId: string;
   tagIds: string[];
+  /** 出店の細かいジャンル（食べ物の種類・物販・ステージの演目など）。1店に1つの前提 */
+  genreId?: string;
   description: string;
   images: string[];
   /** 表示する地図（VenueMap）のid */
   mapId: string;
+  /** 所属する会場番号（1〜3）。「全体」地図では会場番号に関わらず全スポットを表示する */
+  venueId?: number;
   /** 地図画像上のx座標（ImageMap用） */
   x: number;
   /** 地図画像上のy座標（ImageMap用） */
@@ -26,4 +32,6 @@ export interface Spot {
   eventId: string;
   /** スタンプラリーのチェックポイントIDと対応づける場合のみ設定 */
   stampCheckpointId?: number;
+  /** このスポットがステージ（メイン/サブ）そのものを表す場合のみ設定。タイムテーブルの参照キーになる */
+  stageKey?: StageKey;
 }
