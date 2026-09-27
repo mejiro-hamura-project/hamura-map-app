@@ -1,3 +1,4 @@
+import { findGenreById } from '../../../shared/taxonomy';
 import type { Spot } from '../../../shared/types';
 
 type EventListItemProps = {
@@ -6,6 +7,8 @@ type EventListItemProps = {
 };
 
 export default function EventListItem({ index, spot }: EventListItemProps) {
+  const genre = findGenreById(spot.genreId);
+
   return (
     <div className="flex gap-3 border-b border-line px-4 py-4">
       <div className="min-w-0 flex-1">
@@ -14,13 +17,12 @@ export default function EventListItem({ index, spot }: EventListItemProps) {
         {spot.schedule && <div className="mb-1 text-xs font-bold text-brand-magenta">{spot.schedule}</div>}
         <div className="text-xs leading-relaxed text-[#6b7178]">{spot.description}</div>
       </div>
-      <div className="flex h-[72px] w-24 flex-shrink-0 items-center justify-center rounded-[10px] bg-[#edeff2] text-[#c2c7cf]">
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-          <rect x="3" y="3" width="18" height="18" rx="3" />
-          <circle cx="8.5" cy="8.5" r="1.6" />
-          <path d="M21 15l-5-5L5 21" />
-        </svg>
-      </div>
+      {genre && (
+        <div className="flex w-24 flex-shrink-0 flex-col items-center justify-center gap-1">
+          <img src={genre.iconUrl} alt={genre.name} className="h-8 w-8" />
+          <span className="text-center text-[10px] font-bold text-sub">{genre.name}</span>
+        </div>
+      )}
     </div>
   );
 }

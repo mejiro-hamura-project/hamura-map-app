@@ -1,11 +1,11 @@
-import { TAGS } from '../../../shared/taxonomy';
+import { GENRES } from '../../../shared/taxonomy';
 import type { Spot } from '../../../shared/types';
 
 type SearchSheetProps = {
   results: Spot[];
-  activeTagId: string | null;
+  activeGenreId: string | null;
   query: string;
-  onToggleTag: (tagId: string) => void;
+  onToggleGenre: (genreId: string) => void;
   onQueryChange: (query: string) => void;
   onSelectSpot: (spotId: string) => void;
   onClose: () => void;
@@ -13,14 +13,14 @@ type SearchSheetProps = {
 
 export default function SearchSheet({
   results,
-  activeTagId,
+  activeGenreId,
   query,
-  onToggleTag,
+  onToggleGenre,
   onQueryChange,
   onSelectSpot,
   onClose,
 }: SearchSheetProps) {
-  const hasCondition = Boolean(activeTagId || query.trim());
+  const hasCondition = Boolean(activeGenreId || query.trim());
 
   return (
     <div className="absolute inset-0 z-40 flex flex-col bg-bg">
@@ -33,18 +33,19 @@ export default function SearchSheet({
         <h2 className="text-base font-extrabold">検索</h2>
       </div>
 
-      <div className="mt-4 px-4 text-xs font-extrabold tracking-wide text-sub">フィルター検索</div>
+      <div className="mt-4 px-4 text-xs font-extrabold tracking-wide text-sub">ジャンルで絞り込み</div>
       <div className="mx-4 mt-2 flex flex-wrap gap-2">
-        {TAGS.map((tag) => (
+        {GENRES.map((genre) => (
           <button
-            key={tag.id}
+            key={genre.id}
             type="button"
-            onClick={() => onToggleTag(tag.id)}
-            className={`rounded-full border-[1.5px] px-4 py-1.5 text-xs font-bold ${
-              activeTagId === tag.id ? 'border-brand-blue bg-brand-blue text-white' : 'border-brand-blue text-brand-blue'
+            onClick={() => onToggleGenre(genre.id)}
+            className={`flex items-center gap-1.5 rounded-full border-[1.5px] px-3 py-1.5 text-xs font-bold ${
+              activeGenreId === genre.id ? 'border-brand-blue bg-brand-blue text-white' : 'border-brand-blue text-brand-blue'
             }`}
           >
-            {tag.name}
+            <img src={genre.iconUrl} alt="" className="h-4 w-4" />
+            {genre.name}
           </button>
         ))}
       </div>

@@ -9,6 +9,8 @@ export const CATEGORIES: Category[] = [
   { id: 'pr', name: '紹介PR', color: '#5b8dd6' },
   { id: 'goods', name: '商品販売', color: '#3fae86' },
   { id: 'main-stage', name: 'メインステージ', color: '#f4a52c' },
+  // サブステージのスポット用。イベント一覧のタブには出さず、メインステージのタイムテーブル画面から見られる。
+  { id: 'sub-stage', name: 'サブステージ', color: '#e08a2c' },
   { id: 'play-land', name: 'プレイランド', color: '#2fa98a' },
   { id: 'specialty', name: '特産品販売コーナー', color: '#e8534b' },
   // スタンプラリーのQR設置場所（Spot種別＝スタンプQR）の表示用カテゴリ

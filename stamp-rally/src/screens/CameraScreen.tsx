@@ -4,7 +4,8 @@ import { Html5Qrcode } from 'html5-qrcode';
 import Header from '../components/Header';
 import PageContainer from '../components/PageContainer';
 import type { UseStampRally } from '../hooks/useStampRally';
-import { CHECKPOINTS, findCheckpointByQrValue } from '../data/checkpoints';
+import { findCheckpointByQrValue } from '../data/checkpoints';
+import { useDisplayMessages } from '../i18n/useDisplayMessages';
 
 const SCANNER_ELEMENT_ID = 'qr-scanner-region';
 
@@ -16,7 +17,8 @@ type ScanStatus =
 
 export default function CameraScreen() {
   const navigate = useNavigate();
-  const { addStamp, isCollected } = useOutletContext<UseStampRally>();
+  const { registration, courseId, addStamp, isCollected } = useOutletContext<UseStampRally>();
+  const m = useDisplayMessages(registration);
   const [status, setStatus] = useState<ScanStatus>({ type: 'idle' });
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const handledRef = useRef(false);
@@ -24,8 +26,9 @@ export default function CameraScreen() {
   const handleDecoded = useCallback(
     (decodedText: string) => {
       if (handledRef.current) return;
+      if (courseId === null) return;
 
-      const checkpoint = findCheckpointByQrValue(decodedText);
+      const checkpoint = findCheckpointByQrValue(courseId, decodedText);
       if (!checkpoint) {
         setStatus({ type: 'invalid' });
         return;
@@ -39,7 +42,7 @@ export default function CameraScreen() {
       addStamp(checkpoint.id);
       navigate('/reveal', { state: { checkpointId: checkpoint.id } });
     },
-    [addStamp, isCollected, navigate],
+    [addStamp, courseId, isCollected, navigate],
   );
 
   useEffect(() => {
@@ -60,7 +63,10 @@ export default function CameraScreen() {
         },
       )
       .catch(() => {
-        setStatus({ type: 'permission-denied' });
+        // start() 失敗の通知は非同期に確定するため、その間にQR操作で duplicate・invalid
+        // 等のステータスが既に表示されていた場合はそれを上書きしない。
+        // まだ何も起きていない（idle）ときだけ permission-denied にする。
+        setStatus((prev) => (prev.type === 'idle' ? { type: 'permission-denied' } : prev));
         throw new Error('camera-start-failed');
       });
 
@@ -79,15 +85,11 @@ export default function CameraScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const simulateScan = (qrValue: string) => {
-    handleDecoded(qrValue);
-  };
-
   return (
     <PageContainer dark>
       <Header dark />
       <main className="flex flex-1 flex-col items-center gap-6 overflow-y-auto px-6 pb-8 text-white">
-        <p className="text-center text-sm">QRコードを枠内に収めてください</p>
+        <p className="text-center text-sm">{m.camera.instruction}</p>
 
         <div className="relative aspect-square w-full max-w-[280px] overflow-hidden rounded-2xl border-4 border-white bg-[#111]">
           <div id={SCANNER_ELEMENT_ID} className="h-full w-full" />
@@ -95,17 +97,17 @@ export default function CameraScreen() {
 
         {status.type === 'permission-denied' && (
           <div className="rounded-xl bg-notice px-4 py-3 text-center text-sm font-bold">
-            カメラへのアクセスが許可されていません。ブラウザの設定でカメラ権限を許可してください。
+            {m.camera.permissionDenied}
           </div>
         )}
         {status.type === 'duplicate' && (
           <div className="rounded-xl bg-[#555] px-4 py-3 text-center text-sm font-bold">
-            このQRコードはすでに取得済みです
+            {m.camera.duplicate}
           </div>
         )}
         {status.type === 'invalid' && (
           <div className="rounded-xl bg-notice px-4 py-3 text-center text-sm font-bold">
-            対象外のQRコードです
+            {m.camera.invalid}
           </div>
         )}
 
@@ -114,28 +116,8 @@ export default function CameraScreen() {
           onClick={() => navigate('/rally')}
           className="min-h-[44px] rounded-full border border-white/40 px-6 text-sm font-bold text-white"
         >
-          戻る
+          {m.common.back}
         </button>
-
-        {import.meta.env.DEV && (
-          <div className="mt-4 w-full rounded-xl border border-white/20 p-3">
-            <p className="mb-2 text-xs text-white/60">
-              デバッグ用（本番非表示）: カメラなしでスタンプを付与
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {CHECKPOINTS.map((cp) => (
-                <button
-                  key={cp.id}
-                  type="button"
-                  onClick={() => simulateScan(cp.qrValue)}
-                  className="min-h-[44px] rounded-lg bg-white/10 px-3 text-xs text-white"
-                >
-                  {cp.qrValue}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
       </main>
     </PageContainer>
   );

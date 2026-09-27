@@ -8,7 +8,7 @@ export default function MapLegendToggle({ visible, onToggle }: MapLegendTogglePr
     <button
       type="button"
       onClick={onToggle}
-      className={`absolute left-2.5 top-2.5 z-[15] flex items-center gap-1.5 rounded-full border border-line bg-white/95 py-1.5 pl-1.5 pr-2.5 text-[11px] font-extrabold shadow ${
+      className={`absolute bottom-4 left-5 z-[15] flex items-center gap-1.5 rounded-full border border-line bg-white/95 py-1.5 pl-1.5 pr-2.5 text-[11px] font-extrabold shadow ${
         visible ? 'text-brand-purple' : 'text-[#aeb4bc]'
       }`}
     >

@@ -13,7 +13,11 @@ export default function VenueHeader({ maps, currentMapId, onSelect }: VenueHeade
   const current = maps.find((m) => m.id === currentMapId);
 
   return (
-    <div className="relative z-10 mx-3.5 mt-2.5">
+    // z-50：地図側の重なり要素（スタンプQRのトグル/案内、検索ボタン、ポップアップ）は
+    // MapCanvas側で個別にz-indexを持っており、VenueHeaderと同じ重なりの土俵で比較される
+    // （MapCanvasの外枠にはz-indexが無いため）。会場切替メニューが必ずそれらより前面に
+    // 来るよう、他のどの数値よりも大きい値にしている。
+    <div className="relative z-50 mx-3.5 mt-2.5">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}

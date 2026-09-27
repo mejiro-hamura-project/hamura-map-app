@@ -3,9 +3,13 @@ import { useEvents, useSpots } from '../../api';
 import { CATEGORIES } from '../../shared/taxonomy';
 import CategoryTabs from './components/CategoryTabs';
 import EventListItem from './components/EventListItem';
+import StageTimetable from './components/StageTimetable';
 
-// イベント一覧のタブには、店舗・催し物のカテゴリだけを出す（スタンプQRは対象外）
-const EVENT_CATEGORIES = CATEGORIES.filter((category) => category.id !== 'stamp-qr');
+// イベント一覧のタブには、店舗・催し物のカテゴリだけを出す（スタンプQR・サブステージは対象外。
+// サブステージは「メインステージ」タブのタイムテーブル画面から見られる）
+const EVENT_CATEGORIES = CATEGORIES.filter(
+  (category) => category.id !== 'stamp-qr' && category.id !== 'sub-stage',
+);
 
 export default function EventsScreen() {
   const { events } = useEvents();
@@ -25,15 +29,19 @@ export default function EventsScreen() {
         {currentEvent && <p className="mt-0.5 text-[11px] text-sub">{currentEvent.name}</p>}
       </div>
       <CategoryTabs categories={EVENT_CATEGORIES} activeCategoryId={activeCategoryId} onSelect={setActiveCategoryId} />
-      <div className="flex-1 overflow-y-auto">
-        {isLoading ? (
-          <p className="p-6 text-center text-sm text-sub">読み込み中...</p>
-        ) : items.length === 0 ? (
-          <p className="p-6 text-center text-sm text-sub">このカテゴリの情報はまだありません</p>
-        ) : (
-          items.map((spot, index) => <EventListItem key={spot.id} index={index + 1} spot={spot} />)
-        )}
-      </div>
+      {activeCategoryId === 'main-stage' ? (
+        <StageTimetable />
+      ) : (
+        <div className="flex-1 overflow-y-auto">
+          {isLoading ? (
+            <p className="p-6 text-center text-sm text-sub">読み込み中...</p>
+          ) : items.length === 0 ? (
+            <p className="p-6 text-center text-sm text-sub">このカテゴリの情報はまだありません</p>
+          ) : (
+            items.map((spot, index) => <EventListItem key={spot.id} index={index + 1} spot={spot} />)
+          )}
+        </div>
+      )}
     </div>
   );
 }

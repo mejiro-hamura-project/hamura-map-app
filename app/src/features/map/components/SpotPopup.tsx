@@ -1,4 +1,4 @@
-import { findCategoryById, findTagById } from '../../../shared/taxonomy';
+import { findCategoryById, findGenreById, findTagById } from '../../../shared/taxonomy';
 import type { Spot } from '../../../shared/types';
 
 type SpotPopupProps = {
@@ -8,6 +8,7 @@ type SpotPopupProps = {
 
 export default function SpotPopup({ spot, onClose }: SpotPopupProps) {
   const category = findCategoryById(spot.categoryId);
+  const genre = findGenreById(spot.genreId);
   const tags = spot.tagIds.map((tagId) => findTagById(tagId)).filter((tag) => tag !== undefined);
 
   return (
@@ -28,6 +29,12 @@ export default function SpotPopup({ spot, onClose }: SpotPopupProps) {
         </span>
       )}
       <h3 className="mb-1.5 mt-2 text-base font-extrabold">{spot.name}</h3>
+      {genre && (
+        <div className="mb-2 flex items-center gap-1.5">
+          <img src={genre.iconUrl} alt="" className="h-5 w-5" />
+          <span className="text-xs font-bold text-[#6b7178]">{genre.name}</span>
+        </div>
+      )}
       <p className="mb-3 text-xs leading-relaxed text-[#6b7178]">{spot.description}</p>
       <div className="flex flex-wrap gap-1.5">
         {tags.length > 0 ? (

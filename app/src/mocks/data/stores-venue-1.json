@@ -1,0 +1,12 @@
+[
+  { "style": "band", "code": "1", "name": "特産品ワゴン", "genreId": "goods-shokuhin", "detail": "地元の特産品を販売しています。" },
+  { "style": "band", "code": "2", "name": "手作りみそ販売", "genreId": "goods-shokuhin", "detail": "昔ながらの製法で仕込んだ手作りみそです。" },
+  { "style": "band", "code": "7", "name": "からあげ専門店", "genreId": "food-agemono", "detail": "サクサクジューシーな鶏のからあげ。" },
+  { "style": "band", "code": "8", "name": "焼きそば横丁", "genreId": "food-menrui", "detail": "ソース香る鉄板焼きそば。" },
+  { "style": "band", "code": "10", "name": "フルーツ大福", "genreId": "food-dessert", "detail": "旬のフルーツを使った大福です。" },
+  { "style": "band", "code": "28", "name": "クラフトコーラ", "genreId": "food-drink", "detail": "スパイス香るクラフトコーラを販売。" },
+  { "style": "pr", "code": "A", "name": "はむら手芸の会", "genreId": "goods-zakka", "detail": "地域で活動する手芸サークルの紹介です。" },
+  { "style": "pr", "code": "B", "name": "写真クラブ展示", "genreId": "goods-info", "detail": "会員の作品を展示しています。" },
+  { "style": "pr", "code": "U", "name": "竹細工体験", "genreId": "goods-taiken", "detail": "竹を使った小物づくりを体験できます。" },
+  { "style": "pr", "code": "J", "name": "ハンドベル演奏会", "genreId": "stage-gakki", "detail": "地域サークルによるハンドベル演奏です。" }
+]
