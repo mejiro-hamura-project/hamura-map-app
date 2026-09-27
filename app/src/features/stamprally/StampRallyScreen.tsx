@@ -1,16 +1,25 @@
 import PlaceholderScreen from '../../shared/ui/PlaceholderScreen';
+import { externalUrl } from '../../shared/utils/externalUrl';
 
-/**
- * スタンプラリー本体はこのプロジェクト（app/担当）では作り込まない。
- * ここは①担当の実装を後から差し込むための空きスロット。
- * 現状の連携可否は docs/integration-notes.md を参照。
- */
 export default function StampRallyScreen() {
+  const stampRallyUrl = externalUrl(import.meta.env.VITE_STAMP_RALLY_URL);
+
+  if (!stampRallyUrl) {
+    return (
+      <PlaceholderScreen
+        title="スタンプラリー"
+        description="スタンプラリーへのリンクを準備中です。"
+        note="VITE_STAMP_RALLY_URL が未設定、または有効なURLではありません。"
+      />
+    );
+  }
+
   return (
-    <PlaceholderScreen
-      title="スタンプラリー"
-      description="このタブは、既存のスタンプラリー機能を後から差し込むための空きスロットです。"
-      note="現時点ではスタンプラリーは別アプリのため、ここには接続していません。接続方法は docs/integration-notes.md にまとめています。"
-    />
+    <main className="flex flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
+      <h1 className="text-lg font-bold">スタンプラリー</h1>
+      <a href={stampRallyUrl} className="rounded-full bg-brand-blue px-6 py-3 text-sm font-bold text-white">
+        スタンプラリーを開く
+      </a>
+    </main>
   );
 }
