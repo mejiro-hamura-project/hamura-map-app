@@ -2,7 +2,7 @@ import type { BoothStyle, Store } from '../shared/types';
 import storesVenue1 from './data/stores-venue-1.json';
 
 /**
- * ブースの記号に紐づく店のダミーデータ（会場番号→店配列）。
+ * 店登録ツールで作った、ブースの記号に紐づく店データ（会場番号→店配列）。
  * 今は第1会場ぶんだけ。第2・第3会場は店登録ツールでデータができ次第、同じ形で追加する。
  */
 export const STORES_BY_VENUE: Record<number, Store[]> = {

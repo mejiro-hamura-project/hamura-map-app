@@ -108,7 +108,7 @@ export default function HomeScreen() {
       categoryId: '',
       tagIds: [],
       genreId: store.genreId,
-      description: store.detail,
+      description: store.detail ?? '',
       images: [],
       mapId: currentMap?.id ?? '',
       x: 0,
