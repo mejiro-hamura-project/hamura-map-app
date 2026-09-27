@@ -1,14 +1,23 @@
 import { useState } from 'react';
 import type { Spot } from '../../../shared/types';
 import { matchesSpotQuery, spotDisplayName } from '../../../shared/utils/spotSearch';
+import NicknameEditor from './NicknameEditor';
 
 type PostCreateSheetProps = {
   shops: Spot[];
+  nickname: string;
+  onChangeNickname: (nickname: string) => void;
   onSubmit: (input: { spotId: string; caption: string }) => void;
   onClose: () => void;
 };
 
-export default function PostCreateSheet({ shops, onSubmit, onClose }: PostCreateSheetProps) {
+export default function PostCreateSheet({
+  shops,
+  nickname,
+  onChangeNickname,
+  onSubmit,
+  onClose,
+}: PostCreateSheetProps) {
   const [query, setQuery] = useState('');
   const [selectedSpotId, setSelectedSpotId] = useState<string | null>(null);
   const [caption, setCaption] = useState('');
@@ -35,6 +44,10 @@ export default function PostCreateSheet({ shops, onSubmit, onClose }: PostCreate
       </div>
 
       <div className="flex-1 overflow-y-auto pb-4">
+        <div className="mx-4 mt-4 rounded-xl border border-line bg-card px-3.5 py-2.5">
+          <NicknameEditor nickname={nickname} onChange={onChangeNickname} />
+        </div>
+
         <div className="mt-4 px-4 text-xs font-extrabold tracking-wide text-sub">店・イベントを選ぶ（前方一致）</div>
         <div className="mx-4 mt-2 flex items-center gap-2 rounded-xl border border-line bg-card px-3.5 py-2.5">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#b7bcc4" strokeWidth="2" strokeLinecap="round">

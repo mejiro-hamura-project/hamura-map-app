@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
 import { usePosts, useSpots, useUsers } from '../../api';
 import type { Post } from '../../shared/types';
+import { useNickname } from '../../shared/hooks/useNickname';
 import { spotDisplayName } from '../../shared/utils/spotSearch';
 import FeedItem from './components/FeedItem';
 import PostFilterFab from './components/PostFilterFab';
 import PostFilterSheet from './components/PostFilterSheet';
 import PostCreateFab from './components/PostCreateFab';
 import PostCreateSheet from './components/PostCreateSheet';
+import NicknameEditor from './components/NicknameEditor';
 
 // ログイン機能がまだ無いため、自分の投稿は固定のこのユーザーとして扱う（mocks/users.ts参照）
 const CURRENT_USER_ID = 'user-you';
@@ -21,6 +23,7 @@ export default function PostsScreen() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [selectedTagIds, setSelectedTagIds] = useState<Set<string>>(new Set());
   const [selectedSpotIds, setSelectedSpotIds] = useState<Set<string>>(new Set());
+  const [nickname, setNickname] = useNickname();
 
   useEffect(() => {
     setPosts(fetchedPosts);
@@ -86,6 +89,9 @@ export default function PostsScreen() {
 
   return (
     <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
+      <div className="border-b border-line bg-card px-4 py-2.5">
+        <NicknameEditor nickname={nickname} onChange={setNickname} />
+      </div>
       <div className="flex-1 overflow-y-auto">
         {isLoading ? (
           <p className="p-6 text-center text-sm text-sub">読み込み中...</p>
@@ -96,12 +102,16 @@ export default function PostsScreen() {
         ) : (
           visiblePosts.map((post) => {
             const spot = spots.find((s) => s.id === post.spotId);
-            const user = users.find((u) => u.id === post.userId);
+            // 自分（user-you）の投稿だけは、保存済みのニックネーム（無ければ「匿名」）で表示する
+            const authorNickname =
+              post.userId === CURRENT_USER_ID
+                ? nickname || '匿名'
+                : (users.find((u) => u.id === post.userId)?.nickname ?? '名無しさん');
             return (
               <FeedItem
                 key={post.id}
                 post={post}
-                authorNickname={user?.nickname ?? '名無しさん'}
+                authorNickname={authorNickname}
                 spotName={spot ? spotDisplayName(spot.name) : ''}
                 liked={likedPostIds.has(post.id)}
                 onToggleLike={() => handleToggleLike(post.id)}
@@ -126,7 +136,13 @@ export default function PostsScreen() {
       )}
 
       {isCreateOpen && (
-        <PostCreateSheet shops={shopSpots} onSubmit={handleCreatePost} onClose={() => setIsCreateOpen(false)} />
+        <PostCreateSheet
+          shops={shopSpots}
+          nickname={nickname}
+          onChangeNickname={setNickname}
+          onSubmit={handleCreatePost}
+          onClose={() => setIsCreateOpen(false)}
+        />
       )}
     </div>
   );
