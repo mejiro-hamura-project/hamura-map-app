@@ -1,4 +1,6 @@
-import { isCheckpointCollected } from '../../../shared/integrations/stampRally';
+import { useNavigate } from 'react-router-dom';
+import { isCheckpointCollected, useStampRallyReadPort } from '../../../shared/integrations/stampRally';
+import { STAMP_RALLY_ROUTES } from '../../stamprally/routes';
 import type { Spot } from '../../../shared/types';
 
 type QrPopupProps = {
@@ -8,12 +10,13 @@ type QrPopupProps = {
 
 /**
  * スタンプQR地点のポップアップ。
- * 「カメラで読み取る」は見た目だけ用意し、実際の起動はしない。
- * スタンプラリー本体との接続はM3で行う（docs/integration-notes.md参照）。
+ * read契約で取得状況を読み、統合Router内の既存カメラへ接続する。
  */
 export default function QrPopup({ spot, onClose }: QrPopupProps) {
+  const navigate = useNavigate();
+  const port = useStampRallyReadPort();
   const checkpointId = spot.stampCheckpointId ?? null;
-  const done = checkpointId != null && isCheckpointCollected(checkpointId);
+  const done = checkpointId != null && isCheckpointCollected(checkpointId, port);
 
   return (
     <div className="absolute left-1/2 top-11 z-30 w-[250px] -translate-x-1/2 rounded-2xl bg-card p-4 pb-[18px] shadow-xl">
@@ -33,12 +36,11 @@ export default function QrPopup({ spot, onClose }: QrPopupProps) {
       </p>
       <button
         type="button"
-        disabled
-        className="w-full cursor-not-allowed rounded-full bg-brand-purple/50 py-3 text-sm font-extrabold text-white"
+        onClick={() => navigate(port.isRegistered() ? STAMP_RALLY_ROUTES.camera : STAMP_RALLY_ROUTES.entry)}
+        className="w-full rounded-full bg-brand-purple py-3 text-sm font-extrabold text-white"
       >
         カメラで読み取る
       </button>
-      <p className="mt-2 text-center text-[11px] text-[#aab0b8]">※スタンプラリーとの連携はM3で実装予定です</p>
     </div>
   );
 }

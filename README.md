@@ -1,12 +1,15 @@
 # 市民祭りアプリ
 
-このリポジトリには、独立してビルドする2つのWebアプリがあります。
+地図・イベント・投稿・スタンプラリーを `app/` の1つのWebアプリで開発・ビルドします。スタンプラリーの実装の正本は `app/src/features/stamprally/` です。
 
-| ディレクトリ | 役割 | Cloudflare の Root directory | Build command | Build output directory |
-| --- | --- | --- | --- | --- |
-| `app/` | 祭りの地図・催し案内などを表示するメインアプリ | `app` | `npm run build` | `dist` |
-| `stamp-rally/` | スタンプラリーアプリ | `stamp-rally` | `npm run build` | `dist` |
+```sh
+cd app
+npm ci
+npm run dev
+```
 
-各プロジェクトのルートディレクトリで `npm ci` を実行してからビルドしてください。両アプリとも Vite の `dist/` を出力し、リポジトリのルートにあるファイルをビルドに必要としません。
+`app/` で `npm run build` を実行すると `app/dist/` に出力します。検証は `npm run lint` と `npm run test:stamprally`、運営用QRの生成は `npm run generate:qr` です。QR画像7枚とコース別の文字対応表を含む印刷ページは `app/qrcodes/` に生成され、Gitには含めません。
 
-`stamp-rally` は `VITE_SHEET_WEBHOOK_URL` が未設定でもビルドできます。その場合、登録・スタンプ・景品交換のデータはブラウザの `localStorage` のみに保存されます。Google Sheets 連携の設定説明は [stamp-rally/README-sheet-sync.md](stamp-rally/README-sheet-sync.md) を参照してください。今回の統合では、Cloudflare のプロジェクト設定や本番環境変数は変更していません。
+`VITE_SHEET_WEBHOOK_URL` が未設定でも登録から景品交換まで利用できます。進行状況は同じoriginのブラウザストレージに保存します。任意のSheets連携は [設定説明](docs/stamprally/sheet-sync.md)、ルートと地図の取得表示は [連携説明](docs/integration-notes.md) を参照してください。
+
+`stamp-rally/` はPhase 1・2の比較・復旧用として残しています。今後の機能変更は統合先の `app/` に行ってください。旧ディレクトリの削除、公開originやCloudflare設定の変更、実機・PWA更新の受入はPhase 3で扱います。今回の作業は公開切替を含みません。実装範囲と検証結果は [実装メモ](docs/plans/stamp-rally-unification-v1-implementation-notes.md) に記録しています。

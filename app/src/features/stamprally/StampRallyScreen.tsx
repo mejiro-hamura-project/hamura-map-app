@@ -1,16 +1,14 @@
-import PlaceholderScreen from '../../shared/ui/PlaceholderScreen';
+import { Navigate, useOutletContext } from 'react-router-dom';
+import type { UseStampRally } from './hooks/useStampRally';
+import { STAMP_RALLY_ROUTES } from './routes';
 
-/**
- * スタンプラリー本体はこのプロジェクト（app/担当）では作り込まない。
- * ここは①担当の実装を後から差し込むための空きスロット。
- * 現状の連携可否は docs/integration-notes.md を参照。
- */
+/** 既登録の参加者は進行画面へ戻し、再登録させない。 */
 export default function StampRallyScreen() {
+  const { registration } = useOutletContext<UseStampRally>();
   return (
-    <PlaceholderScreen
-      title="スタンプラリー"
-      description="このタブは、既存のスタンプラリー機能を後から差し込むための空きスロットです。"
-      note="現時点ではスタンプラリーは別アプリのため、ここには接続していません。接続方法は docs/integration-notes.md にまとめています。"
+    <Navigate
+      to={registration ? STAMP_RALLY_ROUTES.rally : STAMP_RALLY_ROUTES.notice}
+      replace
     />
   );
 }
