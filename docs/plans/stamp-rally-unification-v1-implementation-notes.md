@@ -2,6 +2,17 @@
 
 Status: IMPLEMENTED（Phase 1・2。本番公開の受入は含まない）
 
+### 後続状況（2026-09-28追記）
+
+Current status: COMPLETED（一体化・公開・旧runtime整理）。Current source of truth: `app/src/features/stamprally/`。
+
+- Cloudflare Workers deployment成功・公開URL発行・スマートフォン実機での基本動作確認は、後続で実施済みとの運営からの確認報告を受けた。後続のサブドメイン変更を反映した現在の公開URLは https://hamura-map-app.academeia.workers.dev/ 。この追記は下記のPhase 1・2当時の「NOT RUN」や外部操作未実施の記録を変更するものではない。
+- repository整理で旧runtimeを削除し、GASコード例と運用説明を [現行Sheets連携説明](../stamprally/sheet-sync.md) に保全した。QR生成物はGit追跡を解除し、生成scriptから再作成する。
+- PWA/offlineの最終受入、GAS / Google Sheets実接続、出展者データ統合、複数OS・端末での網羅的な実機試験は未確認。基本動作確認を実機カメラの全ケース受入としては扱わない。
+- 現行構成と削除前の棚卸しは [統合説明](../integration-notes.md)、チームの作業基準は [development workflow](../development-workflow.md) を参照。
+
+以下はPhase 1・2実装時の履歴。
+
 - 実施日：2026-09-28
 - Branch：`work/stamp-rally-unification-v1`
 - Base：`origin/main` / `a8c41239415c70f9bc5a207e661070a13ef809ab`

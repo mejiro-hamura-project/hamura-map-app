@@ -1,6 +1,8 @@
 # 統合スタンプラリーと地図の連携
 
-Phase 1・2で独立ラリーを `app/src/features/stamprally/` に移植しました。実装の正本はこのfeatureです。`stamp-rally/` は変更せず比較・復旧用として残しています。
+Status: COMPLETED（一体化・旧runtime整理）。現在の実装の正本は `app/src/features/stamprally/` です。旧runtimeは削除済みで、比較・復元にはGit履歴を使います。
+
+統合appの現在の公開URLは https://hamura-map-app.academeia.workers.dev/ です。Cloudflare Workers deployment成功とスマートフォン実機での基本動作確認、後続のサブドメイン変更は、2026-09-28の運営からの確認報告によります。PWA/offlineの最終受入、GAS / Google Sheets実接続、出展者データ統合、複数OS・端末での網羅的な実機試験は未確認です。
 
 ## Routerと状態
 
@@ -39,4 +41,39 @@ read adapterは描画時に既存の保存状態を読み、Reactの進行状態
 
 ## 保存と運用
 
-3つの保存キーと元のJSON／数値文字列を維持し、共有storageユーティリティ経由でアクセスします。旧originが異なる場合の自動引継ぎは行いません。任意のSheets設定は [sheet-sync.md](stamprally/sheet-sync.md)、受入結果と残作業は [実装メモ](plans/stamp-rally-unification-v1-implementation-notes.md) を参照してください。
+3つの保存キーと元のJSON／数値文字列を維持し、共有storageユーティリティ経由でアクセスします。旧originが異なる場合の自動引継ぎは行いません。任意のSheets設定と保全したGASコード例は [sheet-sync.md](stamprally/sheet-sync.md)、実装履歴と残作業は [実装メモ](plans/stamp-rally-unification-v1-implementation-notes.md)、共同開発の進め方は [development workflow](development-workflow.md) を参照してください。
+
+## 旧runtime削除前の棚卸し（2026-09-28）
+
+Base mainは `64da12051962a1bbb817387ab1199ef010b6d1c0`。旧側と統合先を比較し、次を確認しました。
+
+| 対象 | 保全・整理先 |
+| --- | --- |
+| 8画面・components・hooks・業務ロジック | feature内に移植済み。差分は統合ルート、CSSの適用範囲、shared storage、画面・カメラ・タイマーのcleanup等の既存統合変更 |
+| data・75言語の翻訳・回答写真4枚・types | 計84ファイルが旧側とバイト単位で一致 |
+| 注意画像・favicon | 注意画像は `app/public/stamprally/app-icon.png`、faviconは `app/public/favicon.svg`。双方とも旧側と一致 |
+| GAS / Sheet sync | payload・再送キューはfeature内。旧説明だけにあったGASコード例・設定・確認・終了後の管理手順を `docs/stamprally/sheet-sync.md` に保全 |
+| QR生成 | `app/scripts/stamprally/generate-qrcodes.ts` に移植済み。差分はimport先と出力先のみ。生成物8ファイルは既存ignore設定に合わせてGit追跡を解除 |
+| `.env.example`・package scripts | `app/.env.example` と `app/package.json` に必要な設定口・起動・build・lint・QR生成を保全済み |
+| 独立appのroot・config・README | 統合appのroot・Router・PWA・Cloudflare構成と現行docsに置換済み。独立開発用のserver設定、未使用basic-ssl依存は移植不要 |
+| `public/icons.svg` | runtime / HTMLから参照なし。旧テンプレート資産として削除 |
+
+旧側だけに残る必要情報はGAS運用説明の移行で保全しました。旧runtimeのコピーは残さず、Migration文書内の旧path・SHA・当時の検証結果は設計履歴として保持しています。外部 `festival-stamp-rally` repositoryはこの整理の対象外です。
+
+## 削除後の検証（2026-09-28）
+
+| Check | Result |
+| --- | --- |
+| `npm ci` | PASS |
+| `npm run build` | PASS。TypeScript検査、manifestと単一SW生成を含む |
+| `npm run lint` | PASS。既存のonly-export-components警告2件のみ |
+| `npm run test:stamprally` | PASS、6件 |
+| `npm run generate:qr` | PASS。PNG7枚と5コースの文字対応表付きprint.htmlを生成。Git追跡なし |
+| `npx wrangler deploy --dry-run --outdir .wrangler/dry-run` | PASS。配信元は `app/dist`、upload前に終了 |
+| 旧path依存検索 | PASS。runtime import、script、package、Vite、Wranglerに旧pathなし。MigrationとCloudflare設定導入時の記録内の旧pathは履歴として残る |
+| docs・作業場所 | PASS。更新docsのローカルリンク29件とfeatureの実pathを確認 |
+| 軽量browser smoke | PASS。ローカルWorkersで `/`、`/events`、`/posts`、`/stamprally`、`/stamprally/camera` の直接ロード・reload、未登録guard、登録済みcameraの模擬拒否・戻るを確認。ブラウザ例外と400以上のasset応答は0件 |
+
+ブラウザ試験は新しいheadless Edge contextでService Workerをブロックし、外部リクエストを遮断した。Wranglerは `dev --local --show-interactive-dev-session=false` で自動ブラウザ起動を無効にして使用し、終了時にcontext・browser・起動したWorkers process treeを停止した。実機カメラやPWA/offlineの最終受入を代替するものではない。
+
+既存のJS chunkサイズ警告・glob非推奨警告、依存監査のhigh 1件はこの整理の対象外で、依存更新やaudit fixは行っていない。Cloudflare本番・preview再deploy、設定変更、GAS / Sheets実接続は行っていない。

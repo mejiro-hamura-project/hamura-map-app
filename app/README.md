@@ -1,32 +1,12 @@
-# React + TypeScript + Vite
+# 市民祭りアプリ（統合app）
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+現在の実装の正本はこの `app/` です。開発場所・公開URL・関連資料は [repository README](../README.md)、Gitの進め方は [development workflow](../docs/development-workflow.md) を参照してください。
 
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```sh
+npm ci
+npm run dev
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+PR前は `npm run build` / `npm run lint`、Stamp Rally変更時は `npm run test:stamprally` を実行します。buildの出力は `dist/`、Cloudflare設定は `wrangler.jsonc` です。
+
+運営用QRは `npm run generate:qr` で `qrcodes/` に生成します。生成物と環境変数の実値はcommitしません。任意のSheets設定例は `.env.example`、説明は [sheet-sync.md](../docs/stamprally/sheet-sync.md) にあります。

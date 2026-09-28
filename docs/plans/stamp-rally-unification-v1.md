@@ -1,5 +1,9 @@
 # Stamp Rally Unification v1 Migration Plan
 
+Status: COMPLETED（一体化・公開・旧runtime整理）。Current source of truth: `app/src/features/stamprally/`。
+
+2026-09-28追記：統合appのCloudflare公開とスマートフォン実機での基本動作は運営から確認報告済み。旧runtimeは削除し、GAS運用説明は [現行Sheets連携説明](../stamprally/sheet-sync.md) に保全した。PWA/offline最終受入、GAS / Sheets実接続、出展者データ統合、網羅的な実機試験は未確認。以下は計画作成時の設計履歴で、旧path・SHA・未実施記録は当時の記録として残す。現状は [統合説明](../integration-notes.md) と [開発手順](../development-workflow.md) を参照。
+
 ## 1. Goal
 
 `app/` を唯一のアプリケーションシェルとし、独立した `stamp-rally/` の業務機能を `app/src/features/stamprally/` に移す。最終形は単一のWebサイト、React root、BrowserRouter、ビルド、PWAとする。URLリンクで2アプリを維持する形やiframeは採用しない。
@@ -26,7 +30,7 @@
 - [開発手順書](../市民祭りアプリ_開発手順書.md)：M0〜M7、M3の地図連携、M6のPWA・品質。本計画のPhaseはこのマイルストーン番号とは別。
 - [integration-notes.md](../integration-notes.md)：独立ラリーの調査記録。ただしチェックポイント／QRの説明は現コードより古い（3章参照）。
 - [stamp_rally_prompt.md](../stamp_rally_prompt.md)：元仕様。登録項目・QR値・表示順・交換操作等は現コードと差があり、今回の互換基準は実コード。
-- [root README](../../README.md)、[Sheet連携説明](../../stamp-rally/README-sheet-sync.md)：現在の独立ビルドと任意のGAS連携。両アプリのREADMEは主にViteテンプレート。
+- [root README](../../README.md)、当時の `stamp-rally/README-sheet-sync.md`（Base mainのGit履歴参照）：当時の独立ビルドと任意のGAS連携。両アプリのREADMEは主にViteテンプレート。
 - Repositoryおよび確認した祖先ディレクトリに適用対象の `AGENTS.md` は見つからなかった。既存branch例 `work/integrate-sasaki-hasegawa-20260927` に合わせ `work/` を使用。
 
 ## 2. Current Architecture
