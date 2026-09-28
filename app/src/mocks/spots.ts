@@ -148,7 +148,7 @@ const SHOP_SPOTS: Spot[] = [
 
 /**
  * スタンプラリーのQR設置場所（7か所）。実際のスタンプラリー
- * （stamp-rally/src/data/checkpoints.ts）のチェックポイント数に合わせている。
+ * （app/src/features/stamprally/data/checkpoints.ts）の物理QR位置数に合わせている。
  * 座標・会場番号は仮の値（正確な位置合わせは今回は行っていない）。
  */
 const STAMP_QR_SPOTS: Spot[] = Array.from({ length: 7 }, (_, index) => {

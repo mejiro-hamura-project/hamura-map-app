@@ -2,6 +2,10 @@
 
 公開する正本は `app/` の1つのSPAです。`app/wrangler.jsonc` はWorker名を `hamura-map-app`、配信する静的ファイルを `./dist`、存在しないパスの処理を `single-page-application` に指定します。Worker entry scriptは追加していません。地図・イベント・投稿・スタンプラリーは同じoriginで動きます。
 
+公開URL：**https://hamura-map-app.academeia.workers.dev/**
+
+Cloudflare Workers deployment成功とスマートフォン実機での基本動作確認は、2026-09-28の運営からの確認報告によります。旧runtimeは削除済みです。PWA/offline最終受入、GAS / Google Sheets実接続、出展者データ統合、複数OS・端末での網羅的な実機試験は未確認です。
+
 Wranglerは `app/package.json` とlockfileに **4.142.0** を固定しています。compatibility dateは同梱workerdで検証する `2026-09-26` です。CloudflareのビルドではこのdevDependencyを含めてインストールしてください。Node.jsは22.12以降を使用します。
 
 ## Cloudflare UIの設定
@@ -16,7 +20,7 @@ Wranglerは `app/package.json` とlockfileに **4.142.0** を固定していま�
 | Build command | `npm run build` |
 | Deploy command | `npx wrangler deploy` |
 
-このbranchの変更をmainへmergeした後、mainを対象に **New deployment** を実行します。公開するのはビルドされた **`app/dist` のみ**です。WorkersではWranglerの `assets.directory` が出力先を指定するため、PagesのようなBuild output directory欄を別に設定する必要はありません。リポジトリ全体や旧 `stamp-rally/` をassetsとして指定しないでください。public内の運営用アイコン対応メモも、Viteがコピーする `.assetsignore` により公開assetから除外します。
+現在はmainをproduction branchとして公開しています。公開するのはビルドされた **`app/dist` のみ**です。WorkersではWranglerの `assets.directory` が出力先を指定するため、PagesのようなBuild output directory欄を別に設定する必要はありません。リポジトリ全体をassetsとして指定しないでください。public内の運営用アイコン対応メモも、Viteがコピーする `.assetsignore` により公開assetから除外します。
 
 この手順の説明は公開作業の実施を意味しません。今回のCodex作業ではCloudflareへの通常deploy・preview deploy、環境変数設定、DNS/domain変更を行いません。
 
@@ -64,11 +68,13 @@ HTTPだけで確かめる場合の例です。
 curl -i https://<worker>.workers.dev/stamprally/camera
 ```
 
-深いURLのHTTP成功とindex.htmlの内容、JS/CSS/map画像・注意画像・回答写真の取得、`/manifest.webmanifest` と `/sw.js` の配信を確認します。PWA設定は今回変更していません。SW更新・offlineの最終受入と実機カメラ試験は別途行います。
+深いURLのHTTP成功とindex.htmlの内容、JS/CSS/map画像・注意画像・回答写真の取得、`/manifest.webmanifest` と `/sw.js` の配信を確認します。PWA設定は今回変更していません。SW更新・offlineの最終受入と実機カメラの網羅的な試験は別途行います。
 
-同じoriginの保存キーは維持しています。旧公開先とoriginが異なる場合の進行引継ぎは自動で行われないため、公開切替時に別途確認してください。旧 `stamp-rally/` は比較・復旧用として残し、今回の公開対象には含めません。
+同じoriginの保存キーは維持しています。旧公開先とoriginが異なる場合の進行引継ぎは自動で行われないため、公開切替時に別途確認してください。復元・比較にはGit履歴を使い、開発は `app/` に統一します。
 
-## repository側の検証結果（2026-09-28）
+## Cloudflare設定導入時の検証履歴（2026-09-28）
+
+以下は設定導入時点の記録です。後続で公開・スマートフォン基本動作確認・旧runtime削除を実施済みで、現在状態は冒頭を参照してください。
 
 Baseは `origin/main` / `7a5f79db1c05b665dbca1f5220117621106ce5c6`、作業branchは `work/cloudflare-workers-static-assets` です。既存依存のバージョンとアプリ本体、Vite/PWA設定、旧runtimeは変更していません。
 
