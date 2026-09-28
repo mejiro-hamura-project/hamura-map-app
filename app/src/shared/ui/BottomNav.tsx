@@ -15,7 +15,7 @@ const TABS: Tab[] = [
 
 export default function BottomNav() {
   return (
-    <nav className="sticky bottom-0 flex border-t border-line bg-card">
+    <nav aria-label="メインナビゲーション" className="sticky bottom-0 flex shrink-0 border-t border-line bg-card pb-[env(safe-area-inset-bottom)]">
       {TABS.map((tab) => (
         <NavLink
           key={tab.to}
