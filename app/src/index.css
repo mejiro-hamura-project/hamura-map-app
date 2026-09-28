@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./features/stamprally/stamprally.css";
 
 /*
  * 共通デザイントークン。
@@ -6,6 +7,17 @@
  * 色を変えたいときはここだけ直せば全画面に反映される。
  */
 @theme {
+
+  --color-stamprally-notice: #e8524a;
+  --color-stamprally-howto: #4cb37e;
+  --color-stamprally-register: #f7e9a0;
+  --color-stamprally-cta: #e39aa0;
+  --color-stamprally-camera: #8b7ed8;
+  --color-stamprally-collected: #f5a623;
+  --color-stamprally-exchange-link: #e060a8;
+  --color-stamprally-exchange-btn: #a9b8e8;
+  --color-stamprally-exchanged: #e8524a;
+
   --color-bg: #f4f4f1;
   --color-card: #ffffff;
   --color-ink: #2b2f36;

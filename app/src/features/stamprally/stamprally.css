@@ -1,0 +1,156 @@
+/* 景品交換のスタッフ専用「長押し」エリア。長押し中にテキスト選択やブラウザの
+   コンテキストメニューが出て誤操作・体験の妨げにならないようにするだけの表示調整。 */
+.stamprally .staff-long-press {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+/* QR読み取り枠を完全な正方形に保つ。html5-qrcode が挿入する video 要素を
+   正方形コンテナいっぱいに敷き詰めるだけの表示調整で、カメラ処理やQR認識は変更しない。
+   position:absolute + inset:0 にすることで、正方形が aspect-ratio 由来（高さが
+   明示的でない）でも確実にフィットする。 */
+.stamprally #qr-scanner-region {
+  position: relative;
+}
+.stamprally #qr-scanner-region video {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
+
+@keyframes stamp-pop-bounce {
+  0% {
+    transform: scale(0) rotate(-15deg);
+    opacity: 0;
+  }
+  55% {
+    transform: scale(1.2) rotate(4deg);
+    opacity: 1;
+  }
+  75% {
+    transform: scale(0.92) rotate(-2deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+@keyframes stamp-glow-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(245, 166, 35, 0.55), 0 0 24px 4px rgba(245, 166, 35, 0.35);
+  }
+  50% {
+    box-shadow: 0 0 0 14px rgba(245, 166, 35, 0), 0 0 40px 10px rgba(245, 166, 35, 0.5);
+  }
+}
+
+@keyframes stamp-ring-expand {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(1.9);
+    opacity: 0;
+  }
+}
+
+@keyframes stamp-title-drop {
+  0% {
+    transform: translateY(-16px) scale(0.8);
+    opacity: 0;
+  }
+  60% {
+    transform: translateY(2px) scale(1.05);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes stamp-sparkle-float {
+  0% {
+    transform: translateY(0) scale(0) rotate(0deg);
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+    transform: translateY(-6px) scale(1) rotate(20deg);
+  }
+  100% {
+    transform: translateY(-28px) scale(0.8) rotate(60deg);
+    opacity: 0;
+  }
+}
+
+.stamprally .animate-stamp-pop {
+  animation: stamp-pop-bounce 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both,
+    stamp-glow-pulse 1.8s ease-in-out 0.7s infinite;
+}
+
+.stamprally .animate-stamp-ring {
+  animation: stamp-ring-expand 1.6s ease-out infinite;
+}
+
+.stamprally .animate-stamp-title {
+  animation: stamp-title-drop 0.5s ease-out both;
+}
+
+.stamprally .animate-stamp-sparkle {
+  animation: stamp-sparkle-float 1.4s ease-in-out infinite;
+}
+
+/* スタンプ取得後、くるくる回りながら縮小して、スタンプ一覧の実際の空き枠まで
+   飛んでいくように見せるための演出（/rally画面のオーバーレイで使用）。
+   --dx/--dy/--land-scale はJS側で出発地点・到着地点の実座標から計算して渡す。
+   取得データ自体はこの前に確定済みなので、このアニメーションは見た目だけで、
+   状態やスタンプの二重取得には関与しない。720degちょうどで終える（=見た目は
+   0degと同じ）ことで、次のバウンド演出に回転無しで切り替わっても違和感が出ない。 */
+@keyframes stamp-fly-to-slot {
+  0% {
+    transform: translate(0, 0) scale(1) rotate(0deg);
+  }
+  100% {
+    transform: translate(var(--dx, 0px), var(--dy, 0px)) scale(var(--land-scale, 1)) rotate(720deg);
+  }
+}
+
+/* 飛行アニメーションの続きとして、枠に軽く跳ねながら収まる演出。 */
+@keyframes stamp-land-bounce {
+  0% {
+    transform: translate(var(--dx, 0px), var(--dy, 0px)) scale(calc(var(--land-scale, 1) * 1.25));
+  }
+  55% {
+    transform: translate(var(--dx, 0px), var(--dy, 0px)) scale(calc(var(--land-scale, 1) * 0.9));
+  }
+  100% {
+    transform: translate(var(--dx, 0px), var(--dy, 0px)) scale(var(--land-scale, 1));
+  }
+}
+
+.stamprally .animate-stamp-fly-to-slot {
+  animation: stamp-fly-to-slot 0.75s cubic-bezier(0.3, 0, 0.35, 1) both;
+}
+
+.stamprally .animate-stamp-land-bounce {
+  animation: stamp-land-bounce 0.32s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* 端末の「動きを減らす」設定では、この演出そのものをJS側で発生させない
+   （StampRevealScreen が reducedMotion を検知し、/rally への遷移時に
+   startRect を渡さないため、飛行オーバーレイ自体が作られない）。
+   ここではGET!画面側のポップ・キラキラ演出だけを止める。 */
+@media (prefers-reduced-motion: reduce) {
+  .stamprally .animate-stamp-pop,
+  .stamprally .animate-stamp-ring,
+  .stamprally .animate-stamp-title,
+  .stamprally .animate-stamp-sparkle {
+    animation: none !important;
+  }
+}

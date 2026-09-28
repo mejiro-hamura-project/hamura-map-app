@@ -14,6 +14,17 @@ function safeParse<T>(raw: string, fallback: T): T {
 }
 
 export const storage = {
+  /** 既存の数値文字列・JSON保存形式を変えずに扱うための窓口。 */
+  getRaw(key: string): string | null {
+    if (typeof window === 'undefined') return null;
+    return window.localStorage.getItem(key);
+  },
+
+  setRaw(key: string, value: string): void {
+    if (typeof window === 'undefined') return;
+    window.localStorage.setItem(key, value);
+  },
+
   get<T>(key: string, fallback: T): T {
     if (typeof window === 'undefined') return fallback;
     const raw = window.localStorage.getItem(key);

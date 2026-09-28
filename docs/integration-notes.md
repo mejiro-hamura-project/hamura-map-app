@@ -1,63 +1,42 @@
-# 既存スタンプラリーとの連携調査メモ（M0）
+# 統合スタンプラリーと地図の連携
 
-このメモは、地図画面から既存のスタンプラリー（`stamp-rally/`）の情報を「読むだけ」で連携するために、
-今の実装がどうなっているかを調べた結果です。**スタンプラリー側のコードはまだ何も変更していません。**
+Phase 1・2で独立ラリーを `app/src/features/stamprally/` に移植しました。実装の正本はこのfeatureです。`stamp-rally/` は変更せず比較・復旧用として残しています。
 
-## 1. チェックポイント（QR設置場所）の定義
+## Routerと状態
 
-場所：`stamp-rally/src/data/checkpoints.ts`
+`app/src/App.tsx` の単一BrowserRouterに以下を登録しています。`StampRallyLayout` が `useStampRally()` を1回呼び、子画面はOutletのcontextから同じ状態と操作を受け取ります。
 
-- `CHECKPOINTS`：7つのチェックポイントの配列。各要素は `{ id, qrValue, char, phraseIndex }`
-  - `id`：チェックポイント番号（1〜7）
-  - `qrValue`：QRコードの中身の文字列（例：`STAMP_01`）
-  - `char`：そのチェックポイントで手に入る1文字
-  - `phraseIndex`：お題（合言葉）の中での並び順
-- `TOTAL_STAMPS`：チェックポイントの総数（7）
-- `getPhraseCheckpoints()`：お題の並び順（`phraseIndex` 順）に並べ替えたチェックポイント一覧を返す関数
-- `findCheckpointByQrValue(qrValue)`：QRの中身からチェックポイントを検索する関数
-- `getCorrectPhrase()`：完成した合言葉の文字列を返す関数
+| URL | 用途 |
+| --- | --- |
+| `/stamprally` | 未登録ならnotice、登録済みならrallyへ |
+| `/stamprally/notice` | 注意事項・同意 |
+| `/stamprally/howto` | 遊び方 |
+| `/stamprally/register` | 参加登録 |
+| `/stamprally/rally` | 取得状況 |
+| `/stamprally/camera` | 既存のhtml5-qrcodeで読取 |
+| `/stamprally/reveal` | 獲得演出 |
+| `/stamprally/challenge` | 合言葉の並べ替え |
+| `/stamprally/exchange` | 長押し・確認による景品交換 |
+| `/stamprally/result` | exchangeへの互換alias |
 
-→ これらはすべて**ただの関数・定数**（状態を持たない）なので、地図側からそのまま読み取り専用として使えます。
-地図にQRマーカーを7つ表示する際は、この `CHECKPOINTS` をそのまま使う想定です（M3で対応）。
+未登録で途中画面を開いた場合はnoticeへ戻します。未完成のchallenge、未解答のexchange、location stateのないrevealは元実装のガードを維持しています。未知のfeature内URLは入口へ、全体の未知URLはホームへ戻します。旧HashRouterや別originへの橋渡しは追加していません。
 
-## 2. 取得済み状態（進行状況）へのアクセス
+camera・reveal・exchangeではBottomNavを隠し、それ以外では表示します。全画面表示中のヘッダーに祭り案内への退出リンクを設けています。i18nの `lang` はfeature内のsectionに設定し、祭り案内の `html.lang` は書き換えません。
 
-場所：`stamp-rally/src/hooks/useStampRally.ts`
+## 地図の位置番号とコース固有ID
 
-- 進行状況（`registration` / `collectedIds` / `phraseSolved` / `prizeExchanged`）は、
-  ブラウザの `localStorage` に **キー `stampRally.v1`** で保存されています。
-- ただし現状、この状態を読み書きする手段は **`useStampRally()` という1つのReactフックの中だけ** に閉じています。
-  「取得済みかどうかだけを外から読む」ための、独立した関数は**まだ用意されていません**。
+5コースと各7文字の正本は `app/src/features/stamprally/data/checkpoints.ts` です。物理QRの値は全コース共通の `stamp-rally-position-1` から `stamp-rally-position-7`。コース固有の取得IDは1〜35です。
 
-**わかったこと・今後の対応方針**
-- 地図画面がQRの取得状況を表示するには、`stampRally.v1` を直接 `localStorage` から読むのではなく、
-  スタンプラリー側に「読み取り専用の最小限の関数（例：取得済みID一覧を返すだけの関数）」を
-  **後から追加してもらう**必要があります（内部ロジックは変更せず、読み取り口を1つ増やすだけ）。
-- これは今回（M0/M1）の作業範囲外です。地図にQRマーカーを表示するM3のタイミングで、
-  スタンプラリー担当と相談して読み取り用の窓口を追加する想定です。
+`Spot.stampCheckpointId` は物理位置1〜7を表します。たとえばcourse 2で位置1を読んだ取得IDは8ですが、地図では位置1のマーカーを取得済みにします。read adapterは選択中コースの `phraseIndex + 1` と `collectedIds.includes(id)` を対応させます。出展者データやSpotのIDをコースに合わせて変更しません。
 
-## 3.「カメラを起動する」導線
+## 読み取り契約
 
-場所：`stamp-rally/src/screens/CameraScreen.tsx`
+共有契約は `app/src/shared/integrations/stampRally/`、実体はfeature内の `integrations/readPort.ts` です。Appで `StampRallyReadProvider` に実体を渡し、QrMarkerとQrPopupは `useStampRallyReadPort()` を使います。shared層はfeatureをimportしません。
 
-- 「カメラを起動する」は独立した関数ではなく、**`/camera` という画面へ移動する（ルーティングする）**ことで実現されています。
-- スタンプラリーは今のところ**独立した別のReactアプリ**（別の `package.json`、別のルーター）として動いています。
-  そのため、今回作る新しいアプリの中から「スタンプラリーのカメラ画面だけを呼び出す」ことは、
-  今の作り方のままでは技術的にまだできません。
+read adapterは描画時に既存の保存状態を読み、Reactの進行状態を別に保持しません。ラリーから地図へ戻ると取得・リセットを反映します。未登録や不明なコースは未取得扱いです。別タブの更新を購読する仕組みは今回追加していません。
 
-**今後の対応方針**
-- 将来的にスタンプラリーは、新しいアプリの中の1つの機能として合体される予定です（既に方針として確認済み）。
-- 合体が済めば、「カメラを起動する」ボタンも新しいアプリの中の画面遷移として自然に呼び出せるようになります。
-- それまでの間（今回のM0〜M2）は、下部ナビの「スタンプラリー」タブは**仮の画面（空きスロット）**としておき、
-  実際のスタンプラリー機能への接続は、合体作業のタイミングで対応します。
+地図の「カメラで読み取る」は登録済みなら `/stamprally/camera`、未登録なら入口へ遷移します。カメラの読取判定・状態更新は移植した既存実装を使います。
 
-## 4. まとめ（今回のM0での結論）
+## 保存と運用
 
-| 連携したい情報 | 今すぐ読み取れるか | 対応 |
-|---|---|---|
-| QR設置場所7か所の定義（id/文字/並び順） | ○ 読める（ただの定数・関数） | M3でそのまま利用 |
-| QRの取得済み状態 | ✕ まだ外から読めない | M3までにスタンプラリー側へ読み取り用の関数追加を依頼 |
-| カメラ起動 | ✕ 別アプリなので今は呼び出せない | 将来の合体作業まで、下部ナビは仮画面にしておく |
-
-このメモにもとづき、M0では下部ナビの「スタンプラリー」タブを**仮の画面**として作ります
-（本物のスタンプラリーへの接続はまだ行いません）。
+3つの保存キーと元のJSON／数値文字列を維持し、共有storageユーティリティ経由でアクセスします。旧originが異なる場合の自動引継ぎは行いません。任意のSheets設定は [sheet-sync.md](stamprally/sheet-sync.md)、受入結果と残作業は [実装メモ](plans/stamp-rally-unification-v1-implementation-notes.md) を参照してください。

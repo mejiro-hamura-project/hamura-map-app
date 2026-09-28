@@ -1,5 +1,5 @@
 import { useMapProvider } from '../../../shared/map';
-import { isCheckpointCollected } from '../../../shared/integrations/stampRally';
+import { isCheckpointCollected, useStampRallyReadPort } from '../../../shared/integrations/stampRally';
 import type { Spot } from '../../../shared/types';
 
 type QrMarkerProps = {
@@ -9,12 +9,14 @@ type QrMarkerProps = {
 
 export default function QrMarker({ spot, onTap }: QrMarkerProps) {
   const mapProvider = useMapProvider();
+  const port = useStampRallyReadPort();
   const position = mapProvider.getPosition(spot);
-  const done = spot.stampCheckpointId != null && isCheckpointCollected(spot.stampCheckpointId);
+  const done = spot.stampCheckpointId != null && isCheckpointCollected(spot.stampCheckpointId, port);
 
   return (
     <button
       type="button"
+      aria-label={`スタンプQR ${spot.stampCheckpointId}${done ? '（取得済み）' : ''}`}
       onClick={onTap}
       className="absolute z-[7] -translate-x-1/2 -translate-y-1/2"
       style={{ left: position.left, top: position.top }}

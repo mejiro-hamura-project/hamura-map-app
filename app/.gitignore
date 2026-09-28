@@ -13,6 +13,12 @@ dist-ssr
 dev-dist
 *.local
 
+# Deployment-specific values and reproducible operator QR output.
+.env
+.env.*
+!.env.example
+qrcodes/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
