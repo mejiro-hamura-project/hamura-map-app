@@ -19,6 +19,11 @@ dev-dist
 !.env.example
 qrcodes/
 
+# Wrangler local state and environment-specific bindings.
+.wrangler/
+.dev.vars
+.dev.vars.*
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
