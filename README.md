@@ -12,4 +12,6 @@ npm run dev
 
 `VITE_SHEET_WEBHOOK_URL` が未設定でも登録から景品交換まで利用できます。進行状況は同じoriginのブラウザストレージに保存します。任意のSheets連携は [設定説明](docs/stamprally/sheet-sync.md)、ルートと地図の取得表示は [連携説明](docs/integration-notes.md) を参照してください。
 
+Cloudflare Workers Static Assetsでは `app/dist` を1つのWorkerとして配信します。Root directoryは `app`、Build commandは `npm run build`、Deploy commandは `npx wrangler deploy` です。環境変数はViteのbuild時に読み込みます。[Cloudflareの設定と公開後の確認手順](docs/cloudflare-workers-static-assets.md) を参照してください。
+
 `stamp-rally/` はPhase 1・2の比較・復旧用として残しています。今後の機能変更は統合先の `app/` に行ってください。旧ディレクトリの削除、公開originやCloudflare設定の変更、実機・PWA更新の受入はPhase 3で扱います。今回の作業は公開切替を含みません。実装範囲と検証結果は [実装メモ](docs/plans/stamp-rally-unification-v1-implementation-notes.md) に記録しています。
