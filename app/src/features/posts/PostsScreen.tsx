@@ -21,7 +21,7 @@ export default function PostsScreen() {
   const [likedPostIds, setLikedPostIds] = useState<Set<string>>(new Set());
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [selectedTagIds, setSelectedTagIds] = useState<Set<string>>(new Set());
+  const [selectedGenreIds, setSelectedGenreIds] = useState<Set<string>>(new Set());
   const [selectedSpotIds, setSelectedSpotIds] = useState<Set<string>>(new Set());
   const [nickname, setNickname] = useNickname();
 
@@ -32,14 +32,16 @@ export default function PostsScreen() {
   const shopSpots = useMemo(() => spots.filter((spot) => spot.categoryId !== 'stamp-qr'), [spots]);
 
   const visiblePosts = useMemo(() => {
-    if (selectedTagIds.size === 0 && selectedSpotIds.size === 0) return posts;
+    if (selectedGenreIds.size === 0 && selectedSpotIds.size === 0) return posts;
     return posts.filter((post) => {
       const spot = spots.find((s) => s.id === post.spotId);
-      const matchesTag = selectedTagIds.size === 0 || (spot ? spot.tagIds.some((tagId) => selectedTagIds.has(tagId)) : false);
+      // 投稿自体はジャンルを持たないため、投稿先の店（スポット）のジャンルをたどって判定する
+      const matchesGenre =
+        selectedGenreIds.size === 0 || (spot?.genreId ? selectedGenreIds.has(spot.genreId) : false);
       const matchesSpot = selectedSpotIds.size === 0 || selectedSpotIds.has(post.spotId);
-      return matchesTag && matchesSpot;
+      return matchesGenre && matchesSpot;
     });
-  }, [posts, spots, selectedTagIds, selectedSpotIds]);
+  }, [posts, spots, selectedGenreIds, selectedSpotIds]);
 
   function handleToggleLike(postId: string) {
     const willLike = !likedPostIds.has(postId);
@@ -56,11 +58,11 @@ export default function PostsScreen() {
     });
   }
 
-  function handleToggleTag(tagId: string) {
-    setSelectedTagIds((prev) => {
+  function handleToggleGenre(genreId: string) {
+    setSelectedGenreIds((prev) => {
       const next = new Set(prev);
-      if (next.has(tagId)) next.delete(tagId);
-      else next.add(tagId);
+      if (next.has(genreId)) next.delete(genreId);
+      else next.add(genreId);
       return next;
     });
   }
@@ -121,15 +123,15 @@ export default function PostsScreen() {
         )}
       </div>
 
-      <PostFilterFab activeCount={selectedTagIds.size + selectedSpotIds.size} onClick={() => setIsFilterOpen(true)} />
+      <PostFilterFab activeCount={selectedGenreIds.size + selectedSpotIds.size} onClick={() => setIsFilterOpen(true)} />
       <PostCreateFab onClick={() => setIsCreateOpen(true)} />
 
       {isFilterOpen && (
         <PostFilterSheet
           shops={shopSpots}
-          selectedTagIds={selectedTagIds}
+          selectedGenreIds={selectedGenreIds}
           selectedSpotIds={selectedSpotIds}
-          onToggleTag={handleToggleTag}
+          onToggleGenre={handleToggleGenre}
           onToggleSpot={handleToggleSpot}
           onClose={() => setIsFilterOpen(false)}
         />

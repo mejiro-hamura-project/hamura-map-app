@@ -1,21 +1,21 @@
-import { TAGS } from '../../../shared/taxonomy';
+import { GENRES } from '../../../shared/taxonomy';
 import type { Spot } from '../../../shared/types';
 import { spotDisplayName } from '../../../shared/utils/spotSearch';
 
 type PostFilterSheetProps = {
   shops: Spot[];
-  selectedTagIds: Set<string>;
+  selectedGenreIds: Set<string>;
   selectedSpotIds: Set<string>;
-  onToggleTag: (tagId: string) => void;
+  onToggleGenre: (genreId: string) => void;
   onToggleSpot: (spotId: string) => void;
   onClose: () => void;
 };
 
 export default function PostFilterSheet({
   shops,
-  selectedTagIds,
+  selectedGenreIds,
   selectedSpotIds,
-  onToggleTag,
+  onToggleGenre,
   onToggleSpot,
   onClose,
 }: PostFilterSheetProps) {
@@ -32,16 +32,17 @@ export default function PostFilterSheet({
 
       <div className="mt-4 px-4 text-xs font-extrabold tracking-wide text-sub">ジャンルで絞り込み</div>
       <div className="mx-4 mt-2 flex flex-wrap gap-2">
-        {TAGS.map((tag) => (
+        {GENRES.map((genre) => (
           <button
-            key={tag.id}
+            key={genre.id}
             type="button"
-            onClick={() => onToggleTag(tag.id)}
-            className={`rounded-full border-[1.5px] px-4 py-1.5 text-xs font-bold ${
-              selectedTagIds.has(tag.id) ? 'border-brand-blue bg-brand-blue text-white' : 'border-brand-blue text-brand-blue'
+            onClick={() => onToggleGenre(genre.id)}
+            className={`flex items-center gap-1.5 rounded-full border-[1.5px] px-3 py-1.5 text-xs font-bold ${
+              selectedGenreIds.has(genre.id) ? 'border-brand-blue bg-brand-blue text-white' : 'border-brand-blue text-brand-blue'
             }`}
           >
-            {tag.name}
+            <img src={genre.iconUrl} alt="" className="h-4 w-4" />
+            {genre.name}
           </button>
         ))}
       </div>
