@@ -13,3 +13,11 @@ export const STORES_BY_VENUE: Record<number, Store[]> = {
 export function findStore(stores: Store[], style: BoothStyle, code: string): Store | undefined {
   return stores.find((store) => store.style === style && store.code === code);
 }
+
+/**
+ * ブースの店をタップしたときに組み立てる疑似スポットのid。
+ * ダミー投稿のspotIdもこの形式に合わせることで、どの店の投稿かを突き合わせられるようにする。
+ */
+export function storeSpotId(store: Pick<Store, 'style' | 'code'>): string {
+  return `store-${store.style}-${store.code}`;
+}

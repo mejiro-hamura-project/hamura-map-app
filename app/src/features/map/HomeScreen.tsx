@@ -6,7 +6,7 @@ import { matchesSpotQuery } from '../../shared/utils/spotSearch';
 import { getCurrentProgramStatus, getStageStatusText, getTimetableForToday } from '../../shared/utils/timetable';
 import { MOCK_VENUE_HOTSPOTS } from '../../mocks/venueHotspots';
 import { BOOTHS_BY_VENUE } from '../../mocks/booths';
-import { STORES_BY_VENUE } from '../../mocks/stores';
+import { STORES_BY_VENUE, storeSpotId } from '../../mocks/stores';
 import VenueHeader from './components/VenueHeader';
 import MapCanvas from './components/MapCanvas';
 import SearchSheet from './components/SearchSheet';
@@ -103,7 +103,7 @@ export default function HomeScreen() {
   // 疑似スポットをその場で組み立てる（本物のSpotデータと混ぜず、地図上のピン等には影響しない）
   function handleSelectStore(store: Store) {
     setSelectedStoreSpot({
-      id: `store-${store.style}-${store.code}`,
+      id: storeSpotId(store),
       name: store.name,
       categoryId: '',
       tagIds: [],
