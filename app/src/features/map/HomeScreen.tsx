@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useMaps, useSpots, useTimetable } from '../../api';
+import { useMaps, usePosts, useSpots, useTimetable } from '../../api';
 import type { Booth, Spot, Store } from '../../shared/types';
 import { useClock } from '../../shared/context/DevClockContext';
+import { useNickname } from '../../shared/hooks/useNickname';
 import { matchesSpotQuery } from '../../shared/utils/spotSearch';
 import { getCurrentProgramStatus, getStageStatusText, getTimetableForToday } from '../../shared/utils/timetable';
 import { MOCK_VENUE_HOTSPOTS } from '../../mocks/venueHotspots';
@@ -15,7 +16,9 @@ export default function HomeScreen() {
   const { maps, isLoading: isLoadingMaps } = useMaps();
   const { spots, isLoading: isLoadingSpots } = useSpots();
   const { timetable } = useTimetable();
+  const { posts } = usePosts();
   const { now } = useClock();
+  const [nickname] = useNickname();
   const [currentMapId, setCurrentMapId] = useState<string | null>(null);
   const [selectedSpotId, setSelectedSpotId] = useState<string | null>(null);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -162,6 +165,8 @@ export default function HomeScreen() {
         stores={currentStores}
         selectedBooth={selectedBooth}
         selectedStoreSpot={selectedStoreSpot}
+        posts={posts}
+        myNickname={nickname}
         selectedSpot={selectedSpot}
         onSpotTap={setSelectedSpotId}
         onCloseSpot={() => setSelectedSpotId(null)}

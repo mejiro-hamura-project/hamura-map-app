@@ -1,12 +1,15 @@
 import { findCategoryById, findGenreById, findTagById } from '../../../shared/taxonomy';
-import type { Spot } from '../../../shared/types';
+import type { Post, Spot } from '../../../shared/types';
+import SpotPostList from './SpotPostList';
 
 type SpotPopupProps = {
   spot: Spot;
+  posts: Post[];
+  myNickname: string;
   onClose: () => void;
 };
 
-export default function SpotPopup({ spot, onClose }: SpotPopupProps) {
+export default function SpotPopup({ spot, posts, myNickname, onClose }: SpotPopupProps) {
   const category = findCategoryById(spot.categoryId);
   const genre = findGenreById(spot.genreId);
   const tags = spot.tagIds.map((tagId) => findTagById(tagId)).filter((tag) => tag !== undefined);
@@ -52,6 +55,7 @@ export default function SpotPopup({ spot, onClose }: SpotPopupProps) {
           <span className="text-xs text-[#aab0b8]">タグなし</span>
         )}
       </div>
+      <SpotPostList spotId={spot.id} posts={posts} myNickname={myNickname} />
     </div>
   );
 }
