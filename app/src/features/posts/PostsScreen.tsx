@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
-import { usePosts, useSpots, useUsers } from '../../api';
+import { usePosts, useSpots } from '../../api';
 import type { Post } from '../../shared/types';
+import { CURRENT_USER_ID } from '../../shared/constants';
 import { useNickname } from '../../shared/hooks/useNickname';
+import { resolveAuthorNickname } from '../../shared/utils/postAuthor';
 import { spotDisplayName } from '../../shared/utils/spotSearch';
 import FeedItem from './components/FeedItem';
 import PostFilterFab from './components/PostFilterFab';
@@ -10,13 +12,9 @@ import PostCreateFab from './components/PostCreateFab';
 import PostCreateSheet from './components/PostCreateSheet';
 import NicknameEditor from './components/NicknameEditor';
 
-// ログイン機能がまだ無いため、自分の投稿は固定のこのユーザーとして扱う（mocks/users.ts参照）
-const CURRENT_USER_ID = 'user-you';
-
 export default function PostsScreen() {
   const { posts: fetchedPosts, isLoading } = usePosts();
   const { spots } = useSpots();
-  const { users } = useUsers();
   const [posts, setPosts] = useState<Post[]>([]);
   const [likedPostIds, setLikedPostIds] = useState<Set<string>>(new Set());
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -104,11 +102,7 @@ export default function PostsScreen() {
         ) : (
           visiblePosts.map((post) => {
             const spot = spots.find((s) => s.id === post.spotId);
-            // 自分（user-you）の投稿だけは、保存済みのニックネーム（無ければ「匿名」）で表示する
-            const authorNickname =
-              post.userId === CURRENT_USER_ID
-                ? nickname || '匿名'
-                : (users.find((u) => u.id === post.userId)?.nickname ?? '名無しさん');
+            const authorNickname = resolveAuthorNickname(post, nickname);
             return (
               <FeedItem
                 key={post.id}
