@@ -5,11 +5,10 @@ import SpotPostList from './SpotPostList';
 type SpotPopupProps = {
   spot: Spot;
   posts: Post[];
-  myNickname: string;
   onClose: () => void;
 };
 
-export default function SpotPopup({ spot, posts, myNickname, onClose }: SpotPopupProps) {
+export default function SpotPopup({ spot, posts, onClose }: SpotPopupProps) {
   const category = findCategoryById(spot.categoryId);
   const genre = findGenreById(spot.genreId);
   const tags = spot.tagIds.map((tagId) => findTagById(tagId)).filter((tag) => tag !== undefined);
@@ -55,7 +54,7 @@ export default function SpotPopup({ spot, posts, myNickname, onClose }: SpotPopu
           <span className="text-xs text-[#aab0b8]">タグなし</span>
         )}
       </div>
-      <SpotPostList spotId={spot.id} posts={posts} myNickname={myNickname} />
+      <SpotPostList spotId={spot.id} posts={posts} />
     </div>
   );
 }

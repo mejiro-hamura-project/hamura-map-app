@@ -1,10 +1,9 @@
-import { CURRENT_USER_ID } from '../constants';
 import type { Post } from '../types';
 
 /**
- * 投稿者名の表示方針：本名っぽい固定名（mocks/users.tsのnickname）も「匿名」も使わない。
- * 自分の投稿はニックネーム（設定していればそれ）、それ以外（他人の投稿・自分がニックネーム
- * 未設定のとき）はこの5つの架空ニックネームを投稿者（userId）ごとに固定で割り当てて使い回す。
+ * 投稿者名の表示方針：本名っぽい固定名（mocks/users.tsのnickname）は使わない。
+ * ユーザーは名前について一切操作できない（設定・変更不可）。この5つの架空ニックネームを
+ * 投稿者（userId）ごとに固定で割り当てて使い回す（自分の投稿も含め、全員同じ仕組み）。
  * 投稿タブ・地図の口コミ表示など、投稿者名を出すすべての箇所からこの関数を使い回し、
  * 表示ロジックを二重に作らない。
  */
@@ -20,7 +19,6 @@ export function fakeNicknameForUserId(userId: string): string {
   return FAKE_NICKNAMES[hash % FAKE_NICKNAMES.length];
 }
 
-export function resolveAuthorNickname(post: Post, myNickname: string): string {
-  if (post.userId === CURRENT_USER_ID && myNickname) return myNickname;
+export function resolveAuthorNickname(post: Post): string {
   return fakeNicknameForUserId(post.userId);
 }

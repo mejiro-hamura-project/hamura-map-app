@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { usePosts, useSpots } from '../../api';
 import type { Post } from '../../shared/types';
 import { CURRENT_USER_ID } from '../../shared/constants';
-import { useNickname } from '../../shared/hooks/useNickname';
+import { findStoreBySpotId } from '../../mocks/stores';
 import { resolveAuthorNickname } from '../../shared/utils/postAuthor';
 import { spotDisplayName } from '../../shared/utils/spotSearch';
 import FeedItem from './components/FeedItem';
@@ -10,7 +10,6 @@ import PostFilterFab from './components/PostFilterFab';
 import PostFilterSheet from './components/PostFilterSheet';
 import PostCreateFab from './components/PostCreateFab';
 import PostCreateSheet from './components/PostCreateSheet';
-import NicknameEditor from './components/NicknameEditor';
 
 export default function PostsScreen() {
   const { posts: fetchedPosts, isLoading } = usePosts();
@@ -21,7 +20,6 @@ export default function PostsScreen() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [selectedGenreIds, setSelectedGenreIds] = useState<Set<string>>(new Set());
   const [selectedSpotIds, setSelectedSpotIds] = useState<Set<string>>(new Set());
-  const [nickname, setNickname] = useNickname();
 
   useEffect(() => {
     setPosts(fetchedPosts);
@@ -29,16 +27,26 @@ export default function PostsScreen() {
 
   const shopSpots = useMemo(() => spots.filter((spot) => spot.categoryId !== 'stamp-qr'), [spots]);
 
+  // 投稿先は本物のSpotデータとは限らない（ブースの店は疑似スポット）。
+  // 本物のSpotで見つからなければ、ブースの店データからも名前・ジャンルを探す。
+  function resolvePostTarget(spotId: string): { name: string; genreId: string | undefined } {
+    const spot = spots.find((s) => s.id === spotId);
+    if (spot) return { name: spotDisplayName(spot.name), genreId: spot.genreId };
+    const store = findStoreBySpotId(spotId);
+    if (store) return { name: store.name, genreId: store.genreId };
+    return { name: '', genreId: undefined };
+  }
+
   const visiblePosts = useMemo(() => {
     if (selectedGenreIds.size === 0 && selectedSpotIds.size === 0) return posts;
     return posts.filter((post) => {
-      const spot = spots.find((s) => s.id === post.spotId);
+      const { genreId } = resolvePostTarget(post.spotId);
       // 投稿自体はジャンルを持たないため、投稿先の店（スポット）のジャンルをたどって判定する
-      const matchesGenre =
-        selectedGenreIds.size === 0 || (spot?.genreId ? selectedGenreIds.has(spot.genreId) : false);
+      const matchesGenre = selectedGenreIds.size === 0 || (genreId ? selectedGenreIds.has(genreId) : false);
       const matchesSpot = selectedSpotIds.size === 0 || selectedSpotIds.has(post.spotId);
       return matchesGenre && matchesSpot;
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [posts, spots, selectedGenreIds, selectedSpotIds]);
 
   function handleToggleLike(postId: string) {
@@ -89,9 +97,6 @@ export default function PostsScreen() {
 
   return (
     <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
-      <div className="border-b border-line bg-card px-4 py-2.5">
-        <NicknameEditor nickname={nickname} onChange={setNickname} />
-      </div>
       <div className="flex-1 overflow-y-auto">
         {isLoading ? (
           <p className="p-6 text-center text-sm text-sub">読み込み中...</p>
@@ -101,14 +106,13 @@ export default function PostsScreen() {
           </p>
         ) : (
           visiblePosts.map((post) => {
-            const spot = spots.find((s) => s.id === post.spotId);
-            const authorNickname = resolveAuthorNickname(post, nickname);
+            const { name: spotName } = resolvePostTarget(post.spotId);
             return (
               <FeedItem
                 key={post.id}
                 post={post}
-                authorNickname={authorNickname}
-                spotName={spot ? spotDisplayName(spot.name) : ''}
+                authorNickname={resolveAuthorNickname(post)}
+                spotName={spotName}
                 liked={likedPostIds.has(post.id)}
                 onToggleLike={() => handleToggleLike(post.id)}
               />

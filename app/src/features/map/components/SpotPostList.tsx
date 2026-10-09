@@ -4,14 +4,13 @@ import type { Post } from '../../../shared/types';
 type SpotPostListProps = {
   spotId: string;
   posts: Post[];
-  myNickname: string;
 };
 
 /**
  * 店の詳細ポップアップに出す、その店の口コミ一覧。
  * 投稿者名は投稿タブ（PostsScreen）と同じ共通ロジック（resolveAuthorNickname）で決める。
  */
-export default function SpotPostList({ spotId, posts, myNickname }: SpotPostListProps) {
+export default function SpotPostList({ spotId, posts }: SpotPostListProps) {
   const spotPosts = posts.filter((post) => post.spotId === spotId);
 
   return (
@@ -24,7 +23,7 @@ export default function SpotPostList({ spotId, posts, myNickname }: SpotPostList
           {spotPosts.map((post) => (
             <div key={post.id} className="text-xs">
               <div className="flex items-center gap-1.5">
-                <span className="font-extrabold">{resolveAuthorNickname(post, myNickname)}</span>
+                <span className="font-extrabold">{resolveAuthorNickname(post)}</span>
                 <span className="flex items-center gap-0.5 text-[#aab0b8]">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M20.8 4.6a5 5 0 0 0-7 0L12 6.3l-1.8-1.7a5 5 0 1 0-7 7L12 21l8.8-9.4a5 5 0 0 0 0-7z" />

@@ -21,3 +21,16 @@ export function findStore(stores: Store[], style: BoothStyle, code: string): Sto
 export function storeSpotId(store: Pick<Store, 'style' | 'code'>): string {
   return `store-${store.style}-${store.code}`;
 }
+
+/**
+ * 疑似スポットid（storeSpotIdの形式）から、元の店データを会場をまたいで探す。
+ * 投稿タブのフィードなど、本物のSpotデータだけでは見つからないブースの店の
+ * 投稿について、店名・ジャンルを引けるようにするため。
+ */
+export function findStoreBySpotId(spotId: string): Store | undefined {
+  for (const stores of Object.values(STORES_BY_VENUE)) {
+    const found = stores.find((store) => storeSpotId(store) === spotId);
+    if (found) return found;
+  }
+  return undefined;
+}

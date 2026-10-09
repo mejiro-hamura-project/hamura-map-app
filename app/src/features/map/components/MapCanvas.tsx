@@ -28,9 +28,8 @@ type MapCanvasProps = {
   selectedBooth: Booth | null;
   /** ブースの店一覧からタップされた店の詳細。無ければ詳細ポップアップは出さない */
   selectedStoreSpot: Spot | null;
-  /** 店の詳細ポップアップに口コミを出すための投稿一覧・自分のニックネーム */
+  /** 店の詳細ポップアップに口コミを出すための投稿一覧 */
   posts?: Post[];
-  myNickname?: string;
   onSpotTap: (spotId: string) => void;
   onCloseSpot: () => void;
   onOpenSearch: () => void;
@@ -55,7 +54,6 @@ export default function MapCanvas({
   selectedBooth,
   selectedStoreSpot,
   posts = [],
-  myNickname = '',
   onSpotTap,
   onCloseSpot,
   onOpenSearch,
@@ -134,7 +132,7 @@ export default function MapCanvas({
       {selectedSpot &&
         (isSelectedQr
           ? isAllVenues && <QrPopup spot={selectedSpot} onClose={onCloseSpot} />
-          : <SpotPopup spot={selectedSpot} posts={posts} myNickname={myNickname} onClose={onCloseSpot} />)}
+          : <SpotPopup spot={selectedSpot} posts={posts} onClose={onCloseSpot} />)}
       {selectedBooth && (
         <BoothCodesPopup
           booth={selectedBooth}
@@ -143,9 +141,7 @@ export default function MapCanvas({
           onClose={onCloseBooth}
         />
       )}
-      {selectedStoreSpot && (
-        <SpotPopup spot={selectedStoreSpot} posts={posts} myNickname={myNickname} onClose={onCloseStoreSpot} />
-      )}
+      {selectedStoreSpot && <SpotPopup spot={selectedStoreSpot} posts={posts} onClose={onCloseStoreSpot} />}
       <SearchFab onClick={onOpenSearch} />
     </div>
   );
