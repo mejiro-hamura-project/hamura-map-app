@@ -26,7 +26,7 @@ export const MOCK_POSTS: Post[] = [
   },
   {
     id: 'post-3',
-    userId: 'user-taro',
+    userId: 'user-ito',
     spotId: 'spot-11',
     caption: '焼きそば、行列だったけど並ぶ価値あり！',
     images: [],
@@ -35,7 +35,7 @@ export const MOCK_POSTS: Post[] = [
   },
   {
     id: 'post-4',
-    userId: 'user-mika',
+    userId: 'user-aya',
     spotId: MEJIRO_SPOT_ID,
     caption: '店員さんが気さくで話しやすかったです。',
     images: [],
@@ -44,7 +44,7 @@ export const MOCK_POSTS: Post[] = [
   },
   {
     id: 'post-5',
-    userId: 'user-taro',
+    userId: 'user-rio',
     spotId: MEJIRO_SPOT_ID,
     caption: '目白、また来ます！',
     images: [],
