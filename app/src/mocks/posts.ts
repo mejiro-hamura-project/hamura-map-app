@@ -1,4 +1,9 @@
 import type { Post } from '../shared/types';
+import { storeSpotId } from './stores';
+
+// 地図のブース経由で店の投稿を確認できるダミーデータ。第1会場の「目白」（band/1）は
+// 配置ツールの実際のブースに紐づいている唯一の店なので、ここに口コミを数件入れている。
+const MEJIRO_SPOT_ID = storeSpotId({ style: 'band', code: '1' });
 
 export const MOCK_POSTS: Post[] = [
   {
@@ -27,5 +32,32 @@ export const MOCK_POSTS: Post[] = [
     images: [],
     likeCount: 5,
     createdAt: '2026-08-15T12:00:00+09:00',
+  },
+  {
+    id: 'post-4',
+    userId: 'user-mika',
+    spotId: MEJIRO_SPOT_ID,
+    caption: '店員さんが気さくで話しやすかったです。',
+    images: [],
+    likeCount: 3,
+    createdAt: '2026-08-15T12:20:00+09:00',
+  },
+  {
+    id: 'post-5',
+    userId: 'user-taro',
+    spotId: MEJIRO_SPOT_ID,
+    caption: '目白、また来ます！',
+    images: [],
+    likeCount: 1,
+    createdAt: '2026-08-15T12:40:00+09:00',
+  },
+  {
+    id: 'post-6',
+    userId: 'user-you',
+    spotId: MEJIRO_SPOT_ID,
+    caption: '初めて行きましたが良かったです。',
+    images: [],
+    likeCount: 0,
+    createdAt: '2026-08-15T13:00:00+09:00',
   },
 ];
