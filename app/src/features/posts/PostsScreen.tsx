@@ -132,13 +132,7 @@ export default function PostsScreen() {
       )}
 
       {isCreateOpen && (
-        <PostCreateSheet
-          shops={shopSpots}
-          nickname={nickname}
-          onChangeNickname={setNickname}
-          onSubmit={handleCreatePost}
-          onClose={() => setIsCreateOpen(false)}
-        />
+        <PostCreateSheet shops={shopSpots} onSubmit={handleCreatePost} onClose={() => setIsCreateOpen(false)} />
       )}
     </div>
   );
