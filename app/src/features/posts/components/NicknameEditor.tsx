@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { CURRENT_USER_ID } from '../../../shared/constants';
+import { fakeNicknameForUserId } from '../../../shared/utils/postAuthor';
 
 type NicknameEditorProps = {
   nickname: string;
@@ -29,7 +31,7 @@ export default function NicknameEditor({ nickname, onChange }: NicknameEditorPro
         <input
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
-          placeholder="ニックネームを入力（空なら匿名）"
+          placeholder="ニックネームを入力（空なら自動でニックネームが付きます）"
           className="min-w-0 flex-1 rounded-lg border border-line bg-card px-2.5 py-1.5 text-xs outline-none"
           autoFocus
         />
@@ -46,7 +48,7 @@ export default function NicknameEditor({ nickname, onChange }: NicknameEditorPro
   return (
     <div className="flex items-center gap-1.5 text-xs">
       <span className="text-sub">投稿名：</span>
-      <span className="font-bold">{nickname || '匿名'}</span>
+      <span className="font-bold">{nickname || fakeNicknameForUserId(CURRENT_USER_ID)}</span>
       <button type="button" onClick={startEditing} className="font-bold text-brand-blue">
         変更
       </button>
