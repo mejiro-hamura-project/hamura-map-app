@@ -1,7 +1,9 @@
-import type { Booth, Post, Spot, Store, VenueHotspot, VenueMap } from '../../../shared/types';
+import type { AreaHotspot, Booth, Post, Spot, Store, VenueHotspot, VenueMap } from '../../../shared/types';
 import ZoomPanView from '../../../shared/ui/ZoomPanView';
 import StageNowBubble from './StageNowBubble';
 import VenueHotspotArea from './VenueHotspotArea';
+import AreaHotspotButton from './AreaHotspotButton';
+import AreaPopup from './AreaPopup';
 import BoothButton from './BoothButton';
 import BoothCodesPopup from './BoothCodesPopup';
 import SpotPopup from './SpotPopup';
@@ -20,6 +22,10 @@ type MapCanvasProps = {
   stageNowTitles?: Record<string, string>;
   /** 「全体」地図の上に置く、会場（第1〜第3）のタップ範囲 */
   venueHotspots?: VenueHotspot[];
+  /** 会場表示のときだけ使う、特殊区画（エリア）の透明なタップ範囲 */
+  areaHotspots?: AreaHotspot[];
+  /** タップ中のエリア。無ければエリアの説明ポップアップは出さない */
+  selectedArea?: AreaHotspot | null;
   /** 会場表示のときだけ使う、配置ツールのブース一覧 */
   booths?: Booth[];
   /** ブースの記号に紐づく、この会場の店データ */
@@ -36,6 +42,8 @@ type MapCanvasProps = {
   onToggleQrVisible: () => void;
   onSelectVenue: (venueId: number) => void;
   onBoothTap: (booth: Booth) => void;
+  onAreaTap?: (area: AreaHotspot) => void;
+  onCloseArea?: () => void;
   onCloseBooth: () => void;
   onSelectStore: (store: Store) => void;
   onCloseStoreSpot: () => void;
@@ -49,6 +57,8 @@ export default function MapCanvas({
   selectedSpot,
   stageNowTitles = {},
   venueHotspots = [],
+  areaHotspots = [],
+  selectedArea = null,
   booths = [],
   stores = [],
   selectedBooth,
@@ -60,6 +70,8 @@ export default function MapCanvas({
   onToggleQrVisible,
   onSelectVenue,
   onBoothTap,
+  onAreaTap,
+  onCloseArea,
   onCloseBooth,
   onSelectStore,
   onCloseStoreSpot,
@@ -71,7 +83,7 @@ export default function MapCanvas({
   return (
     <div className="relative mx-3.5 min-h-0 flex-1 overflow-hidden rounded-b-xl border border-t-0 border-line bg-[#f7f9f4]">
       <div className="absolute left-1/2 top-2 z-[15] -translate-x-1/2 whitespace-nowrap rounded-full border border-line bg-white/95 px-3 py-1 text-[10px] font-bold text-sub shadow">
-        {isAllVenues ? '会場をタップすると、その会場を拡大できます' : 'ブースをタップすると、お店の詳細が見られます'}
+        {isAllVenues ? '会場をタップすると、その会場を拡大できます' : 'ブースやエリア名をタップすると、詳細が見られます'}
       </div>
       {isAllVenues ? (
         <MapLegendToggle visible={qrVisible} onToggle={onToggleQrVisible} />
@@ -123,6 +135,10 @@ export default function MapCanvas({
                 />
               ))}
             {!isAllVenues &&
+              areaHotspots.map((area) => (
+                <AreaHotspotButton key={area.id} area={area} onTap={() => onAreaTap?.(area)} />
+              ))}
+            {!isAllVenues &&
               booths.map((booth, index) => (
                 <BoothButton key={index} booth={booth} onTap={() => onBoothTap(booth)} />
               ))}
@@ -133,6 +149,7 @@ export default function MapCanvas({
         (isSelectedQr
           ? isAllVenues && <QrPopup spot={selectedSpot} onClose={onCloseSpot} />
           : <SpotPopup spot={selectedSpot} posts={posts} onClose={onCloseSpot} />)}
+      {selectedArea && onCloseArea && <AreaPopup area={selectedArea} onClose={onCloseArea} />}
       {selectedBooth && (
         <BoothCodesPopup
           booth={selectedBooth}
