@@ -49,11 +49,15 @@ export default function HomeScreen() {
     return spots.filter((spot) => spot.venueId === currentMap.venueId);
   }, [spots, currentMap]);
   const shopSpots = useMemo(() => mapSpots.filter((spot) => spot.categoryId !== 'stamp-qr'), [mapSpots]);
-  // 範囲（area）を持つスポットのうち、今表示している会場地図の上に置くもの
-  const areaSpots = useMemo(
-    () => (currentMap ? spots.filter((spot) => spot.area?.mapId === currentMap.id) : []),
-    [spots, currentMap],
-  );
+  // 範囲（area）を持つスポットのうち、今表示している会場地図の上に置くもの。
+  // 大きい範囲から順に並べ、プレイランドの中の枠のように内側にある小さい範囲を後から（上に）描いて押せるようにする
+  const areaSpots = useMemo(() => {
+    if (!currentMap) return [];
+    const areaSize = (spot: Spot) => (spot.area ? spot.area.width * spot.area.height : 0);
+    return spots
+      .filter((spot) => spot.area?.mapId === currentMap.id)
+      .sort((a, b) => areaSize(b) - areaSize(a));
+  }, [spots, currentMap]);
   const qrSpots = useMemo(() => mapSpots.filter((spot) => spot.categoryId === 'stamp-qr'), [mapSpots]);
 
   // 検索は今選んでいる会場に関わらず、会場をまたいで全スポットから探す

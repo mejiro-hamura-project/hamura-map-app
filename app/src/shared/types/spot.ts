@@ -10,6 +10,11 @@ export interface SpotArea {
   y: number;
   width: number;
   height: number;
+  /**
+   * 地図にエリア名が印刷されていない（空白の枠だけの）場合に、アプリ側で枠の中に表示する名前。
+   * 改行（\n）で折り返し位置を指定できる。未設定なら何も表示しない（透明なボタンのみ）
+   */
+  label?: string;
 }
 
 /**
