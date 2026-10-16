@@ -1,4 +1,5 @@
 import type { Spot } from '../shared/types';
+import { AREA_SPOTS } from './areaSpots';
 
 const EVENT_ID = 'festival-2026';
 // スポットのx, yは「全体」地図（venue-all.png）の座標系で決めた仮の値。
@@ -169,4 +170,4 @@ const STAMP_QR_SPOTS: Spot[] = Array.from({ length: 7 }, (_, index) => {
   } satisfies Spot;
 });
 
-export const MOCK_SPOTS: Spot[] = [...SHOP_SPOTS, ...STAMP_QR_SPOTS];
+export const MOCK_SPOTS: Spot[] = [...SHOP_SPOTS, ...AREA_SPOTS, ...STAMP_QR_SPOTS];

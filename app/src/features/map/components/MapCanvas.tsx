@@ -1,9 +1,8 @@
-import type { AreaHotspot, Booth, Post, Spot, Store, VenueHotspot, VenueMap } from '../../../shared/types';
+import type { Booth, Post, Spot, Store, VenueHotspot, VenueMap } from '../../../shared/types';
 import ZoomPanView from '../../../shared/ui/ZoomPanView';
 import StageNowBubble from './StageNowBubble';
 import VenueHotspotArea from './VenueHotspotArea';
 import AreaHotspotButton from './AreaHotspotButton';
-import AreaPopup from './AreaPopup';
 import BoothButton from './BoothButton';
 import BoothCodesPopup from './BoothCodesPopup';
 import SpotPopup from './SpotPopup';
@@ -22,10 +21,8 @@ type MapCanvasProps = {
   stageNowTitles?: Record<string, string>;
   /** 「全体」地図の上に置く、会場（第1〜第4）のタップ範囲 */
   venueHotspots?: VenueHotspot[];
-  /** 会場表示のときだけ使う、特殊区画（エリア）の透明なタップ範囲 */
-  areaHotspots?: AreaHotspot[];
-  /** タップ中のエリア。無ければエリアの説明ポップアップは出さない */
-  selectedArea?: AreaHotspot | null;
+  /** 会場表示のときだけ使う、範囲（area）を持つスポット。会場地図の上に透明なタップ範囲として置く */
+  areaSpots?: Spot[];
   /** 会場表示のときだけ使う、配置ツールのブース一覧 */
   booths?: Booth[];
   /** ブースの記号に紐づく、この会場の店データ */
@@ -42,8 +39,7 @@ type MapCanvasProps = {
   onToggleQrVisible: () => void;
   onSelectVenue: (venueId: number) => void;
   onBoothTap: (booth: Booth) => void;
-  onAreaTap?: (area: AreaHotspot) => void;
-  onCloseArea?: () => void;
+  onAreaTap?: (spotId: string) => void;
   onCloseBooth: () => void;
   onSelectStore: (store: Store) => void;
   onCloseStoreSpot: () => void;
@@ -57,8 +53,7 @@ export default function MapCanvas({
   selectedSpot,
   stageNowTitles = {},
   venueHotspots = [],
-  areaHotspots = [],
-  selectedArea = null,
+  areaSpots = [],
   booths = [],
   stores = [],
   selectedBooth,
@@ -71,7 +66,6 @@ export default function MapCanvas({
   onSelectVenue,
   onBoothTap,
   onAreaTap,
-  onCloseArea,
   onCloseBooth,
   onSelectStore,
   onCloseStoreSpot,
@@ -135,9 +129,12 @@ export default function MapCanvas({
                 />
               ))}
             {!isAllVenues &&
-              areaHotspots.map((area) => (
-                <AreaHotspotButton key={area.id} area={area} onTap={() => onAreaTap?.(area)} />
-              ))}
+              areaSpots.map(
+                (spot) =>
+                  spot.area && (
+                    <AreaHotspotButton key={spot.id} spot={spot} area={spot.area} onTap={() => onAreaTap?.(spot.id)} />
+                  ),
+              )}
             {!isAllVenues &&
               booths.map((booth, index) => (
                 <BoothButton key={index} booth={booth} onTap={() => onBoothTap(booth)} />
@@ -149,7 +146,6 @@ export default function MapCanvas({
         (isSelectedQr
           ? isAllVenues && <QrPopup spot={selectedSpot} onClose={onCloseSpot} />
           : <SpotPopup spot={selectedSpot} posts={posts} onClose={onCloseSpot} />)}
-      {selectedArea && onCloseArea && <AreaPopup area={selectedArea} onClose={onCloseArea} />}
       {selectedBooth && (
         <BoothCodesPopup
           booth={selectedBooth}

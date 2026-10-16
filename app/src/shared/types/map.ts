@@ -26,20 +26,3 @@ export interface VenueHotspot {
   width: number;
   height: number;
 }
-
-/**
- * 会場地図の上に置く、エリア（区画）のタップ範囲。地図に印刷されたエリア名の上に重ねる透明なボタンで、
- * タップするとエリアの説明を出す。x, y, width, height は地図画像に対する割合（0〜100）。
- */
-export interface AreaHotspot {
-  id: string;
-  name: string;
-  /** 説明文。まだ内容が届いていないエリアは省略し、ポップアップでは「準備中」と出す */
-  description?: string;
-  /** 曜日・日付ごとの内容など、説明の下に箇条書きで出す補足（任意） */
-  notes?: string[];
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}

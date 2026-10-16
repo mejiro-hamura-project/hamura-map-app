@@ -1,12 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useMaps, usePosts, useSpots, useTimetable } from '../../api';
-import type { AreaHotspot, Booth, Spot, Store } from '../../shared/types';
+import type { Booth, Spot, Store } from '../../shared/types';
 import { useClock } from '../../shared/context/DevClockContext';
 import { matchesSpotQuery } from '../../shared/utils/spotSearch';
 import { getCurrentProgramStatus, getStageStatusText, getTimetableForToday } from '../../shared/utils/timetable';
 import { MOCK_VENUE_HOTSPOTS } from '../../mocks/venueHotspots';
 import { BOOTHS_BY_VENUE } from '../../mocks/booths';
-import { AREA_HOTSPOTS_BY_VENUE } from '../../mocks/areaHotspots';
 import { STORES_BY_VENUE, storeSpotId } from '../../mocks/stores';
 import VenueHeader from './components/VenueHeader';
 import MapCanvas from './components/MapCanvas';
@@ -26,7 +25,6 @@ export default function HomeScreen() {
   const [qrVisible, setQrVisible] = useState(true);
   const [selectedBooth, setSelectedBooth] = useState<Booth | null>(null);
   const [selectedStoreSpot, setSelectedStoreSpot] = useState<Spot | null>(null);
-  const [selectedArea, setSelectedArea] = useState<AreaHotspot | null>(null);
 
   useEffect(() => {
     if (!currentMapId && maps.length > 0) {
@@ -34,17 +32,14 @@ export default function HomeScreen() {
     }
   }, [maps, currentMapId]);
 
-  // 地図を切り替えたら、開いていたブース・店・エリアのポップアップは閉じる
+  // 地図を切り替えたら、開いていたブース・店のポップアップは閉じる
   useEffect(() => {
     setSelectedBooth(null);
     setSelectedStoreSpot(null);
-    setSelectedArea(null);
   }, [currentMapId]);
 
   const currentMap = maps.find((venueMap) => venueMap.id === currentMapId) ?? null;
   const currentBooths = currentMap?.venueId != null ? (BOOTHS_BY_VENUE[currentMap.venueId] ?? []) : [];
-  const currentAreaHotspots =
-    currentMap?.venueId != null ? (AREA_HOTSPOTS_BY_VENUE[currentMap.venueId] ?? []) : [];
   const currentStores = currentMap?.venueId != null ? (STORES_BY_VENUE[currentMap.venueId] ?? []) : [];
 
   // 「全体」地図（venueId未設定）は全スポットを表示。会場別の地図はその会場番号のスポットだけに絞り込む。
@@ -54,6 +49,11 @@ export default function HomeScreen() {
     return spots.filter((spot) => spot.venueId === currentMap.venueId);
   }, [spots, currentMap]);
   const shopSpots = useMemo(() => mapSpots.filter((spot) => spot.categoryId !== 'stamp-qr'), [mapSpots]);
+  // 範囲（area）を持つスポットのうち、今表示している会場地図の上に置くもの
+  const areaSpots = useMemo(
+    () => (currentMap ? spots.filter((spot) => spot.area?.mapId === currentMap.id) : []),
+    [spots, currentMap],
+  );
   const qrSpots = useMemo(() => mapSpots.filter((spot) => spot.categoryId === 'stamp-qr'), [mapSpots]);
 
   // 検索は今選んでいる会場に関わらず、会場をまたいで全スポットから探す
@@ -123,16 +123,16 @@ export default function HomeScreen() {
     });
   }
 
-  // ブースとエリアのポップアップは同じ位置に出るため、片方を開いたらもう片方は閉じる
+  // ブースとエリア（スポット詳細）のポップアップは同じ位置に出るため、片方を開いたらもう片方は閉じる
   function handleBoothTap(booth: Booth) {
-    setSelectedArea(null);
+    setSelectedSpotId(null);
     setSelectedBooth(booth);
   }
 
-  function handleAreaTap(area: AreaHotspot) {
+  function handleAreaTap(spotId: string) {
     setSelectedBooth(null);
     setSelectedStoreSpot(null);
-    setSelectedArea(area);
+    setSelectedSpotId(spotId);
   }
 
   function handleToggleGenre(genreId: string) {
@@ -176,8 +176,7 @@ export default function HomeScreen() {
         qrVisible={qrVisible}
         stageNowTitles={stageNowTitles}
         venueHotspots={MOCK_VENUE_HOTSPOTS}
-        areaHotspots={currentAreaHotspots}
-        selectedArea={selectedArea}
+        areaSpots={areaSpots}
         booths={currentBooths}
         stores={currentStores}
         selectedBooth={selectedBooth}
@@ -191,7 +190,6 @@ export default function HomeScreen() {
         onSelectVenue={handleSelectVenue}
         onBoothTap={handleBoothTap}
         onAreaTap={handleAreaTap}
-        onCloseArea={() => setSelectedArea(null)}
         onCloseBooth={() => setSelectedBooth(null)}
         onSelectStore={handleSelectStore}
         onCloseStoreSpot={() => setSelectedStoreSpot(null)}

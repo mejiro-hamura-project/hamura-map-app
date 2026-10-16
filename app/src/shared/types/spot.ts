@@ -1,6 +1,18 @@
 import type { StageKey } from './timetable';
 
 /**
+ * スポットが点ではなく「範囲」を持つ場合（地図に印刷されたエリア名など）の、タップ範囲。
+ * 会場ごとの地図（mapId）の上に透明なボタンとして重ねる。x, y, width, height は地図画像に対する割合（0〜100）。
+ */
+export interface SpotArea {
+  mapId: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+/**
  * 地図上の1点。出店・団体・ステージ・エリアなどを表す中核エンティティ。
  * スタンプラリーのQR設置場所も、専用の型は作らずこの Spot（stampCheckpointId 付き）として扱う。
  */
@@ -34,4 +46,6 @@ export interface Spot {
   stampCheckpointId?: number;
   /** このスポットがステージ（メイン/サブ）そのものを表す場合のみ設定。タイムテーブルの参照キーになる */
   stageKey?: StageKey;
+  /** エリア（範囲）を表すスポットの場合のみ設定。会場地図の上に透明なタップ範囲として置く */
+  area?: SpotArea;
 }
