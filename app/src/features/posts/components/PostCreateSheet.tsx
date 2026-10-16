@@ -1,10 +1,10 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import type { Spot } from '../../../shared/types';
 import { matchesSpotQuery, spotDisplayName } from '../../../shared/utils/spotSearch';
 
 type PostCreateSheetProps = {
   shops: Spot[];
-  onSubmit: (input: { spotId: string; caption: string }) => void;
+  onSubmit: (input: { spotId: string; caption: string }, key: string) => Promise<void>;
   onClose: () => void;
 };
 
@@ -12,21 +12,38 @@ export default function PostCreateSheet({ shops, onSubmit, onClose }: PostCreate
   const [query, setQuery] = useState('');
   const [selectedSpotId, setSelectedSpotId] = useState<string | null>(null);
   const [caption, setCaption] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState('');
+  const inFlight = useRef(false);
+  const attempt = useRef<{ body: string; key: string } | null>(null);
 
   const filteredShops = query.trim() ? shops.filter((shop) => matchesSpotQuery(shop, query.trim())) : shops;
   const selectedShop = shops.find((shop) => shop.id === selectedSpotId) ?? null;
-  const canSubmit = Boolean(selectedSpotId) && caption.trim().length > 0;
+  const canSubmit = Boolean(selectedSpotId) && caption.trim().length > 0 && [...caption.trim()].length <= 500 && !isSubmitting;
 
-  function handleSubmit() {
-    if (!selectedSpotId || !canSubmit) return;
-    onSubmit({ spotId: selectedSpotId, caption: caption.trim() });
-    onClose();
+  async function handleSubmit() {
+    if (!selectedSpotId || !canSubmit || inFlight.current) return;
+    const input = { spotId: selectedSpotId, caption: caption.trim() };
+    const body = JSON.stringify(input);
+    if (attempt.current?.body !== body) attempt.current = { body, key: crypto.randomUUID() };
+    inFlight.current = true;
+    setIsSubmitting(true);
+    setError('');
+    try {
+      await onSubmit(input, attempt.current.key);
+      onClose();
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : '投稿できませんでした');
+    } finally {
+      inFlight.current = false;
+      setIsSubmitting(false);
+    }
   }
 
   return (
     <div className="absolute inset-0 z-40 flex flex-col bg-bg">
       <div className="flex items-center gap-2.5 border-b border-line bg-card px-3.5 py-4">
-        <button type="button" onClick={onClose} className="flex p-1 text-ink">
+        <button type="button" onClick={onClose} disabled={isSubmitting} aria-label="閉じる" className="flex p-1 text-ink">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
             <path d="M15 18l-6-6 6-6" />
           </svg>
@@ -42,6 +59,7 @@ export default function PostCreateSheet({ shops, onSubmit, onClose }: PostCreate
             <path d="M21 21l-4.3-4.3" />
           </svg>
           <input
+            disabled={isSubmitting}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="店名を入力（例：や）"
@@ -56,6 +74,7 @@ export default function PostCreateSheet({ shops, onSubmit, onClose }: PostCreate
               <button
                 key={shop.id}
                 type="button"
+                disabled={isSubmitting}
                 onClick={() => setSelectedSpotId(shop.id)}
                 className={`mx-4 mt-2 flex w-[calc(100%-2rem)] items-center justify-between rounded-xl border px-3.5 py-3 text-left text-[13px] font-bold ${
                   selected ? 'border-brand-blue bg-brand-blue-soft text-brand-blue' : 'border-line bg-card text-ink'
@@ -72,6 +91,8 @@ export default function PostCreateSheet({ shops, onSubmit, onClose }: PostCreate
         <div className="mx-4 mb-1.5 mt-5 text-xs font-bold text-sub">キャプション</div>
         <div className="mx-4">
           <input
+            disabled={isSubmitting}
+            maxLength={1000}
             value={caption}
             onChange={(e) => setCaption(e.target.value)}
             placeholder="感想を書く…"
@@ -79,6 +100,8 @@ export default function PostCreateSheet({ shops, onSubmit, onClose }: PostCreate
           />
         </div>
 
+        <p className="mx-4 mt-2 text-xs text-sub">{[...caption.trim()].length}/500文字</p>
+        {error && <p role="alert" className="mx-4 mt-2 text-sm text-red-700">{error} 入力を保持しています。同じ内容で再試行できます。</p>}
         {selectedShop && <p className="mx-4 mt-3 text-xs text-sub">投稿先：{spotDisplayName(selectedShop.name)}</p>}
       </div>
 
@@ -88,7 +111,7 @@ export default function PostCreateSheet({ shops, onSubmit, onClose }: PostCreate
         disabled={!canSubmit}
         className="mx-4 mb-4 rounded-full bg-brand-blue py-3.5 text-center text-sm font-extrabold text-white disabled:cursor-not-allowed disabled:opacity-40"
       >
-        投稿する
+        {isSubmitting ? '投稿中...' : '投稿する'}
       </button>
     </div>
   );

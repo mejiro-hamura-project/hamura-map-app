@@ -10,6 +10,10 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
+      workbox: {
+        navigateFallbackDenylist: [/^\/api(?:\/|$)/],
+        runtimeCaching: [{ urlPattern: /\/api(?:\/|$)/, handler: 'NetworkOnly' }],
+      },
       // 開発中もPWAの挙動を確認できるようにする
       devOptions: { enabled: true },
       manifest: {
