@@ -20,7 +20,7 @@ type MapCanvasProps = {
   selectedSpot: Spot | null;
   /** ステージ（メイン/サブ）スポットのid→今の演目名。無ければ吹き出しを出さない */
   stageNowTitles?: Record<string, string>;
-  /** 「全体」地図の上に置く、会場（第1〜第3）のタップ範囲 */
+  /** 「全体」地図の上に置く、会場（第1〜第4）のタップ範囲 */
   venueHotspots?: VenueHotspot[];
   /** 会場表示のときだけ使う、特殊区画（エリア）の透明なタップ範囲 */
   areaHotspots?: AreaHotspot[];

@@ -11,12 +11,12 @@ export interface VenueMap {
   width: number;
   /** 地図画像の高さ（px）。x, y 座標の基準 */
   height: number;
-  /** 特定の会場（1〜3）専用の地図である場合の会場番号。未設定＝会場をまたいだ「全体」の地図 */
+  /** 特定の会場（1〜4）専用の地図である場合の会場番号。未設定＝会場をまたいだ「全体」の地図 */
   venueId?: number;
 }
 
 /**
- * 「全体」地図の上に置く、会場（第1〜第3）のタップ範囲。
+ * 「全体」地図の上に置く、会場（第1〜第4）のタップ範囲。
  * タップするとその会場の拡大地図に切り替える。x, y, width, height は地図画像に対する割合（0〜100）。
  */
 export interface VenueHotspot {
@@ -34,7 +34,8 @@ export interface VenueHotspot {
 export interface AreaHotspot {
   id: string;
   name: string;
-  description: string;
+  /** 説明文。まだ内容が届いていないエリアは省略し、ポップアップでは「準備中」と出す */
+  description?: string;
   /** 曜日・日付ごとの内容など、説明の下に箇条書きで出す補足（任意） */
   notes?: string[];
   x: number;

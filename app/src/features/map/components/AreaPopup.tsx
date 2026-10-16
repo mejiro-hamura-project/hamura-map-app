@@ -17,7 +17,7 @@ export default function AreaPopup({ area, onClose }: AreaPopupProps) {
         ✕
       </button>
       <h3 className="mb-1.5 mt-2 text-base font-extrabold">{area.name}</h3>
-      <p className="text-xs leading-relaxed text-[#4a5058]">{area.description}</p>
+      <p className="text-xs leading-relaxed text-[#4a5058]">{area.description ?? '詳しい内容は準備中です。'}</p>
       {area.notes && area.notes.length > 0 && (
         <ul className="mt-2 flex flex-col gap-1">
           {area.notes.map((note) => (

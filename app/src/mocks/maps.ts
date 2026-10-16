@@ -33,4 +33,12 @@ export const MOCK_MAPS: VenueMap[] = [
     height: 1344,
     venueId: 3,
   },
+  {
+    id: 'map-4',
+    name: '第4会場',
+    imageUrl: '/maps/venue-4.png',
+    width: 964,
+    height: 1239,
+    venueId: 4,
+  },
 ];

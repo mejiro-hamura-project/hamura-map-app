@@ -17,7 +17,7 @@ export interface Spot {
   images: string[];
   /** 表示する地図（VenueMap）のid */
   mapId: string;
-  /** 所属する会場番号（1〜3）。「全体」地図では会場番号に関わらず全スポットを表示する */
+  /** 所属する会場番号（1〜4）。「全体」地図では会場番号に関わらず全スポットを表示する */
   venueId?: number;
   /** 地図画像上のx座標（ImageMap用） */
   x: number;
