@@ -124,7 +124,7 @@
   "area": "pink",
   "code": "16",
   "name": "Café kukutana",
-  "genreId": "food-drink",
+  "genreId": "food-dessert",
   "link": ""
  },
  {
@@ -348,7 +348,7 @@
   "area": "pink",
   "code": "44",
   "name": "ONEモア",
-  "genreId": "food-agemono",
+  "genreId": "food-dessert",
   "link": ""
  },
  {
@@ -412,7 +412,7 @@
   "area": "pink",
   "code": "52",
   "name": "陽だまり",
-  "genreId": "food-sonota",
+  "genreId": "food-dessert",
   "link": ""
  },
  {
@@ -460,7 +460,7 @@
   "area": "pink",
   "code": "キ2",
   "name": "Deli&Café54",
-  "genreId": "food-sonota",
+  "genreId": "food-yakimono",
   "link": ""
  },
  {
@@ -468,7 +468,7 @@
   "area": "pink",
   "code": "キ3",
   "name": "マットケバブ",
-  "genreId": "food-sonota",
+  "genreId": "food-yakimono",
   "link": ""
  },
  {
@@ -528,342 +528,6 @@
   "link": ""
  },
  {
-  "style": "band",
-  "area": "green",
-  "code": "1",
-  "name": "株式会社 石善",
-  "genreId": "goods-zakka",
-  "link": ""
- },
- {
-  "style": "band",
-  "area": "green",
-  "code": "2",
-  "name": "株式会社 大進緑建",
-  "genreId": "goods-zakka",
-  "link": ""
- },
- {
-  "style": "band",
-  "area": "green",
-  "code": "3",
-  "name": "株式会社 大進緑建",
-  "genreId": "goods-zakka",
-  "link": ""
- },
- {
-  "style": "band",
-  "area": "green",
-  "code": "4",
-  "name": "ダスキン羽村",
-  "genreId": "goods-zakka",
-  "link": ""
- },
- {
-  "style": "band",
-  "area": "green",
-  "code": "5",
-  "name": "精神科に強い訪問看護ここもっと",
-  "genreId": "goods-info",
-  "link": ""
- },
- {
-  "style": "band",
-  "area": "green",
-  "code": "6",
-  "name": "マルチーズの小さなひみつきち",
-  "genreId": "goods-zakka",
-  "link": ""
- },
- {
-  "style": "band",
-  "area": "green",
-  "code": "7",
-  "name": "TS倶楽部",
-  "genreId": "goods-zakka",
-  "link": ""
- },
- {
-  "style": "band",
-  "area": "green",
-  "code": "8",
-  "name": "TS倶楽部",
-  "genreId": "goods-zakka",
-  "link": ""
- },
- {
-  "style": "band",
-  "area": "green",
-  "code": "9",
-  "name": "（株）ホームワン",
-  "genreId": "goods-info",
-  "link": ""
- },
- {
-  "style": "band",
-  "area": "green",
-  "code": "10",
-  "name": "（株）ホームワン",
-  "genreId": "goods-info",
-  "link": ""
- },
- {
-  "style": "band",
-  "area": "green",
-  "code": "11",
-  "name": "伊吹石油ガス株式会社",
-  "genreId": "goods-info",
-  "link": ""
- },
- {
-  "style": "band",
-  "area": "green",
-  "code": "12",
-  "name": "伊吹石油ガス株式会社",
-  "genreId": "goods-info",
-  "link": ""
- },
- {
-  "style": "band",
-  "area": "green",
-  "code": "13",
-  "name": "伊吹石油ガス株式会社",
-  "genreId": "goods-info",
-  "link": ""
- },
- {
-  "style": "band",
-  "area": "green",
-  "code": "14",
-  "name": "（株）サムライTシャツ",
-  "genreId": "goods-zakka",
-  "link": ""
- },
- {
-  "style": "band",
-  "area": "green",
-  "code": "15",
-  "name": "安本塗装店",
-  "genreId": "goods-info",
-  "link": ""
- },
- {
-  "style": "band",
-  "area": "green",
-  "code": "16",
-  "name": "丸十みそ漬物店",
-  "genreId": "goods-shokuhin",
-  "link": ""
- },
- {
-  "style": "band",
-  "area": "green",
-  "code": "17",
-  "name": "丸十みそ漬物店",
-  "genreId": "goods-shokuhin",
-  "link": ""
- },
- {
-  "style": "band",
-  "area": "green",
-  "code": "18",
-  "name": "（有）大西園",
-  "genreId": "goods-shokuhin",
-  "link": ""
- },
- {
-  "style": "band",
-  "area": "green",
-  "code": "19",
-  "name": "PAIN MIZA",
-  "genreId": "food-pan",
-  "link": ""
- },
- {
-  "style": "band",
-  "area": "green",
-  "code": "20",
-  "name": "メディックス",
-  "genreId": "goods-zakka",
-  "link": ""
- },
- {
-  "style": "band",
-  "area": "green",
-  "code": "21",
-  "name": "メディックス",
-  "genreId": "goods-zakka",
-  "link": ""
- },
- {
-  "style": "band",
-  "area": "green",
-  "code": "22",
-  "name": "犬用品のゼット物産",
-  "genreId": "goods-zakka",
-  "link": ""
- },
- {
-  "style": "band",
-  "area": "green",
-  "code": "23",
-  "name": "株式会社 西多摩自動車学校",
-  "genreId": "goods-taiken",
-  "link": ""
- },
- {
-  "style": "band",
-  "area": "green",
-  "code": "24",
-  "name": "ともカイロプラクティック",
-  "genreId": "goods-taiken",
-  "link": ""
- },
- {
-  "style": "band",
-  "area": "green",
-  "code": "25",
-  "name": "株式会社滝島商店",
-  "genreId": "goods-shokuhin",
-  "link": ""
- },
- {
-  "style": "band",
-  "area": "green",
-  "code": "26",
-  "name": "こころワクワクショップ",
-  "genreId": "goods-taiken",
-  "link": ""
- },
- {
-  "style": "band",
-  "area": "green",
-  "code": "27",
-  "name": "（株）Tamaya creatures",
-  "genreId": "goods-taiken",
-  "link": ""
- },
- {
-  "style": "band",
-  "area": "green",
-  "code": "28",
-  "name": "PETSHOP LIEN",
-  "genreId": "goods-zakka",
-  "link": ""
- },
- {
-  "style": "band",
-  "area": "green",
-  "code": "29",
-  "name": "武陽液化ガス株式会社",
-  "genreId": "goods-info",
-  "link": ""
- },
- {
-  "style": "band",
-  "area": "green",
-  "code": "30",
-  "name": "武陽液化ガス株式会社",
-  "genreId": "goods-info",
-  "link": ""
- },
- {
-  "style": "band",
-  "area": "green",
-  "code": "31",
-  "name": "武陽液化ガス株式会社",
-  "genreId": "goods-info",
-  "link": ""
- },
- {
-  "style": "band",
-  "area": "green",
-  "code": "32",
-  "name": "武陽液化ガス株式会社",
-  "genreId": "goods-info",
-  "link": ""
- },
- {
-  "style": "orange",
-  "area": "orange",
-  "code": "B1",
-  "name": "北杜市／植松農園",
-  "genreId": "goods-shokuhin",
-  "link": ""
- },
- {
-  "style": "orange",
-  "area": "orange",
-  "code": "B2",
-  "name": "北杜市商工会青年部",
-  "genreId": "goods-shokuhin",
-  "link": ""
- },
- {
-  "style": "orange",
-  "area": "orange",
-  "code": "B3",
-  "name": "公益財団法人キープ協会",
-  "genreId": "food-dessert",
-  "link": ""
- },
- {
-  "style": "orange",
-  "area": "orange",
-  "code": "B4",
-  "name": "株式会社清里ミルクプラント",
-  "genreId": "goods-shokuhin",
-  "link": ""
- },
- {
-  "style": "orange",
-  "area": "orange",
-  "code": "B5",
-  "name": "八ヶ岳パイ工房",
-  "genreId": "goods-shokuhin",
-  "link": ""
- },
- {
-  "style": "orange",
-  "area": "orange",
-  "code": "B6",
-  "name": "保原町商工会",
-  "genreId": "goods-shokuhin",
-  "link": ""
- },
- {
-  "style": "orange",
-  "area": "orange",
-  "code": "B7",
-  "name": "芽室町観光物産協会",
-  "genreId": "goods-shokuhin",
-  "link": ""
- },
- {
-  "style": "orange",
-  "area": "orange",
-  "code": "B8",
-  "name": "八丈町商工会",
-  "genreId": "goods-shokuhin",
-  "link": ""
- },
- {
-  "style": "orange",
-  "area": "orange",
-  "code": "B9",
-  "name": "鳴門物産組合",
-  "genreId": "goods-shokuhin",
-  "link": ""
- },
- {
-  "style": "orange",
-  "area": "orange",
-  "code": "物1",
-  "name": "ペプス",
-  "genreId": "goods-taiken",
-  "link": ""
- },
- {
   "style": "pr",
   "area": "blue",
   "code": "A",
@@ -892,7 +556,7 @@
   "area": "blue",
   "code": "D",
   "name": "公益社団法人シルバー人材センター",
-  "genreId": "goods-info",
+  "genreId": "goods-zakka",
   "link": ""
  },
  {
@@ -900,7 +564,7 @@
   "area": "blue",
   "code": "E",
   "name": "公益社団法人シルバー人材センター",
-  "genreId": "goods-info",
+  "genreId": "goods-zakka",
   "link": ""
  },
  {
@@ -956,7 +620,7 @@
   "area": "blue",
   "code": "L",
   "name": "東京羽村ライオンズクラブ",
-  "genreId": "goods-info",
+  "genreId": "food-dessert",
   "link": ""
  },
  {
@@ -964,7 +628,7 @@
   "area": "blue",
   "code": "M",
   "name": "東京羽村ライオンズクラブ",
-  "genreId": "goods-info",
+  "genreId": "food-dessert",
   "link": ""
  },
  {
@@ -1020,7 +684,7 @@
   "area": "blue",
   "code": "T",
   "name": "西多摩地区保護司会羽村分区（羽村市福祉健康部社会福祉課）",
-  "genreId": "goods-info",
+  "genreId": "goods-zakka",
   "link": ""
  },
  {
@@ -1028,7 +692,7 @@
   "area": "blue",
   "code": "U",
   "name": "羽村市観光協会",
-  "genreId": "goods-info",
+  "genreId": "goods-zakka",
   "link": ""
  },
  {
@@ -1164,7 +828,7 @@
   "area": "blue",
   "code": "LL",
   "name": "羽村市防衛協会",
-  "genreId": "goods-info",
+  "genreId": "goods-zakka",
   "link": ""
  },
  {
@@ -1172,7 +836,7 @@
   "area": "blue",
   "code": "MM",
   "name": "羽村市防衛協会",
-  "genreId": "goods-info",
+  "genreId": "goods-zakka",
   "link": ""
  },
  {
@@ -1236,7 +900,7 @@
   "area": "blue",
   "code": "UU",
   "name": "羽村市創業支援スペースiサロン",
-  "genreId": "goods-info",
+  "genreId": "goods-zakka",
   "link": ""
  },
  {
@@ -1244,7 +908,7 @@
   "area": "blue",
   "code": "VV",
   "name": "羽村市創業支援スペースiサロン",
-  "genreId": "goods-info",
+  "genreId": "goods-zakka",
   "link": ""
  },
  {
@@ -1253,6 +917,342 @@
   "code": "WW",
   "name": "丸順商事有限会社",
   "genreId": "goods-info",
+  "link": ""
+ },
+ {
+  "style": "band",
+  "area": "green",
+  "code": "1",
+  "name": "株式会社 石善",
+  "genreId": "goods-zakka",
+  "link": ""
+ },
+ {
+  "style": "band",
+  "area": "green",
+  "code": "2",
+  "name": "株式会社 大進緑建",
+  "genreId": "goods-zakka",
+  "link": ""
+ },
+ {
+  "style": "band",
+  "area": "green",
+  "code": "3",
+  "name": "株式会社 大進緑建",
+  "genreId": "goods-zakka",
+  "link": ""
+ },
+ {
+  "style": "band",
+  "area": "green",
+  "code": "4",
+  "name": "ダスキン羽村",
+  "genreId": "goods-zakka",
+  "link": ""
+ },
+ {
+  "style": "band",
+  "area": "green",
+  "code": "5",
+  "name": "精神科に強い訪問看護ここもっと",
+  "genreId": "goods-taiken",
+  "link": ""
+ },
+ {
+  "style": "band",
+  "area": "green",
+  "code": "6",
+  "name": "マルチーズの小さなひみつきち",
+  "genreId": "goods-zakka",
+  "link": ""
+ },
+ {
+  "style": "band",
+  "area": "green",
+  "code": "7",
+  "name": "TS倶楽部",
+  "genreId": "goods-zakka",
+  "link": ""
+ },
+ {
+  "style": "band",
+  "area": "green",
+  "code": "8",
+  "name": "TS倶楽部",
+  "genreId": "goods-zakka",
+  "link": ""
+ },
+ {
+  "style": "band",
+  "area": "green",
+  "code": "9",
+  "name": "（株）ホームワン",
+  "genreId": "goods-info",
+  "link": ""
+ },
+ {
+  "style": "band",
+  "area": "green",
+  "code": "10",
+  "name": "（株）ホームワン",
+  "genreId": "goods-info",
+  "link": ""
+ },
+ {
+  "style": "band",
+  "area": "green",
+  "code": "11",
+  "name": "伊吹石油ガス株式会社",
+  "genreId": "goods-zakka",
+  "link": ""
+ },
+ {
+  "style": "band",
+  "area": "green",
+  "code": "12",
+  "name": "伊吹石油ガス株式会社",
+  "genreId": "goods-zakka",
+  "link": ""
+ },
+ {
+  "style": "band",
+  "area": "green",
+  "code": "13",
+  "name": "伊吹石油ガス株式会社",
+  "genreId": "goods-zakka",
+  "link": ""
+ },
+ {
+  "style": "band",
+  "area": "green",
+  "code": "14",
+  "name": "（株）サムライTシャツ",
+  "genreId": "goods-zakka",
+  "link": ""
+ },
+ {
+  "style": "band",
+  "area": "green",
+  "code": "15",
+  "name": "安本塗装店",
+  "genreId": "goods-info",
+  "link": ""
+ },
+ {
+  "style": "band",
+  "area": "green",
+  "code": "16",
+  "name": "丸十みそ漬物店",
+  "genreId": "goods-shokuhin",
+  "link": ""
+ },
+ {
+  "style": "band",
+  "area": "green",
+  "code": "17",
+  "name": "丸十みそ漬物店",
+  "genreId": "goods-shokuhin",
+  "link": ""
+ },
+ {
+  "style": "band",
+  "area": "green",
+  "code": "18",
+  "name": "（有）大西園",
+  "genreId": "goods-shokuhin",
+  "link": ""
+ },
+ {
+  "style": "band",
+  "area": "green",
+  "code": "19",
+  "name": "PAIN MIZA",
+  "genreId": "food-pan",
+  "link": ""
+ },
+ {
+  "style": "band",
+  "area": "green",
+  "code": "20",
+  "name": "メディックス",
+  "genreId": "goods-zakka",
+  "link": ""
+ },
+ {
+  "style": "band",
+  "area": "green",
+  "code": "21",
+  "name": "メディックス",
+  "genreId": "goods-zakka",
+  "link": ""
+ },
+ {
+  "style": "band",
+  "area": "green",
+  "code": "22",
+  "name": "犬用品のゼット物産",
+  "genreId": "goods-zakka",
+  "link": ""
+ },
+ {
+  "style": "band",
+  "area": "green",
+  "code": "23",
+  "name": "株式会社 西多摩自動車学校",
+  "genreId": "goods-taiken",
+  "link": ""
+ },
+ {
+  "style": "band",
+  "area": "green",
+  "code": "24",
+  "name": "ともカイロプラクティック",
+  "genreId": "goods-taiken",
+  "link": ""
+ },
+ {
+  "style": "band",
+  "area": "green",
+  "code": "25",
+  "name": "株式会社滝島商店",
+  "genreId": "goods-shokuhin",
+  "link": ""
+ },
+ {
+  "style": "band",
+  "area": "green",
+  "code": "26",
+  "name": "こころワクワクショップ",
+  "genreId": "goods-taiken",
+  "link": ""
+ },
+ {
+  "style": "band",
+  "area": "green",
+  "code": "27",
+  "name": "（株）Tamaya creatures",
+  "genreId": "goods-taiken",
+  "link": ""
+ },
+ {
+  "style": "band",
+  "area": "green",
+  "code": "28",
+  "name": "PETSHOP LIEN",
+  "genreId": "goods-zakka",
+  "link": ""
+ },
+ {
+  "style": "band",
+  "area": "green",
+  "code": "29",
+  "name": "武陽液化ガス株式会社",
+  "genreId": "goods-zakka",
+  "link": ""
+ },
+ {
+  "style": "band",
+  "area": "green",
+  "code": "30",
+  "name": "武陽液化ガス株式会社",
+  "genreId": "goods-zakka",
+  "link": ""
+ },
+ {
+  "style": "band",
+  "area": "green",
+  "code": "31",
+  "name": "武陽液化ガス株式会社",
+  "genreId": "goods-zakka",
+  "link": ""
+ },
+ {
+  "style": "band",
+  "area": "green",
+  "code": "32",
+  "name": "武陽液化ガス株式会社",
+  "genreId": "goods-zakka",
+  "link": ""
+ },
+ {
+  "style": "orange",
+  "area": "orange",
+  "code": "B1",
+  "name": "北杜市／植松農園",
+  "genreId": "goods-shokuhin",
+  "link": ""
+ },
+ {
+  "style": "orange",
+  "area": "orange",
+  "code": "B2",
+  "name": "北杜市商工会青年部",
+  "genreId": "goods-shokuhin",
+  "link": ""
+ },
+ {
+  "style": "orange",
+  "area": "orange",
+  "code": "B3",
+  "name": "公益財団法人キープ協会",
+  "genreId": "food-dessert",
+  "link": ""
+ },
+ {
+  "style": "orange",
+  "area": "orange",
+  "code": "B4",
+  "name": "株式会社清里ミルクプラント",
+  "genreId": "goods-shokuhin",
+  "link": ""
+ },
+ {
+  "style": "orange",
+  "area": "orange",
+  "code": "B5",
+  "name": "八ヶ岳パイ工房",
+  "genreId": "food-dessert",
+  "link": ""
+ },
+ {
+  "style": "orange",
+  "area": "orange",
+  "code": "B6",
+  "name": "保原町商工会",
+  "genreId": "goods-shokuhin",
+  "link": ""
+ },
+ {
+  "style": "orange",
+  "area": "orange",
+  "code": "B7",
+  "name": "芽室町観光物産協会",
+  "genreId": "goods-shokuhin",
+  "link": ""
+ },
+ {
+  "style": "orange",
+  "area": "orange",
+  "code": "B8",
+  "name": "八丈町商工会",
+  "genreId": "goods-shokuhin",
+  "link": ""
+ },
+ {
+  "style": "orange",
+  "area": "orange",
+  "code": "B9",
+  "name": "鳴門物産組合",
+  "genreId": "goods-shokuhin",
+  "link": ""
+ },
+ {
+  "style": "orange",
+  "area": "orange",
+  "code": "物1",
+  "name": "ペプス",
+  "genreId": "goods-taiken",
   "link": ""
  }
 ]
