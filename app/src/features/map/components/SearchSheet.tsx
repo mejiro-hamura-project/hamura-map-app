@@ -1,12 +1,6 @@
-import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
-import { GENRES, findGenreById } from '../../../shared/taxonomy';
+import GenreChipRow from '../../../shared/ui/GenreChipRow';
+import SpotResultButton from '../../../shared/ui/SpotResultButton';
 import type { Spot } from '../../../shared/types';
-
-// この距離（px）より動いたら「ドラッグでスクロール」とみなし、ジャンル選択のクリックを起こさない（イベント一覧のタブと同じ）
-const DRAG_THRESHOLD_PX = 6;
-
-// 両端をふわっと透けさせ、続きがあることを示す（イベント一覧のタブと同じマスク）
-const FADE_MASK = 'linear-gradient(90deg, transparent 0, #000 16px, #000 calc(100% - 30px), transparent 100%)';
 
 type SearchSheetProps = {
   results: Spot[];
@@ -32,55 +26,6 @@ export default function SearchSheet({
   onClose,
 }: SearchSheetProps) {
   const hasCondition = Boolean(activeGenreId || query.trim());
-  const genreScrollRef = useRef<HTMLDivElement>(null);
-  const genreButtonRefs = useRef(new Map<string, HTMLButtonElement>());
-  const dragStart = useRef<{ pointerX: number; scrollLeft: number } | null>(null);
-  const wasDraggedRef = useRef(false);
-  const [showMoreHint, setShowMoreHint] = useState(false);
-
-  function updateMoreHint() {
-    const el = genreScrollRef.current;
-    if (!el) return;
-    setShowMoreHint(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
-  }
-
-  useEffect(() => {
-    updateMoreHint();
-  }, []);
-
-  // 選んだジャンルを横スクロールの中央に寄せ、前後のジャンルも見えるようにする（イベント一覧のタブと同じ動き）。
-  // scrollIntoView は検索画面全体まで動かすことがあるため、横スクロールの位置だけを計算して動かす
-  useEffect(() => {
-    const el = genreScrollRef.current;
-    const button = activeGenreId ? genreButtonRefs.current.get(activeGenreId) : undefined;
-    if (!el || !button) return;
-    el.scrollTo({ left: button.offsetLeft - (el.clientWidth - button.offsetWidth) / 2, behavior: 'smooth' });
-  }, [activeGenreId]);
-
-  function handlePointerDown(e: ReactPointerEvent<HTMLDivElement>) {
-    dragStart.current = { pointerX: e.clientX, scrollLeft: genreScrollRef.current?.scrollLeft ?? 0 };
-  }
-
-  function handlePointerMove(e: ReactPointerEvent<HTMLDivElement>) {
-    if (!dragStart.current || !genreScrollRef.current) return;
-    const dx = e.clientX - dragStart.current.pointerX;
-    if (Math.abs(dx) > DRAG_THRESHOLD_PX) {
-      wasDraggedRef.current = true;
-      genreScrollRef.current.scrollLeft = dragStart.current.scrollLeft - dx;
-    }
-  }
-
-  function handlePointerUp() {
-    dragStart.current = null;
-  }
-
-  function handleGenreClick(genreId: string) {
-    if (wasDraggedRef.current) {
-      wasDraggedRef.current = false;
-      return;
-    }
-    onToggleGenre(genreId);
-  }
 
   return (
     // z-[60]：会場名の帯（VenueHeader、z-50）より前に出す。下に隠れると「地図に戻る」が押せなくなるため
@@ -113,43 +58,12 @@ export default function SearchSheet({
       </div>
 
       <div className="mt-3 px-4 text-xs font-extrabold tracking-wide text-sub">ジャンルで絞り込み</div>
-      <div className="relative mt-2">
-        <div
-          ref={genreScrollRef}
-          onPointerDown={handlePointerDown}
-          onPointerMove={handlePointerMove}
-          onPointerUp={handlePointerUp}
-          onPointerLeave={handlePointerUp}
-          onScroll={updateMoreHint}
-          className="flex cursor-grab gap-2 overflow-x-auto px-4 pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-          style={{ WebkitMaskImage: FADE_MASK, maskImage: FADE_MASK }}
-        >
-          {GENRES.map((genre) => (
-            <button
-              key={genre.id}
-              ref={(el) => {
-                if (el) genreButtonRefs.current.set(genre.id, el);
-                else genreButtonRefs.current.delete(genre.id);
-              }}
-              type="button"
-              onClick={() => handleGenreClick(genre.id)}
-              className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border-[1.5px] px-3 py-1.5 text-xs font-bold ${
-                activeGenreId === genre.id ? 'border-brand-blue bg-brand-blue text-white' : 'border-brand-blue bg-card text-brand-blue'
-              }`}
-            >
-              <img src={genre.iconUrl} alt="" className="h-4 w-4" />
-              {genre.name}
-            </button>
-          ))}
-        </div>
-        {showMoreHint && (
-          <span
-            className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 text-base text-[#c2c7cf]"
-            style={{ animation: 'nudge 1.4s ease-in-out infinite' }}
-          >
-            ›
-          </span>
-        )}
+      <div className="mt-2">
+        <GenreChipRow
+          selectedIds={new Set(activeGenreId ? [activeGenreId] : [])}
+          focusId={activeGenreId}
+          onToggle={onToggleGenre}
+        />
       </div>
 
       <div className="mt-3 flex min-h-0 flex-1 flex-col border-t border-line">
@@ -159,30 +73,9 @@ export default function SearchSheet({
           </p>
         )}
         <div className="flex-1 overflow-y-auto pb-4">
-          {results.map((spot) => {
-            const genre = findGenreById(spot.genreId);
-            const subLabel = [spot.schedule, spot.venueId != null ? `第${spot.venueId}会場` : null, genre?.name]
-              .filter(Boolean)
-              .join('・');
-            return (
-              <button
-                key={spot.id}
-                type="button"
-                onClick={() => onSelectSpot(spot.id)}
-                className="mx-4 mt-2 flex w-[calc(100%-2rem)] items-center gap-2.5 rounded-xl border border-line bg-card px-3.5 py-2.5 text-left"
-              >
-                {genre ? (
-                  <img src={genre.iconUrl} alt="" className="h-6 w-6 shrink-0" />
-                ) : (
-                  <span className="w-6 shrink-0 text-center text-brand-magenta">📍</span>
-                )}
-                <span className="flex min-w-0 flex-col">
-                  <span className="text-[13px] font-bold">{spot.name}</span>
-                  {subLabel && <span className="text-[10.5px] text-sub">{subLabel}</span>}
-                </span>
-              </button>
-            );
-          })}
+          {results.map((spot) => (
+            <SpotResultButton key={spot.id} spot={spot} onClick={() => onSelectSpot(spot.id)} />
+          ))}
         </div>
       </div>
     </div>

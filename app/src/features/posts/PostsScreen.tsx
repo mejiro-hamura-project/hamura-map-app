@@ -119,6 +119,10 @@ export default function PostsScreen() {
           shops={shopSpots}
           selectedGenreIds={selectedGenreIds}
           selectedSpotIds={selectedSpotIds}
+          onClear={() => {
+            setSelectedGenreIds(new Set());
+            setSelectedSpotIds(new Set());
+          }}
           onToggleGenre={handleToggleGenre}
           onToggleSpot={handleToggleSpot}
           onClose={() => setIsFilterOpen(false)}
