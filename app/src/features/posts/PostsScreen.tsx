@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { usePosts, useSpots } from '../../api';
 import type { Post } from '../../shared/types';
-import { CURRENT_USER_ID } from '../../shared/constants';
+import { getDeviceUserId } from '../../shared/utils/deviceUser';
 import { findStoreBySpotId } from '../../mocks/stores';
 import { resolveAuthorNickname } from '../../shared/utils/postAuthor';
 import { spotDisplayName } from '../../shared/utils/spotSearch';
@@ -12,18 +12,14 @@ import PostCreateFab from './components/PostCreateFab';
 import PostCreateSheet from './components/PostCreateSheet';
 
 export default function PostsScreen() {
-  const { posts: fetchedPosts, isLoading } = usePosts();
+  // 口コミはアプリ全体で共有（シート連携があればシートの内容）。いいねはこの端末の画面内だけで数える
+  const { posts, isLoading, addPost } = usePosts();
   const { spots } = useSpots();
-  const [posts, setPosts] = useState<Post[]>([]);
   const [likedPostIds, setLikedPostIds] = useState<Set<string>>(new Set());
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [selectedGenreIds, setSelectedGenreIds] = useState<Set<string>>(new Set());
   const [selectedSpotIds, setSelectedSpotIds] = useState<Set<string>>(new Set());
-
-  useEffect(() => {
-    setPosts(fetchedPosts);
-  }, [fetchedPosts]);
 
   const shopSpots = useMemo(() => spots.filter((spot) => spot.categoryId !== 'stamp-qr'), [spots]);
 
@@ -50,16 +46,10 @@ export default function PostsScreen() {
   }, [posts, spots, selectedGenreIds, selectedSpotIds]);
 
   function handleToggleLike(postId: string) {
-    const willLike = !likedPostIds.has(postId);
-    setPosts((prevPosts) =>
-      prevPosts.map((post) =>
-        post.id === postId ? { ...post, likeCount: post.likeCount + (willLike ? 1 : -1) } : post,
-      ),
-    );
     setLikedPostIds((prev) => {
       const next = new Set(prev);
-      if (willLike) next.add(postId);
-      else next.delete(postId);
+      if (next.has(postId)) next.delete(postId);
+      else next.add(postId);
       return next;
     });
   }
@@ -84,15 +74,15 @@ export default function PostsScreen() {
 
   function handleCreatePost(input: { spotId: string; caption: string }) {
     const newPost: Post = {
-      id: `post-${Date.now()}`,
-      userId: CURRENT_USER_ID,
+      id: `post-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      userId: getDeviceUserId(),
       spotId: input.spotId,
       caption: input.caption,
       images: [],
       likeCount: 0,
       createdAt: new Date().toISOString(),
     };
-    setPosts((prevPosts) => [newPost, ...prevPosts]);
+    addPost(newPost, resolvePostTarget(input.spotId).name);
   }
 
   return (
@@ -110,7 +100,7 @@ export default function PostsScreen() {
             return (
               <FeedItem
                 key={post.id}
-                post={post}
+                post={likedPostIds.has(post.id) ? { ...post, likeCount: post.likeCount + 1 } : post}
                 authorNickname={resolveAuthorNickname(post)}
                 spotName={spotName}
                 liked={likedPostIds.has(post.id)}

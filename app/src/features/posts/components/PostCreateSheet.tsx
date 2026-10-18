@@ -74,6 +74,8 @@ export default function PostCreateSheet({ shops, onSubmit, onClose }: PostCreate
           <input
             value={caption}
             onChange={(e) => setCaption(e.target.value)}
+            // シート（Apps Script）側でも同じ長さで切り詰める。docs/posts/posts-sheet.md 参照
+            maxLength={200}
             placeholder="感想を書く…"
             className="w-full rounded-xl border border-line bg-card px-3 py-2.5 text-sm outline-none"
           />
