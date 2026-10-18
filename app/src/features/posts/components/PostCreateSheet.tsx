@@ -1,10 +1,13 @@
 import { useState } from 'react';
 import type { Spot } from '../../../shared/types';
 import { matchesSpotQuery } from '../../../shared/utils/spotSearch';
+import { getRecentSpotIds } from '../../../shared/utils/recentSpots';
 import SpotResultButton from '../../../shared/ui/SpotResultButton';
 
 type PostCreateSheetProps = {
   shops: Spot[];
+  /** 最初から選んでおく投稿先（地図の店の詳細の「口コミを書く」から開いたとき） */
+  initialSpotId?: string | null;
   onSubmit: (input: { spotId: string; caption: string }) => void;
   onClose: () => void;
 };
@@ -16,12 +19,15 @@ const MAX_CANDIDATES = 10;
 
 /**
  * 口コミの投稿画面。①投稿先を選ぶ → ②感想を書く の順。
- * 投稿先の候補は、名前を入力したときだけ出す（全店を並べると感想の入力欄が画面の下に押し出されるため）。
+ * 店名を検索しなくても選べるよう、入力前は「最近見た店・イベント」（地図で詳細を開いたもの）を並べる。
+ * 名前を入力したら、その候補を出す（全店を並べると感想の入力欄が画面の下に押し出されるため）。
  * 選んだら候補を閉じて「投稿先：○○」の1行にまとめ、すぐ下の感想欄に進めるようにする。
  */
-export default function PostCreateSheet({ shops, onSubmit, onClose }: PostCreateSheetProps) {
+export default function PostCreateSheet({ shops, initialSpotId = null, onSubmit, onClose }: PostCreateSheetProps) {
   const [query, setQuery] = useState('');
-  const [selectedSpotId, setSelectedSpotId] = useState<string | null>(null);
+  const [selectedSpotId, setSelectedSpotId] = useState<string | null>(initialSpotId);
+  // 開いたときの「最近見た」を使う（開いている間に並びが変わらないようにする）
+  const [recentSpotIds] = useState(getRecentSpotIds);
   const [caption, setCaption] = useState('');
 
   const trimmedQuery = query.trim();
@@ -29,6 +35,9 @@ export default function PostCreateSheet({ shops, onSubmit, onClose }: PostCreate
     ? shops.filter((shop) => matchesSpotQuery(shop, trimmedQuery)).slice(0, MAX_CANDIDATES)
     : [];
   const selectedShop = shops.find((shop) => shop.id === selectedSpotId) ?? null;
+  const recentShops = recentSpotIds
+    .map((id) => shops.find((shop) => shop.id === id))
+    .filter((shop): shop is Spot => shop !== undefined);
   const canSubmit = Boolean(selectedShop) && caption.trim().length > 0;
 
   function handleSubmit() {
@@ -85,8 +94,18 @@ export default function PostCreateSheet({ shops, onSubmit, onClose }: PostCreate
                 className="min-w-0 flex-1 border-0 bg-transparent text-sm outline-none"
               />
             </div>
-            {!trimmedQuery && (
-              <p className="mx-4 mt-2 text-[11px] text-[#aab0b8]">名前の最初の文字を入れると、候補が出ます</p>
+            {!trimmedQuery && recentShops.length > 0 && (
+              <>
+                <p className="mx-4 mt-3 text-[11px] font-bold text-sub">最近見た店・イベント</p>
+                {recentShops.map((shop) => (
+                  <SpotResultButton key={shop.id} spot={shop} onClick={() => setSelectedSpotId(shop.id)} />
+                ))}
+              </>
+            )}
+            {!trimmedQuery && recentShops.length === 0 && (
+              <p className="mx-4 mt-2 text-[11px] text-[#aab0b8]">
+                名前の最初の文字を入れると、候補が出ます。地図で店の詳細を開くと、ここに「最近見た店」として並びます
+              </p>
             )}
             {trimmedQuery && candidates.length === 0 && (
               <p className="mx-4 mt-2 text-[11px] text-[#aab0b8]">該当する候補はありません</p>

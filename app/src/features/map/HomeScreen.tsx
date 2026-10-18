@@ -4,6 +4,7 @@ import type { Booth, Spot, Store } from '../../shared/types';
 import { useClock } from '../../shared/context/DevClockContext';
 import { matchesSpotQuery } from '../../shared/utils/spotSearch';
 import { allMapToVenuePercent } from '../../shared/utils/mapCoords';
+import { rememberRecentSpot } from '../../shared/utils/recentSpots';
 import { getCurrentProgramStatus, getStageStatusText, getTimetableForToday } from '../../shared/utils/timetable';
 import { MOCK_VENUE_HOTSPOTS } from '../../mocks/venueHotspots';
 import { BOOTHS_BY_VENUE } from '../../mocks/booths';
@@ -169,6 +170,8 @@ export default function HomeScreen() {
   // 該当の場所を光らせ、そこへ寄せる。それ以外（場所を持たないもの）は全体地図のまま詳細ポップアップを出す。
   function handleSelectSearchResult(spotId: string) {
     setIsSearchOpen(false);
+    // 検索で選んだものも「最近見た」に入れる（口コミの投稿画面で検索せずに選べるようにする）
+    rememberRecentSpot(spotId);
     const spot = spots.find((s) => s.id === spotId);
     const booth = findStoreSpotBooth(spotId);
     const boothMap = booth && maps.find((venueMap) => venueMap.venueId === booth.venueId);

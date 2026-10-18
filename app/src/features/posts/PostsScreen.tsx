@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { usePosts, useSpots } from '../../api';
 import type { Post } from '../../shared/types';
 import { getDeviceUserId } from '../../shared/utils/deviceUser';
@@ -10,6 +11,7 @@ import PostFilterFab from './components/PostFilterFab';
 import PostFilterSheet from './components/PostFilterSheet';
 import PostCreateFab from './components/PostCreateFab';
 import PostCreateSheet from './components/PostCreateSheet';
+import { POSTS_ROUTE_STATE_KEY } from './routeState';
 
 export default function PostsScreen() {
   // 口コミはアプリ全体で共有（シート連携があればシートの内容）。いいねはこの端末の画面内だけで数える
@@ -18,6 +20,20 @@ export default function PostsScreen() {
   const [likedPostIds, setLikedPostIds] = useState<Set<string>>(new Set());
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  // 投稿画面を開いたときに最初から選んでおく投稿先（地図の店の詳細の「口コミを書く」から来たとき）
+  const [initialCreateSpotId, setInitialCreateSpotId] = useState<string | null>(null);
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // 地図の「口コミを書く」から来たら、その店を投稿先に選んだ状態で投稿画面を開く。
+  // 開いたら location.state を消し、再読み込みや「戻る」で投稿画面が開き直さないようにする
+  useEffect(() => {
+    const spotId = (location.state as Record<string, unknown> | null)?.[POSTS_ROUTE_STATE_KEY];
+    if (typeof spotId !== 'string') return;
+    setInitialCreateSpotId(spotId);
+    setIsCreateOpen(true);
+    navigate(location.pathname, { replace: true, state: null });
+  }, [location.state, location.pathname, navigate]);
   const [selectedGenreIds, setSelectedGenreIds] = useState<Set<string>>(new Set());
   const [selectedSpotIds, setSelectedSpotIds] = useState<Set<string>>(new Set());
 
@@ -112,7 +128,12 @@ export default function PostsScreen() {
       </div>
 
       <PostFilterFab activeCount={selectedGenreIds.size + selectedSpotIds.size} onClick={() => setIsFilterOpen(true)} />
-      <PostCreateFab onClick={() => setIsCreateOpen(true)} />
+      <PostCreateFab
+        onClick={() => {
+          setInitialCreateSpotId(null);
+          setIsCreateOpen(true);
+        }}
+      />
 
       {isFilterOpen && (
         <PostFilterSheet
@@ -130,7 +151,12 @@ export default function PostsScreen() {
       )}
 
       {isCreateOpen && (
-        <PostCreateSheet shops={shopSpots} onSubmit={handleCreatePost} onClose={() => setIsCreateOpen(false)} />
+        <PostCreateSheet
+          shops={shopSpots}
+          initialSpotId={initialCreateSpotId}
+          onSubmit={handleCreatePost}
+          onClose={() => setIsCreateOpen(false)}
+        />
       )}
     </div>
   );
