@@ -13,6 +13,11 @@ export interface VenueMap {
   height: number;
   /** 特定の会場（1〜4）専用の地図である場合の会場番号。未設定＝会場をまたいだ「全体」の地図 */
   venueId?: number;
+  /**
+   * 会場の地図が「全体」地図のどこを切り出したものか（全体地図の画像上での左上の位置、px）。
+   * 会場の地図と全体地図は同じ縮尺で作っているため、この位置だけで両者の座標を変換できる。
+   */
+  offsetInAllMap?: { x: number; y: number };
 }
 
 /**

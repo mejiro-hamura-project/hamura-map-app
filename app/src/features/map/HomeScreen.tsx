@@ -3,10 +3,11 @@ import { useMaps, usePosts, useSpots, useTimetable } from '../../api';
 import type { Booth, Spot, Store } from '../../shared/types';
 import { useClock } from '../../shared/context/DevClockContext';
 import { matchesSpotQuery } from '../../shared/utils/spotSearch';
+import { allMapToVenuePercent } from '../../shared/utils/mapCoords';
 import { getCurrentProgramStatus, getStageStatusText, getTimetableForToday } from '../../shared/utils/timetable';
 import { MOCK_VENUE_HOTSPOTS } from '../../mocks/venueHotspots';
 import { BOOTHS_BY_VENUE } from '../../mocks/booths';
-import { STORES, storeSpotId } from '../../mocks/stores';
+import { STORES, findStoreSpot } from '../../mocks/stores';
 import VenueHeader from './components/VenueHeader';
 import MapCanvas from './components/MapCanvas';
 import SearchSheet from './components/SearchSheet';
@@ -48,7 +49,17 @@ export default function HomeScreen() {
     if (currentMap.venueId == null) return spots;
     return spots.filter((spot) => spot.venueId === currentMap.venueId);
   }, [spots, currentMap]);
-  const shopSpots = useMemo(() => mapSpots.filter((spot) => spot.categoryId !== 'stamp-qr'), [mapSpots]);
+  // 地図の上に出す（ステージの吹き出し等）スポット。スポットの位置は「全体」地図上の％なので、
+  // 会場の地図を表示しているときは、その会場の地図上の位置に変換してから渡す
+  const shopSpots = useMemo(() => {
+    const spotsOnMap = mapSpots.filter((spot) => spot.categoryId !== 'stamp-qr');
+    const allMap = maps.find((venueMap) => venueMap.venueId == null);
+    if (!currentMap || currentMap.venueId == null || !allMap) return spotsOnMap;
+    return spotsOnMap.flatMap((spot) => {
+      const point = allMapToVenuePercent(spot, currentMap, allMap);
+      return point ? [{ ...spot, x: point.x, y: point.y }] : [];
+    });
+  }, [mapSpots, maps, currentMap]);
   // 範囲（area）を持つスポットのうち、今表示している会場地図の上に置くもの。
   // 大きい範囲から順に並べ、プレイランドの中の枠のように内側にある小さい範囲を後から（上に）描いて押せるようにする
   const areaSpots = useMemo(() => {
@@ -109,22 +120,9 @@ export default function HomeScreen() {
     if (venueMapEntry) setCurrentMapId(venueMapEntry.id);
   }
 
-  // ブースの店一覧から店がタップされたときに、既存のスポット詳細ポップアップで表示するための
-  // 疑似スポットをその場で組み立てる（本物のSpotデータと混ぜず、地図上のピン等には影響しない）
+  // ブースの店一覧から店がタップされたときに、その店のスポット（検索・口コミと共通）を詳細ポップアップで出す
   function handleSelectStore(store: Store) {
-    setSelectedStoreSpot({
-      id: storeSpotId(store),
-      name: store.name,
-      categoryId: '',
-      tagIds: [],
-      genreId: store.genreId,
-      description: store.detail ?? '',
-      images: [],
-      mapId: currentMap?.id ?? '',
-      x: 0,
-      y: 0,
-      eventId: '',
-    });
+    setSelectedStoreSpot(findStoreSpot(store) ?? null);
   }
 
   // ブースとエリア（スポット詳細）のポップアップは同じ位置に出るため、片方を開いたらもう片方は閉じる

@@ -1,88 +1,13 @@
 import type { Spot } from '../shared/types';
 import { AREA_SPOTS } from './areaSpots';
+import { STORE_SPOTS } from './stores';
 
 const EVENT_ID = 'festival-2026';
-// スポットのx, yは「全体」地図（venue-all.png）の座標系で決めた仮の値。
-// 会場ごとの画像（venue-1/2/3.png）上での正確な位置合わせは今回は行っていない。
+// スポットのx, yは「全体」地図（venue-all.png）上の％。会場の地図に出すときは offsetInAllMap で変換する。
 const MAP_ID = 'map-all';
 
-/** 出店・団体・ステージの見本データ（UIプロトタイプの実例に合わせた名称） */
-const SHOP_SPOTS: Spot[] = [
-  {
-    id: 'spot-11',
-    name: '11：焼きそば横丁',
-    reading: 'やきそばよこちょう',
-    categoryId: 'gourmet',
-    genreId: 'food-menrui',
-    tagIds: ['drink', 'meat', 'recommended'],
-    description: '定番の屋台グルメ。ドリンクもあります。',
-    images: [],
-    mapId: MAP_ID,
-    x: 40,
-    y: 78,
-    eventId: EVENT_ID,
-    venueId: 2,
-  },
-  {
-    id: 'spot-07',
-    name: '7：炭火焼き鳥',
-    reading: 'すみびやきとり',
-    categoryId: 'gourmet',
-    genreId: 'food-yakimono',
-    tagIds: ['meat', 'recommended'],
-    description: '炭火でじっくり焼き上げる焼き鳥。',
-    images: [],
-    mapId: MAP_ID,
-    x: 50,
-    y: 80,
-    eventId: EVENT_ID,
-    venueId: 2,
-  },
-  {
-    id: 'spot-d',
-    name: 'D：クラフトドリンク店',
-    reading: 'くらふとどりんくてん',
-    categoryId: 'gourmet',
-    genreId: 'food-drink',
-    tagIds: ['drink'],
-    description: '地ビール・ソフトドリンクを提供。',
-    images: [],
-    mapId: MAP_ID,
-    x: 45,
-    y: 76,
-    eventId: EVENT_ID,
-    venueId: 1,
-  },
-  {
-    id: 'spot-p',
-    name: 'P：公園遊具体験',
-    reading: 'こうえんゆうぐたいけん',
-    categoryId: 'play-land',
-    genreId: 'goods-taiken',
-    tagIds: ['workshop'],
-    description: 'お子さま向けの大型遊具コーナー。',
-    images: [],
-    mapId: MAP_ID,
-    x: 55,
-    y: 30,
-    eventId: EVENT_ID,
-    venueId: 1,
-  },
-  {
-    id: 'spot-pr1',
-    name: 'はむらまちゼミ',
-    reading: 'はむらまちぜみ',
-    categoryId: 'pr',
-    genreId: 'goods-info',
-    tagIds: [],
-    description: '地域団体による活動紹介。',
-    images: [],
-    mapId: MAP_ID,
-    x: 15,
-    y: 60,
-    eventId: EVENT_ID,
-    venueId: 1,
-  },
+/** ステージ（メイン＝第2会場、サブ＝第3会場ウッドデッキ）。位置は今年版の会場図に合わせた値 */
+const STAGE_SPOTS: Spot[] = [
   {
     // 演目名は日によって変わるため持たせず、タイムテーブル（mocks/timetable.ts）から
     // 「今の演目」を都度取得して表示する（イベント一覧・地図の吹き出しで共通）。
@@ -94,8 +19,8 @@ const SHOP_SPOTS: Spot[] = [
     description: '歌・ダンス・楽器演奏など、祭りのメインの催し物を行うステージです。',
     images: [],
     mapId: MAP_ID,
-    x: 55,
-    y: 65,
+    x: 31,
+    y: 73.8,
     eventId: EVENT_ID,
     venueId: 2,
     stageKey: 'main',
@@ -106,44 +31,14 @@ const SHOP_SPOTS: Spot[] = [
     reading: 'さぶすてーじ',
     categoryId: 'sub-stage',
     tagIds: [],
-    description: '得意演奏やミニ発表を行う小さめのステージです。',
+    description: '第3会場のウッドデッキで、歌・ダンス・演奏などを行うステージです。',
     images: [],
     mapId: MAP_ID,
-    x: 80,
-    y: 60,
+    x: 71.6,
+    y: 62.9,
     eventId: EVENT_ID,
     venueId: 3,
     stageKey: 'sub',
-  },
-  {
-    id: 'spot-goods1',
-    name: '特産品ワゴン',
-    reading: 'とくさんひんわごん',
-    categoryId: 'goods',
-    genreId: 'goods-shokuhin',
-    tagIds: [],
-    description: '地元の特産品を販売。',
-    images: [],
-    mapId: MAP_ID,
-    x: 60,
-    y: 10,
-    eventId: EVENT_ID,
-    venueId: 1,
-  },
-  {
-    id: 'spot-specialty1',
-    name: '農産物直売',
-    reading: 'のうさんぶつちょくばい',
-    categoryId: 'specialty',
-    genreId: 'goods-shokuhin',
-    tagIds: [],
-    description: '採れたて野菜を直売。',
-    images: [],
-    mapId: MAP_ID,
-    x: 12,
-    y: 8,
-    eventId: EVENT_ID,
-    venueId: 3,
   },
 ];
 
@@ -170,4 +65,5 @@ const STAMP_QR_SPOTS: Spot[] = Array.from({ length: 7 }, (_, index) => {
   } satisfies Spot;
 });
 
-export const MOCK_SPOTS: Spot[] = [...SHOP_SPOTS, ...AREA_SPOTS, ...STAMP_QR_SPOTS];
+/** 店（ブース）・エリア・ステージ・スタンプQR。店は店登録ツールのデータから作る（mocks/stores.ts） */
+export const MOCK_SPOTS: Spot[] = [...STAGE_SPOTS, ...STORE_SPOTS, ...AREA_SPOTS, ...STAMP_QR_SPOTS];

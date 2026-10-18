@@ -1,9 +1,9 @@
 import type { Spot } from '../types';
 import { toHiragana } from './kana';
 
-/** "11：焼きそば横丁" → "焼きそば横丁" のように、番号・記号部分を除いた名前を取り出す */
+/** "11：焼きそば横丁"・"キ1：○○"・"2・3：○○" → 店名のように、先頭の番号・記号部分を除いた名前を取り出す */
 export function spotDisplayName(name: string): string {
-  return name.replace(/^[0-9A-Z]+：/, '');
+  return name.replace(/^[^：]+：/, '');
 }
 
 /**
@@ -13,7 +13,10 @@ export function spotDisplayName(name: string): string {
  * ホーム地図の検索・投稿作成の店選択など、前方一致検索が必要な画面で共通して使う。
  */
 export function matchesSpotQuery(spot: Spot, query: string): boolean {
-  if (spotDisplayName(spot.name).startsWith(query)) return true;
+  const displayName = spotDisplayName(spot.name);
+  if (displayName.startsWith(query)) return true;
+  // カタカナの店名（例：スナック紅蓮）は、ひらがなで入力しても一致させる
+  if (toHiragana(displayName).startsWith(toHiragana(query))) return true;
   if (spot.reading) {
     return toHiragana(spot.reading).startsWith(toHiragana(query));
   }

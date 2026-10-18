@@ -1,5 +1,6 @@
 import type { VenueMap } from '../shared/types';
 
+// offsetInAllMap は、会場ごとの地図を今年版の会場図から切り出したときの、全体地図（venue-all.png）上の左上の位置。
 export const MOCK_MAPS: VenueMap[] = [
   {
     id: 'map-all',
@@ -16,6 +17,7 @@ export const MOCK_MAPS: VenueMap[] = [
     width: 1794,
     height: 1309,
     venueId: 1,
+    offsetInAllMap: { x: 0, y: 0 },
   },
   {
     id: 'map-2',
@@ -24,6 +26,7 @@ export const MOCK_MAPS: VenueMap[] = [
     width: 1395,
     height: 930,
     venueId: 2,
+    offsetInAllMap: { x: 0, y: 1309 },
   },
   {
     id: 'map-3',
@@ -32,6 +35,7 @@ export const MOCK_MAPS: VenueMap[] = [
     width: 1122,
     height: 1344,
     venueId: 3,
+    offsetInAllMap: { x: 1370, y: 895 },
   },
   {
     id: 'map-4',
@@ -40,5 +44,6 @@ export const MOCK_MAPS: VenueMap[] = [
     width: 964,
     height: 1239,
     venueId: 4,
+    offsetInAllMap: { x: 1506, y: 14 },
   },
 ];
