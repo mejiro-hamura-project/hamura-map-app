@@ -35,22 +35,49 @@ type SheetPostRow = {
   spotId: string;
   userId: string;
   caption: string;
+  /** 「いいね」の数（古い Apps Script では無い） */
+  likeCount?: number;
+  /** 問い合わせた端末が「いいね」を押しているか（古い Apps Script では無い） */
+  liked?: boolean;
 };
 
-/** シートに残っている口コミを読み込む（本文が空の行・削除された行は Apps Script 側で除かれている） */
-export async function fetchSheetPosts(url: string): Promise<Post[]> {
-  const response = await fetch(url, { cache: 'no-store' });
+export type SheetPosts = { posts: Post[]; likedPostIds: Set<string> };
+
+/**
+ * シートに残っている口コミを読み込む（本文が空の行・削除された行は Apps Script 側で除かれている）。
+ * 「いいね」の数と、この端末（userId）が押した口コミも一緒に受け取る
+ */
+export async function fetchSheetPosts(url: string, userId: string): Promise<SheetPosts> {
+  const requestUrl = new URL(url);
+  requestUrl.searchParams.set('userId', userId);
+  const response = await fetch(requestUrl, { cache: 'no-store' });
   if (!response.ok) throw new Error(`posts sheet responded ${response.status}`);
   const data = (await response.json()) as { posts?: SheetPostRow[] };
-  return (data.posts ?? []).map((row) => ({
-    id: row.id,
-    userId: row.userId,
-    spotId: row.spotId,
-    caption: row.caption,
-    images: [],
-    likeCount: 0,
-    createdAt: row.createdAt,
-  }));
+  const rows = data.posts ?? [];
+  return {
+    posts: rows.map((row) => ({
+      id: row.id,
+      userId: row.userId,
+      spotId: row.spotId,
+      caption: row.caption,
+      images: [],
+      likeCount: row.likeCount ?? 0,
+      createdAt: row.createdAt,
+    })),
+    likedPostIds: new Set(rows.filter((row) => row.liked).map((row) => row.id)),
+  };
+}
+
+/** 「いいね」を押した（liked=true）／取り消した（liked=false）ことをシートに送る。送り方は投稿と同じ */
+export function sendSheetLike(url: string, postId: string, userId: string, liked: boolean): void {
+  void fetch(url, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ type: liked ? 'like' : 'unlike', postId, userId }),
+  }).catch(() => {
+    // 送れなかった「いいね」は、次の読み込みでシートの状態に戻る
+  });
 }
 
 /**

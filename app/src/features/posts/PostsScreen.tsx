@@ -14,10 +14,9 @@ import PostCreateSheet from './components/PostCreateSheet';
 import { POSTS_ROUTE_STATE_KEY } from './routeState';
 
 export default function PostsScreen() {
-  // 口コミはアプリ全体で共有（シート連携があればシートの内容）。いいねはこの端末の画面内だけで数える
-  const { posts, isLoading, addPost } = usePosts();
+  // 口コミと「いいね」はアプリ全体で共有（シート連携があればシートの内容・数）
+  const { posts, likedPostIds, isLoading, addPost, toggleLike } = usePosts();
   const { spots } = useSpots();
-  const [likedPostIds, setLikedPostIds] = useState<Set<string>>(new Set());
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   // 投稿画面を開いたときに最初から選んでおく投稿先（地図の店の詳細の「口コミを書く」から来たとき）
@@ -60,15 +59,6 @@ export default function PostsScreen() {
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [posts, spots, selectedGenreIds, selectedSpotIds]);
-
-  function handleToggleLike(postId: string) {
-    setLikedPostIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(postId)) next.delete(postId);
-      else next.add(postId);
-      return next;
-    });
-  }
 
   function handleToggleGenre(genreId: string) {
     setSelectedGenreIds((prev) => {
@@ -116,11 +106,11 @@ export default function PostsScreen() {
             return (
               <FeedItem
                 key={post.id}
-                post={likedPostIds.has(post.id) ? { ...post, likeCount: post.likeCount + 1 } : post}
+                post={post}
                 authorNickname={resolveAuthorNickname(post)}
                 spotName={spotName}
                 liked={likedPostIds.has(post.id)}
-                onToggleLike={() => handleToggleLike(post.id)}
+                onToggleLike={() => toggleLike(post.id)}
               />
             );
           })
