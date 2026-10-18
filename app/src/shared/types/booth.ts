@@ -1,5 +1,5 @@
-/** ブースの色の種類（配置ツールの分類に合わせる。pr=青／band=緑／pink=ピンク） */
-export type BoothStyle = 'pr' | 'band' | 'pink';
+/** ブースの色の種類（配置ツールの分類に合わせる。pr=青／band=緑／pink=ピンク／orange=オレンジ（特産品）） */
+export type BoothStyle = 'pr' | 'band' | 'pink' | 'orange';
 
 /**
  * ブース配置ツールで作った、地図上のブース1つぶんのデータ。

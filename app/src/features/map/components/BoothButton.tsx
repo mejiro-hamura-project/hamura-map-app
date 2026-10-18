@@ -22,12 +22,19 @@ const STYLE_CLASSES: Record<Booth['style'], { pill: string; box: string; cell: s
     box: 'border-[#4aa972]',
     cell: 'text-[#2f8f57]',
   },
+  // 特産品。会場図の「特産品販売コーナー」の文字色（#f5821f）に合わせたオレンジ
+  orange: {
+    pill: 'bg-[rgba(245,130,31,.22)]',
+    box: 'border-[#f0954a]',
+    cell: 'text-[#d0661a]',
+  },
 };
 
 const CELL_BORDER_COLOR: Record<Booth['style'], string> = {
   pr: '#bcd7ef',
   pink: '#f3cfe0',
   band: '#cdead9',
+  orange: '#fbd9bb',
 };
 
 // 配置ツールは、地図が横幅720px前後で表示されるPC向けの画面（.phone{max-width:1100px}から

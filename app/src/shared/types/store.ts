@@ -1,8 +1,7 @@
-/**
- * 店のエリアの色。ブース（配置ツール）の色（pr/band/pink）に、まだブースが無い
- * 「orange（特産品）」を加えた4種。店データ側だけ先に4色を受け付けられるようにしておく。
- */
-export type StoreStyle = 'pink' | 'pr' | 'band' | 'orange';
+import type { BoothStyle } from './booth';
+
+/** 店のエリアの色。ブース（配置ツール）の色と同じ4種（pr/band/pink/orange） */
+export type StoreStyle = BoothStyle;
 
 /**
  * 店登録ツールで作った、ブースの記号に紐づく店のデータ。
