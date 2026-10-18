@@ -161,7 +161,9 @@ export default function SearchSheet({
         <div className="flex-1 overflow-y-auto pb-4">
           {results.map((spot) => {
             const genre = findGenreById(spot.genreId);
-            const subLabel = [spot.venueId != null ? `第${spot.venueId}会場` : null, genre?.name].filter(Boolean).join('・');
+            const subLabel = [spot.schedule, spot.venueId != null ? `第${spot.venueId}会場` : null, genre?.name]
+              .filter(Boolean)
+              .join('・');
             return (
               <button
                 key={spot.id}

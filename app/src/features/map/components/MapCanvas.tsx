@@ -108,7 +108,7 @@ export default function MapCanvas({
       {highlight ? (
         <div className="absolute bottom-4 left-3 right-[84px] z-[16] flex items-center gap-2 rounded-2xl border-2 border-[#ffc400] bg-white px-3 py-2 shadow-lg">
           <span className="min-w-0 flex-1">
-            <span className="block text-[10px] font-bold text-sub">選んだお店・エリアはここです</span>
+            <span className="block text-[10px] font-bold text-sub">選んだ場所はここです</span>
             <span className="block truncate text-xs font-extrabold">{highlight.spot.name}</span>
           </span>
           <button

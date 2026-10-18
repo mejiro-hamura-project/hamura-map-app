@@ -8,6 +8,7 @@ import { getCurrentProgramStatus, getStageStatusText, getTimetableForToday } fro
 import { MOCK_VENUE_HOTSPOTS } from '../../mocks/venueHotspots';
 import { BOOTHS_BY_VENUE } from '../../mocks/booths';
 import { STORES, findStoreSpot, findStoreSpotBooth } from '../../mocks/stores';
+import { findProgramStageSpot } from '../../mocks/programSpots';
 import VenueHeader from './components/VenueHeader';
 import MapCanvas, { type MapHighlight } from './components/MapCanvas';
 import SearchSheet from './components/SearchSheet';
@@ -93,7 +94,8 @@ export default function HomeScreen() {
   const searchResults = useMemo<Spot[]>(() => {
     const query = searchQuery.trim();
     if (query) {
-      return allShopSpots.filter((spot) => matchesSpotQuery(spot, query)).slice(0, 3);
+      // 仕様書では候補は3件程度だが、演目（同じ団体が両日・複数回出る）も対象になったため、結果欄に収まる10件まで出す
+      return allShopSpots.filter((spot) => matchesSpotQuery(spot, query)).slice(0, 10);
     }
     if (activeGenreId) {
       return allShopSpots.filter((spot) => spot.genreId === activeGenreId);
@@ -163,8 +165,8 @@ export default function HomeScreen() {
     }
   }
 
-  // 検索結果が選ばれたとき。店（ブース）・エリアは、その会場の地図に切り替えて該当の場所を光らせ、そこへ寄せる。
-  // それ以外（ステージ等）は今までどおり、全体地図のまま詳細ポップアップを出す。
+  // 検索結果が選ばれたとき。店（ブース）・エリア・ステージとその演目は、その会場の地図に切り替えて
+  // 該当の場所を光らせ、そこへ寄せる。それ以外（場所を持たないもの）は全体地図のまま詳細ポップアップを出す。
   function handleSelectSearchResult(spotId: string) {
     setIsSearchOpen(false);
     const spot = spots.find((s) => s.id === spotId);
@@ -176,14 +178,16 @@ export default function HomeScreen() {
       setHighlight({ spot, boothStyle: booth.style, boothCodes: booth.codes, focus: { x: booth.x, y: booth.y } });
       return;
     }
-    const area = spot?.area;
+    // ステージの演目は、演目を行うステージの範囲を光らせる。エリア・ステージは自分の範囲を光らせる
+    const areaSpot = findProgramStageSpot(spotId) ?? spot;
+    const area = areaSpot?.area;
     const areaMap = area && maps.find((venueMap) => venueMap.id === area.mapId);
-    if (spot && area && areaMap) {
+    if (spot && areaSpot && area && areaMap) {
       setSelectedSpotId(null);
       setCurrentMapId(areaMap.id);
       setHighlight({
         spot,
-        areaSpotId: spot.id,
+        areaSpotId: areaSpot.id,
         focus: { x: area.x + area.width / 2, y: area.y + area.height / 2 },
       });
       return;

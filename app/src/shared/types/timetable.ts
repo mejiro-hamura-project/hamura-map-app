@@ -4,6 +4,8 @@ export interface StageProgram {
   start: string;
   end: string;
   title: string;
+  /** 演目のジャンル（共通マスタのステージ系ジャンル）。開会式など催し物でない枠は未設定 */
+  genreId?: string;
 }
 
 /** どちらのステージか。地図上のSpotのstageKeyと対応させる */
