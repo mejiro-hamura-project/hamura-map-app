@@ -3,6 +3,11 @@ import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent, ty
 type ZoomPanViewProps = {
   children: ReactNode;
   className?: string;
+  /**
+   * 中身のこの位置（中身に対する％）が枠の中央に来るように、指定の倍率で拡大する。
+   * 値が変わるたびに適用する（検索で選んだ店のブースへ寄せる等）。
+   */
+  focus?: { x: number; y: number; scale: number } | null;
 };
 
 type Point = { x: number; y: number };
@@ -20,6 +25,19 @@ function clampScale(scale: number): number {
 }
 
 /**
+ * 1方向（横または縦）の移動量を、中身が枠からはみ出しすぎない範囲に収める。
+ * size は拡大前の中身の大きさ、viewport は枠の大きさ。中身は枠の端（0）に置かれ、中心を基準に拡大される前提。
+ */
+function clampAxis(offset: number, size: number, viewport: number, scale: number): number {
+  // 移動0のとき、拡大後の中身の端は (1 - scale) * size / 2 の位置に来る。これを枠の端（0）に合わせる移動量
+  const alignStart = ((scale - 1) * size) / 2;
+  if (size * scale <= viewport) return alignStart;
+  // 中身の反対側の端を、枠の反対側の端に合わせる移動量
+  const alignEnd = viewport - ((scale + 1) * size) / 2;
+  return Math.min(alignStart, Math.max(alignEnd, offset));
+}
+
+/**
  * 指2本でのピンチズーム、指1本（またはマウス）でのドラッグ移動、
  * PCではマウスホイールでの拡大縮小に対応した汎用の枠。
  * 地図専用ではなく、拡大したい画像などにも使い回せる部品として shared/ui に置いている。
@@ -28,7 +46,7 @@ function clampScale(scale: number): number {
 // ピンなど子要素のクリックをそのまま通す。
 const DRAG_THRESHOLD_PX = 6;
 
-export default function ZoomPanView({ children, className }: ZoomPanViewProps) {
+export default function ZoomPanView({ children, className, focus }: ZoomPanViewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const pointers = useRef(new Map<number, Point>());
@@ -47,13 +65,15 @@ export default function ZoomPanView({ children, className }: ZoomPanViewProps) {
     // 中身（content）の「拡大していない元のサイズ」は、枠（container）と同じとは限らない
     // （地図画像の縦横比によっては枠より小さかったり大きかったりする）。
     // 実際に描画されている中身のサイズを見て、はみ出す分だけ動かせるようにする。
-    const contentWidth = (content?.offsetWidth ?? containerWidth) * scale;
-    const contentHeight = (content?.offsetHeight ?? containerHeight) * scale;
-    const maxX = Math.max(0, (contentWidth - containerWidth) / 2);
-    const maxY = Math.max(0, (contentHeight - containerHeight) / 2);
+    // 中身は枠の左上に置かれ、拡大は中身の中心を基準に行われる。
+    // 拡大後の中身が枠より大きい向きは、枠の外に空白が出ない範囲で動かせる。
+    // 枠に収まる向きは、中身の左上（上端）を枠の左上（上端）に合わせて固定する
+    // （拡大で中身の上側が枠の外へはみ出して戻せなくなるのを防ぐ）。
+    const contentWidth = content?.offsetWidth ?? containerWidth;
+    const contentHeight = content?.offsetHeight ?? containerHeight;
     return {
-      x: Math.min(maxX, Math.max(-maxX, x)),
-      y: Math.min(maxY, Math.max(-maxY, y)),
+      x: clampAxis(x, contentWidth, containerWidth, scale),
+      y: clampAxis(y, contentHeight, containerHeight, scale),
     };
   }
 
@@ -115,6 +135,26 @@ export default function ZoomPanView({ children, className }: ZoomPanViewProps) {
       panStart.current = null;
     }
   }
+
+  // focus が指定されたら、その位置が枠の中央に来るように拡大・移動する。
+  // 中身は枠の左上を基準に置かれ、拡大は中身の中心を基準に行われる（transform の既定）ことを前提に計算する。
+  useEffect(() => {
+    if (!focus) return;
+    const frame = requestAnimationFrame(() => {
+      const container = containerRef.current;
+      const content = contentRef.current;
+      if (!container || !content) return;
+      const scale = clampScale(focus.scale);
+      const contentWidth = content.offsetWidth;
+      const contentHeight = content.offsetHeight;
+      const pointX = (focus.x / 100 - 0.5) * contentWidth * scale + contentWidth / 2;
+      const pointY = (focus.y / 100 - 0.5) * contentHeight * scale + contentHeight / 2;
+      const next = clampPosition(container.clientWidth / 2 - pointX, container.clientHeight / 2 - pointY, scale);
+      setTransform({ scale, ...next });
+    });
+    return () => cancelAnimationFrame(frame);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focus]);
 
   // ホイールでの拡大縮小はブラウザ標準のページスクロールを止める必要があり、
   // React の onWheel は passive 指定のため preventDefault が効かないことがある。

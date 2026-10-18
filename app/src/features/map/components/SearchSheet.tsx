@@ -23,12 +23,18 @@ export default function SearchSheet({
   const hasCondition = Boolean(activeGenreId || query.trim());
 
   return (
-    <div className="absolute inset-0 z-40 flex flex-col bg-bg">
-      <div className="flex items-center gap-2.5 border-b border-line bg-card px-3.5 py-4">
-        <button type="button" onClick={onClose} className="flex p-1 text-ink">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+    // z-[60]：会場名の帯（VenueHeader、z-50）より前に出す。下に隠れると「地図に戻る」が押せなくなるため
+    <div className="absolute inset-0 z-[60] flex flex-col bg-bg">
+      <div className="flex items-center gap-2.5 border-b border-line bg-card px-3.5 py-3">
+        <button
+          type="button"
+          onClick={onClose}
+          className="flex items-center gap-1 rounded-full border border-line px-3 py-1.5 text-xs font-bold text-ink"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
             <path d="M15 18l-6-6 6-6" />
           </svg>
+          地図に戻る
         </button>
         <h2 className="text-base font-extrabold">検索</h2>
       </div>

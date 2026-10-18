@@ -3,6 +3,8 @@ import type { Spot, SpotArea } from '../../../shared/types';
 type AreaHotspotButtonProps = {
   spot: Spot;
   area: SpotArea;
+  /** 検索で選ばれたエリア。透明な範囲を、このときだけ光らせて見せる */
+  highlighted?: boolean;
   onTap: () => void;
 };
 
@@ -12,13 +14,15 @@ type AreaHotspotButtonProps = {
  * 文字の大きさはブースのボタンと同じく、地図の表示幅に対する割合（cqw）で決める。
  * ブースのボタン（z-[5]）より下に置き、重なった所ではブースのタップを優先する。
  */
-export default function AreaHotspotButton({ spot, area, onTap }: AreaHotspotButtonProps) {
+export default function AreaHotspotButton({ spot, area, highlighted = false, onTap }: AreaHotspotButtonProps) {
   return (
     <button
       type="button"
       onClick={onTap}
       aria-label={`${spot.name}の説明を見る`}
-      className="absolute z-[4] flex items-center justify-center p-0"
+      className={`absolute flex items-center justify-center rounded-md p-0 ${
+        highlighted ? 'spot-glow z-[6] bg-[#ffd84d]/25' : 'z-[4]'
+      }`}
       style={{
         left: `${area.x}%`,
         top: `${area.y}%`,

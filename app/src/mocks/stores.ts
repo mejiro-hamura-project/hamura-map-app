@@ -67,9 +67,20 @@ function findBoothLocation(style: BoothStyle, code: string): { venueId: number; 
  * 複数のテントを使う店（同じ色で同じ店名が続く記号）は1つにまとめ、名前を「2・3：店名」のようにする。
  * 位置（x, y）は他のスポットと同じく「全体」地図上の％で、ブースの位置から変換している。
  */
-function buildStoreSpots(): { spots: Spot[]; byStoreKey: Map<string, Spot> } {
+/** 店のスポットが、どの会場のどのブースにあるか（地図で光らせる・拡大するために使う） */
+export type StoreSpotBooth = {
+  venueId: number;
+  style: BoothStyle;
+  codes: string[];
+  /** 会場地図上のブースの位置（％） */
+  x: number;
+  y: number;
+};
+
+function buildStoreSpots(): { spots: Spot[]; byStoreKey: Map<string, Spot>; boothBySpotId: Map<string, StoreSpotBooth> } {
   const spots: Spot[] = [];
   const byStoreKey = new Map<string, Spot>();
+  const boothBySpotId = new Map<string, StoreSpotBooth>();
   let index = 0;
   while (index < STORES.length) {
     const first = STORES[index];
@@ -103,8 +114,17 @@ function buildStoreSpots(): { spots: Spot[]; byStoreKey: Map<string, Spot> } {
     };
     spots.push(spot);
     for (const store of group) byStoreKey.set(`${store.style}:${store.code}`, spot);
+    if (location) {
+      boothBySpotId.set(spot.id, {
+        venueId: location.venueId,
+        style: first.style,
+        codes: group.map((store) => store.code),
+        x: location.x,
+        y: location.y,
+      });
+    }
   }
-  return { spots, byStoreKey };
+  return { spots, byStoreKey, boothBySpotId };
 }
 
 const STORE_SPOT_INDEX = buildStoreSpots();
@@ -115,4 +135,9 @@ export const STORE_SPOTS: Spot[] = STORE_SPOT_INDEX.spots;
 /** ブースの店一覧で選ばれた店に対応するスポット（複数テントの店は、どの記号から選んでも同じスポット） */
 export function findStoreSpot(store: Pick<Store, 'style' | 'code'>): Spot | undefined {
   return STORE_SPOT_INDEX.byStoreKey.get(`${store.style}:${store.code}`);
+}
+
+/** 店のスポットがあるブース（会場・色・記号・位置）。店以外のスポットや、ブースが無い店は undefined */
+export function findStoreSpotBooth(spotId: string): StoreSpotBooth | undefined {
+  return STORE_SPOT_INDEX.boothBySpotId.get(spotId);
 }

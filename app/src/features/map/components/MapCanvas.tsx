@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import type { Booth, Post, Spot, Store, VenueHotspot, VenueMap } from '../../../shared/types';
 import ZoomPanView from '../../../shared/ui/ZoomPanView';
 import StageNowBubble from './StageNowBubble';
@@ -11,6 +12,15 @@ import QrMarker from './QrMarker';
 import QrPopup from './QrPopup';
 import MapLegendToggle from './MapLegendToggle';
 
+/** 地図上で光らせて示すスポット。店ならブースの色と記号、エリアならスポットid。focus はそこへ寄せる位置（会場地図上の％） */
+export type MapHighlight = {
+  spot: Spot;
+  boothStyle?: Booth['style'];
+  boothCodes?: string[];
+  areaSpotId?: string;
+  focus: { x: number; y: number };
+};
+
 type MapCanvasProps = {
   venueMap: VenueMap | null;
   shopSpots: Spot[];
@@ -23,6 +33,12 @@ type MapCanvasProps = {
   venueHotspots?: VenueHotspot[];
   /** 会場表示のときだけ使う、範囲（area）を持つスポット。会場地図の上に透明なタップ範囲として置く */
   areaSpots?: Spot[];
+  /** 検索で選ばれ、地図上で光らせて示しているスポット（店・エリア）。無ければ何も光らせない */
+  highlight?: MapHighlight | null;
+  /** 光らせているスポットの詳細を開く */
+  onOpenHighlightDetail?: () => void;
+  /** 光らせるのをやめる */
+  onClearHighlight?: () => void;
   /** 会場表示のときだけ使う、配置ツールのブース一覧 */
   booths?: Booth[];
   /** ブースの記号に紐づく、この会場の店データ */
@@ -54,6 +70,9 @@ export default function MapCanvas({
   stageNowTitles = {},
   venueHotspots = [],
   areaSpots = [],
+  highlight = null,
+  onOpenHighlightDetail,
+  onClearHighlight,
   booths = [],
   stores = [],
   selectedBooth,
@@ -74,12 +93,41 @@ export default function MapCanvas({
   // スタンプQRは「全体」地図（venueId未設定）のときだけ表示する
   const isAllVenues = venueMap?.venueId == null;
 
+  // 光らせたブース・エリアへ寄せる位置。highlight が変わるたびに新しいオブジェクトにして、ZoomPanView に適用させる
+  const focus = useMemo(
+    () => (highlight ? { x: highlight.focus.x, y: highlight.focus.y, scale: 2 } : null),
+    [highlight],
+  );
+
   return (
-    <div className="relative mx-3.5 min-h-0 flex-1 overflow-hidden rounded-b-xl border border-t-0 border-line bg-[#f7f9f4]">
-      <div className="absolute left-1/2 top-2 z-[15] -translate-x-1/2 whitespace-nowrap rounded-full border border-line bg-white/95 px-3 py-1 text-[10px] font-bold text-sub shadow">
+    <div className="relative mx-3.5 flex min-h-0 flex-1 flex-col overflow-hidden rounded-b-xl border border-t-0 border-line bg-[#f7f9f4]">
+      {/* 案内文は地図に重ねず、地図の上に帯として置く（地図の上端のブースに文字がかぶらないように） */}
+      <div className="shrink-0 border-b border-line bg-white/95 px-3 py-1 text-center text-[10px] font-bold text-sub">
         {isAllVenues ? '会場をタップすると、その会場を拡大できます' : 'ブースやエリア名をタップすると、詳細が見られます'}
       </div>
-      {isAllVenues ? (
+      {highlight ? (
+        <div className="absolute bottom-4 left-3 right-[84px] z-[16] flex items-center gap-2 rounded-2xl border-2 border-[#ffc400] bg-white px-3 py-2 shadow-lg">
+          <span className="min-w-0 flex-1">
+            <span className="block text-[10px] font-bold text-sub">選んだお店・エリアはここです</span>
+            <span className="block truncate text-xs font-extrabold">{highlight.spot.name}</span>
+          </span>
+          <button
+            type="button"
+            onClick={onOpenHighlightDetail}
+            className="shrink-0 rounded-full bg-brand-blue px-3 py-1.5 text-[11px] font-bold text-white"
+          >
+            詳細
+          </button>
+          <button
+            type="button"
+            onClick={onClearHighlight}
+            aria-label="表示を消す"
+            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#f1f2f4] text-xs text-[#8a9098]"
+          >
+            ✕
+          </button>
+        </div>
+      ) : isAllVenues ? (
         <MapLegendToggle visible={qrVisible} onToggle={onToggleQrVisible} />
       ) : (
         <div className="absolute bottom-4 left-5 z-[15] rounded-full border border-line bg-white/95 px-3 py-1.5 text-[11px] font-bold text-sub shadow">
@@ -91,7 +139,7 @@ export default function MapCanvas({
         ZoomPanView を作り直す＝ズーム・パンの状態を毎回リセットする。
         前の会場の拡大位置を引き継ぐと表示が崩れるため。
       */}
-      <ZoomPanView key={venueMap?.id ?? 'none'} className="h-full w-full">
+      <ZoomPanView key={venueMap?.id ?? 'none'} className="min-h-0 w-full flex-1" focus={focus}>
         {venueMap && (
           // 地図画像と同じ縦横比の枠。ピンはこの枠の中に置くことで、必ず画像の上に重なる。
           // containerType を指定し、この枠の実際の表示幅を基準にした単位（cqw）を
@@ -132,12 +180,23 @@ export default function MapCanvas({
               areaSpots.map(
                 (spot) =>
                   spot.area && (
-                    <AreaHotspotButton key={spot.id} spot={spot} area={spot.area} onTap={() => onAreaTap?.(spot.id)} />
+                    <AreaHotspotButton
+                      key={spot.id}
+                      spot={spot}
+                      area={spot.area}
+                      highlighted={highlight?.areaSpotId === spot.id}
+                      onTap={() => onAreaTap?.(spot.id)}
+                    />
                   ),
               )}
             {!isAllVenues &&
               booths.map((booth, index) => (
-                <BoothButton key={index} booth={booth} onTap={() => onBoothTap(booth)} />
+                <BoothButton
+                  key={index}
+                  booth={booth}
+                  highlightCodes={highlight?.boothStyle === booth.style ? highlight.boothCodes : undefined}
+                  onTap={() => onBoothTap(booth)}
+                />
               ))}
           </div>
         )}

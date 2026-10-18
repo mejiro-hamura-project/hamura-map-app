@@ -2,6 +2,8 @@ import type { Booth } from '../../../shared/types';
 
 type BoothButtonProps = {
   booth: Booth;
+  /** 光らせる記号（検索で選んだ店の記号）。このブースに含まれていれば、ブースを光らせ該当のマスを塗る */
+  highlightCodes?: string[];
   onTap: () => void;
 };
 
@@ -53,8 +55,9 @@ function cqw(px: number): string {
  * 画面の大きさが変わっても配置ツールと同じ比率に見える。
  * ツールと同じく、枠だけでなく中の記号もまとめて回転させる（文字だけを正立させる処理はしない）。
  */
-export default function BoothButton({ booth, onTap }: BoothButtonProps) {
+export default function BoothButton({ booth, highlightCodes = [], onTap }: BoothButtonProps) {
   const styleClasses = STYLE_CLASSES[booth.style];
+  const isHighlighted = booth.codes.some((code) => highlightCodes.includes(code));
   const isVertical = booth.orient === 'v';
   const borderColor = CELL_BORDER_COLOR[booth.style];
 
@@ -62,7 +65,7 @@ export default function BoothButton({ booth, onTap }: BoothButtonProps) {
     <button
       type="button"
       onClick={onTap}
-      className="absolute z-[5]"
+      className={`absolute ${isHighlighted ? 'z-[6]' : 'z-[5]'}`}
       style={{
         left: `${booth.x}%`,
         top: `${booth.y}%`,
@@ -71,7 +74,7 @@ export default function BoothButton({ booth, onTap }: BoothButtonProps) {
       }}
     >
       <div
-        className={`flex rounded-full ${styleClasses.pill}`}
+        className={`flex rounded-full ${styleClasses.pill} ${isHighlighted ? 'spot-glow' : ''}`}
         style={{ padding: `${cqw(5)} ${cqw(9)}` }}
       >
         <div
@@ -83,7 +86,9 @@ export default function BoothButton({ booth, onTap }: BoothButtonProps) {
           {booth.codes.map((code, index) => (
             <div
               key={`${code}-${index}`}
-              className={`flex items-center justify-center font-extrabold ${styleClasses.cell}`}
+              className={`flex items-center justify-center font-extrabold ${
+                highlightCodes.includes(code) ? 'bg-[#ffd84d] text-ink' : styleClasses.cell
+              }`}
               style={{
                 height: cqw(21),
                 minWidth: cqw(18),

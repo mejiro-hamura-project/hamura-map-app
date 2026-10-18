@@ -7,9 +7,9 @@ import { allMapToVenuePercent } from '../../shared/utils/mapCoords';
 import { getCurrentProgramStatus, getStageStatusText, getTimetableForToday } from '../../shared/utils/timetable';
 import { MOCK_VENUE_HOTSPOTS } from '../../mocks/venueHotspots';
 import { BOOTHS_BY_VENUE } from '../../mocks/booths';
-import { STORES, findStoreSpot } from '../../mocks/stores';
+import { STORES, findStoreSpot, findStoreSpotBooth } from '../../mocks/stores';
 import VenueHeader from './components/VenueHeader';
-import MapCanvas from './components/MapCanvas';
+import MapCanvas, { type MapHighlight } from './components/MapCanvas';
 import SearchSheet from './components/SearchSheet';
 
 export default function HomeScreen() {
@@ -26,6 +26,7 @@ export default function HomeScreen() {
   const [qrVisible, setQrVisible] = useState(true);
   const [selectedBooth, setSelectedBooth] = useState<Booth | null>(null);
   const [selectedStoreSpot, setSelectedStoreSpot] = useState<Spot | null>(null);
+  const [highlight, setHighlight] = useState<MapHighlight | null>(null);
 
   useEffect(() => {
     if (!currentMapId && maps.length > 0) {
@@ -112,12 +113,20 @@ export default function HomeScreen() {
   function switchToAllVenues() {
     const allVenuesMap = maps.find((venueMap) => venueMap.venueId == null);
     if (allVenuesMap) setCurrentMapId(allVenuesMap.id);
+    setHighlight(null);
   }
 
   // 全体地図で会場エリアがタップされたときに、その会場の拡大地図に切り替える
   function handleSelectVenue(venueId: number) {
     const venueMapEntry = maps.find((venueMap) => venueMap.venueId === venueId);
     if (venueMapEntry) setCurrentMapId(venueMapEntry.id);
+    setHighlight(null);
+  }
+
+  // 会場名の帯から地図を切り替えたときは、検索で光らせていた表示をやめる
+  function handleSelectMap(mapId: string) {
+    setCurrentMapId(mapId);
+    setHighlight(null);
   }
 
   // ブースの店一覧から店がタップされたときに、その店のスポット（検索・口コミと共通）を詳細ポップアップで出す
@@ -154,9 +163,44 @@ export default function HomeScreen() {
     }
   }
 
+  // 検索結果が選ばれたとき。店（ブース）・エリアは、その会場の地図に切り替えて該当の場所を光らせ、そこへ寄せる。
+  // それ以外（ステージ等）は今までどおり、全体地図のまま詳細ポップアップを出す。
   function handleSelectSearchResult(spotId: string) {
-    setSelectedSpotId(spotId);
     setIsSearchOpen(false);
+    const spot = spots.find((s) => s.id === spotId);
+    const booth = findStoreSpotBooth(spotId);
+    const boothMap = booth && maps.find((venueMap) => venueMap.venueId === booth.venueId);
+    if (spot && booth && boothMap) {
+      setSelectedSpotId(null);
+      setCurrentMapId(boothMap.id);
+      setHighlight({ spot, boothStyle: booth.style, boothCodes: booth.codes, focus: { x: booth.x, y: booth.y } });
+      return;
+    }
+    const area = spot?.area;
+    const areaMap = area && maps.find((venueMap) => venueMap.id === area.mapId);
+    if (spot && area && areaMap) {
+      setSelectedSpotId(null);
+      setCurrentMapId(areaMap.id);
+      setHighlight({
+        spot,
+        areaSpotId: spot.id,
+        focus: { x: area.x + area.width / 2, y: area.y + area.height / 2 },
+      });
+      return;
+    }
+    setHighlight(null);
+    setSelectedSpotId(spotId);
+  }
+
+  // 光らせている店・エリアの「詳細」ボタン。店はブースの店と同じ詳細、エリアはスポットの詳細を開く
+  function handleOpenHighlightDetail() {
+    if (!highlight) return;
+    setSelectedBooth(null);
+    if (findStoreSpotBooth(highlight.spot.id)) {
+      setSelectedStoreSpot(highlight.spot);
+    } else {
+      setSelectedSpotId(highlight.spot.id);
+    }
   }
 
   function handleToggleQrVisible() {
@@ -170,7 +214,7 @@ export default function HomeScreen() {
 
   return (
     <main className="relative flex min-h-0 flex-1 flex-col overflow-hidden pb-3">
-      <VenueHeader maps={maps} currentMapId={currentMapId} onSelect={setCurrentMapId} />
+      <VenueHeader maps={maps} currentMapId={currentMapId} onSelect={handleSelectMap} />
       <MapCanvas
         venueMap={currentMap}
         shopSpots={shopSpots}
@@ -179,6 +223,9 @@ export default function HomeScreen() {
         stageNowTitles={stageNowTitles}
         venueHotspots={MOCK_VENUE_HOTSPOTS}
         areaSpots={areaSpots}
+        highlight={highlight}
+        onOpenHighlightDetail={handleOpenHighlightDetail}
+        onClearHighlight={() => setHighlight(null)}
         booths={currentBooths}
         stores={currentStores}
         selectedBooth={selectedBooth}
