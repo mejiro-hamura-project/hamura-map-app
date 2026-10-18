@@ -1,0 +1,1258 @@
+[
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "1",
+  "name": "orangesデリカキッチン",
+  "genreId": "food-yakimono",
+  "link": ""
+ },
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "2",
+  "name": "スナック紅蓮",
+  "genreId": "food-sonota",
+  "link": ""
+ },
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "3",
+  "name": "三光米飯",
+  "genreId": "food-agemono",
+  "link": ""
+ },
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "4",
+  "name": "1/4KARAT",
+  "genreId": "food-sonota",
+  "link": ""
+ },
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "5",
+  "name": "OKURA",
+  "genreId": "food-menrui",
+  "link": ""
+ },
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "6",
+  "name": "おでん清月",
+  "genreId": "food-sonota",
+  "link": ""
+ },
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "7",
+  "name": "スナック花唄",
+  "genreId": "food-sonota",
+  "link": ""
+ },
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "8",
+  "name": "チャーシュー弁当まるふる亭",
+  "genreId": "food-pan",
+  "link": ""
+ },
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "9",
+  "name": "おいもや農家の台所",
+  "genreId": "food-dessert",
+  "link": ""
+ },
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "10",
+  "name": "パブ ヴィーナス",
+  "genreId": "food-yakimono",
+  "link": ""
+ },
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "11",
+  "name": "（有）エス・ビー・インターナショナル（アジ庵ガンジー）",
+  "genreId": "food-agemono",
+  "link": ""
+ },
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "12",
+  "name": "羽村ラーメン マルフル食堂",
+  "genreId": "food-menrui",
+  "link": ""
+ },
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "13",
+  "name": "酒処 三吉",
+  "genreId": "food-agemono",
+  "link": ""
+ },
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "14",
+  "name": "炭火屋串RYU",
+  "genreId": "food-yakimono",
+  "link": ""
+ },
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "15",
+  "name": "イタリアンカンパーナ",
+  "genreId": "food-agemono",
+  "link": ""
+ },
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "16",
+  "name": "Café kukutana",
+  "genreId": "food-drink",
+  "link": ""
+ },
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "17",
+  "name": "GROOVY",
+  "genreId": "food-menrui",
+  "link": ""
+ },
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "18",
+  "name": "（株）cherrycorporation",
+  "genreId": "food-sonota",
+  "link": ""
+ },
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "19",
+  "name": "Bar M",
+  "genreId": "food-sonota",
+  "link": ""
+ },
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "20",
+  "name": "居酒屋 小鉄",
+  "genreId": "food-yakimono",
+  "link": ""
+ },
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "21",
+  "name": "snack 玲",
+  "genreId": "food-drink",
+  "link": ""
+ },
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "22",
+  "name": "裏道酒場",
+  "genreId": "food-yakimono",
+  "link": ""
+ },
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "23",
+  "name": "TARO'S DINER",
+  "genreId": "food-sonota",
+  "link": ""
+ },
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "24",
+  "name": "ひみつ屋",
+  "genreId": "food-agemono",
+  "link": ""
+ },
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "25",
+  "name": "餡味",
+  "genreId": "food-yakimono",
+  "link": ""
+ },
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "26",
+  "name": "北味",
+  "genreId": "food-menrui",
+  "link": ""
+ },
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "27",
+  "name": "ナイトスポットJOY",
+  "genreId": "food-dessert",
+  "link": ""
+ },
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "28",
+  "name": "コミュニティレストランらるご",
+  "genreId": "food-agemono",
+  "link": ""
+ },
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "29",
+  "name": "ダイニングキッチンkyuz",
+  "genreId": "food-dessert",
+  "link": ""
+ },
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "30",
+  "name": "食堂 酔ってっ亭",
+  "genreId": "food-yakimono",
+  "link": ""
+ },
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "31",
+  "name": "ラ・ブーム",
+  "genreId": "food-agemono",
+  "link": ""
+ },
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "32",
+  "name": "オープンゲートベーカリー",
+  "genreId": "food-pan",
+  "link": ""
+ },
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "33",
+  "name": "かみ山",
+  "genreId": "food-menrui",
+  "link": ""
+ },
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "34",
+  "name": "Ms Kitchen",
+  "genreId": "food-sonota",
+  "link": ""
+ },
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "35",
+  "name": "やきとりBarすたいる",
+  "genreId": "food-yakimono",
+  "link": ""
+ },
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "36",
+  "name": "WABOKU CAFÉ TOKYO",
+  "genreId": "food-yakimono",
+  "link": ""
+ },
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "37",
+  "name": "ラウンジ夜上海",
+  "genreId": "food-sonota",
+  "link": ""
+ },
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "38",
+  "name": "とんかつちがさき",
+  "genreId": "food-agemono",
+  "link": ""
+ },
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "39",
+  "name": "スポーツカフェ ホールショット",
+  "genreId": "food-yakimono",
+  "link": ""
+ },
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "40",
+  "name": "カジュアルバー彩",
+  "genreId": "food-yakimono",
+  "link": ""
+ },
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "41",
+  "name": "男と女の絆",
+  "genreId": "food-menrui",
+  "link": ""
+ },
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "42",
+  "name": "ごはんやままきっちん",
+  "genreId": "food-yakimono",
+  "link": ""
+ },
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "43",
+  "name": "串焼いちりん",
+  "genreId": "food-sonota",
+  "link": ""
+ },
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "44",
+  "name": "ONEモア",
+  "genreId": "food-agemono",
+  "link": ""
+ },
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "45",
+  "name": "Happy Table",
+  "genreId": "food-pan",
+  "link": ""
+ },
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "46",
+  "name": "pub snack LUCE",
+  "genreId": "food-drink",
+  "link": ""
+ },
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "47",
+  "name": "カラオケ居酒屋のりちゃん",
+  "genreId": "food-yakimono",
+  "link": ""
+ },
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "48",
+  "name": "居酒屋やおき",
+  "genreId": "food-agemono",
+  "link": ""
+ },
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "49",
+  "name": "pretty",
+  "genreId": "food-menrui",
+  "link": ""
+ },
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "50",
+  "name": "LITTLE CROP",
+  "genreId": "food-sonota",
+  "link": ""
+ },
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "51",
+  "name": "お好み焼き成",
+  "genreId": "food-agemono",
+  "link": ""
+ },
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "52",
+  "name": "陽だまり",
+  "genreId": "food-sonota",
+  "link": ""
+ },
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "53",
+  "name": "和食厨房ゆず",
+  "genreId": "food-agemono",
+  "link": ""
+ },
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "54",
+  "name": "和風肉ビストロ空楽",
+  "genreId": "food-yakimono",
+  "link": ""
+ },
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "青",
+  "name": "羽村市商工会青年部",
+  "genreId": "food-menrui",
+  "link": ""
+ },
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "女",
+  "name": "羽村市商工会女性部",
+  "genreId": "food-sonota",
+  "link": ""
+ },
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "キ1",
+  "name": "のんびりカフェ中車水車小屋",
+  "genreId": "food-gohan",
+  "link": ""
+ },
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "キ2",
+  "name": "Deli&Café54",
+  "genreId": "food-sonota",
+  "link": ""
+ },
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "キ3",
+  "name": "マットケバブ",
+  "genreId": "food-sonota",
+  "link": ""
+ },
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "キ4",
+  "name": "カレーハウスCoCo壱番屋JR羽村駅前店",
+  "genreId": "food-gohan",
+  "link": ""
+ },
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "キ5",
+  "name": "54CAFE",
+  "genreId": "food-dessert",
+  "link": ""
+ },
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "55",
+  "name": "羽村リトルシニア野球協会",
+  "genreId": "food-yakimono",
+  "link": ""
+ },
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "56",
+  "name": "双葉富士見町内会",
+  "genreId": "food-yakimono",
+  "link": ""
+ },
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "57",
+  "name": "栄ヴェルディーズ",
+  "genreId": "food-agemono",
+  "link": ""
+ },
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "58",
+  "name": "スズメの会",
+  "genreId": "food-dessert",
+  "link": ""
+ },
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "59",
+  "name": "福生消防少年団育成協力会羽村支部",
+  "genreId": "food-menrui",
+  "link": ""
+ },
+ {
+  "style": "band",
+  "area": "green",
+  "code": "1",
+  "name": "株式会社 石善",
+  "genreId": "goods-zakka",
+  "link": ""
+ },
+ {
+  "style": "band",
+  "area": "green",
+  "code": "2",
+  "name": "株式会社 大進緑建",
+  "genreId": "goods-zakka",
+  "link": ""
+ },
+ {
+  "style": "band",
+  "area": "green",
+  "code": "3",
+  "name": "株式会社 大進緑建",
+  "genreId": "goods-zakka",
+  "link": ""
+ },
+ {
+  "style": "band",
+  "area": "green",
+  "code": "4",
+  "name": "ダスキン羽村",
+  "genreId": "goods-zakka",
+  "link": ""
+ },
+ {
+  "style": "band",
+  "area": "green",
+  "code": "5",
+  "name": "精神科に強い訪問看護ここもっと",
+  "genreId": "goods-info",
+  "link": ""
+ },
+ {
+  "style": "band",
+  "area": "green",
+  "code": "6",
+  "name": "マルチーズの小さなひみつきち",
+  "genreId": "goods-zakka",
+  "link": ""
+ },
+ {
+  "style": "band",
+  "area": "green",
+  "code": "7",
+  "name": "TS倶楽部",
+  "genreId": "goods-zakka",
+  "link": ""
+ },
+ {
+  "style": "band",
+  "area": "green",
+  "code": "8",
+  "name": "TS倶楽部",
+  "genreId": "goods-zakka",
+  "link": ""
+ },
+ {
+  "style": "band",
+  "area": "green",
+  "code": "9",
+  "name": "（株）ホームワン",
+  "genreId": "goods-info",
+  "link": ""
+ },
+ {
+  "style": "band",
+  "area": "green",
+  "code": "10",
+  "name": "（株）ホームワン",
+  "genreId": "goods-info",
+  "link": ""
+ },
+ {
+  "style": "band",
+  "area": "green",
+  "code": "11",
+  "name": "伊吹石油ガス株式会社",
+  "genreId": "goods-info",
+  "link": ""
+ },
+ {
+  "style": "band",
+  "area": "green",
+  "code": "12",
+  "name": "伊吹石油ガス株式会社",
+  "genreId": "goods-info",
+  "link": ""
+ },
+ {
+  "style": "band",
+  "area": "green",
+  "code": "13",
+  "name": "伊吹石油ガス株式会社",
+  "genreId": "goods-info",
+  "link": ""
+ },
+ {
+  "style": "band",
+  "area": "green",
+  "code": "14",
+  "name": "（株）サムライTシャツ",
+  "genreId": "goods-zakka",
+  "link": ""
+ },
+ {
+  "style": "band",
+  "area": "green",
+  "code": "15",
+  "name": "安本塗装店",
+  "genreId": "goods-info",
+  "link": ""
+ },
+ {
+  "style": "band",
+  "area": "green",
+  "code": "16",
+  "name": "丸十みそ漬物店",
+  "genreId": "goods-shokuhin",
+  "link": ""
+ },
+ {
+  "style": "band",
+  "area": "green",
+  "code": "17",
+  "name": "丸十みそ漬物店",
+  "genreId": "goods-shokuhin",
+  "link": ""
+ },
+ {
+  "style": "band",
+  "area": "green",
+  "code": "18",
+  "name": "（有）大西園",
+  "genreId": "goods-shokuhin",
+  "link": ""
+ },
+ {
+  "style": "band",
+  "area": "green",
+  "code": "19",
+  "name": "PAIN MIZA",
+  "genreId": "food-pan",
+  "link": ""
+ },
+ {
+  "style": "band",
+  "area": "green",
+  "code": "20",
+  "name": "メディックス",
+  "genreId": "goods-zakka",
+  "link": ""
+ },
+ {
+  "style": "band",
+  "area": "green",
+  "code": "21",
+  "name": "メディックス",
+  "genreId": "goods-zakka",
+  "link": ""
+ },
+ {
+  "style": "band",
+  "area": "green",
+  "code": "22",
+  "name": "犬用品のゼット物産",
+  "genreId": "goods-zakka",
+  "link": ""
+ },
+ {
+  "style": "band",
+  "area": "green",
+  "code": "23",
+  "name": "株式会社 西多摩自動車学校",
+  "genreId": "goods-taiken",
+  "link": ""
+ },
+ {
+  "style": "band",
+  "area": "green",
+  "code": "24",
+  "name": "ともカイロプラクティック",
+  "genreId": "goods-taiken",
+  "link": ""
+ },
+ {
+  "style": "band",
+  "area": "green",
+  "code": "25",
+  "name": "株式会社滝島商店",
+  "genreId": "goods-shokuhin",
+  "link": ""
+ },
+ {
+  "style": "band",
+  "area": "green",
+  "code": "26",
+  "name": "こころワクワクショップ",
+  "genreId": "goods-taiken",
+  "link": ""
+ },
+ {
+  "style": "band",
+  "area": "green",
+  "code": "27",
+  "name": "（株）Tamaya creatures",
+  "genreId": "goods-taiken",
+  "link": ""
+ },
+ {
+  "style": "band",
+  "area": "green",
+  "code": "28",
+  "name": "PETSHOP LIEN",
+  "genreId": "goods-zakka",
+  "link": ""
+ },
+ {
+  "style": "band",
+  "area": "green",
+  "code": "29",
+  "name": "武陽液化ガス株式会社",
+  "genreId": "goods-info",
+  "link": ""
+ },
+ {
+  "style": "band",
+  "area": "green",
+  "code": "30",
+  "name": "武陽液化ガス株式会社",
+  "genreId": "goods-info",
+  "link": ""
+ },
+ {
+  "style": "band",
+  "area": "green",
+  "code": "31",
+  "name": "武陽液化ガス株式会社",
+  "genreId": "goods-info",
+  "link": ""
+ },
+ {
+  "style": "band",
+  "area": "green",
+  "code": "32",
+  "name": "武陽液化ガス株式会社",
+  "genreId": "goods-info",
+  "link": ""
+ },
+ {
+  "style": "orange",
+  "area": "orange",
+  "code": "B1",
+  "name": "北杜市／植松農園",
+  "genreId": "goods-shokuhin",
+  "link": ""
+ },
+ {
+  "style": "orange",
+  "area": "orange",
+  "code": "B2",
+  "name": "北杜市商工会青年部",
+  "genreId": "goods-shokuhin",
+  "link": ""
+ },
+ {
+  "style": "orange",
+  "area": "orange",
+  "code": "B3",
+  "name": "公益財団法人キープ協会",
+  "genreId": "food-dessert",
+  "link": ""
+ },
+ {
+  "style": "orange",
+  "area": "orange",
+  "code": "B4",
+  "name": "株式会社清里ミルクプラント",
+  "genreId": "goods-shokuhin",
+  "link": ""
+ },
+ {
+  "style": "orange",
+  "area": "orange",
+  "code": "B5",
+  "name": "八ヶ岳パイ工房",
+  "genreId": "goods-shokuhin",
+  "link": ""
+ },
+ {
+  "style": "orange",
+  "area": "orange",
+  "code": "B6",
+  "name": "保原町商工会",
+  "genreId": "goods-shokuhin",
+  "link": ""
+ },
+ {
+  "style": "orange",
+  "area": "orange",
+  "code": "B7",
+  "name": "芽室町観光物産協会",
+  "genreId": "goods-shokuhin",
+  "link": ""
+ },
+ {
+  "style": "orange",
+  "area": "orange",
+  "code": "B8",
+  "name": "八丈町商工会",
+  "genreId": "goods-shokuhin",
+  "link": ""
+ },
+ {
+  "style": "orange",
+  "area": "orange",
+  "code": "B9",
+  "name": "鳴門物産組合",
+  "genreId": "goods-shokuhin",
+  "link": ""
+ },
+ {
+  "style": "orange",
+  "area": "orange",
+  "code": "物1",
+  "name": "ペプス",
+  "genreId": "goods-taiken",
+  "link": ""
+ },
+ {
+  "style": "pr",
+  "area": "blue",
+  "code": "A",
+  "name": "福生食品衛生協会",
+  "genreId": "goods-info",
+  "link": ""
+ },
+ {
+  "style": "pr",
+  "area": "blue",
+  "code": "B",
+  "name": "西多摩保健所福生地区特定給食研究会（医療法人社団大聖病院）",
+  "genreId": "goods-info",
+  "link": ""
+ },
+ {
+  "style": "pr",
+  "area": "blue",
+  "code": "C",
+  "name": "西多摩保健所福生地区特定給食研究会（医療法人社団大聖病院）",
+  "genreId": "goods-info",
+  "link": ""
+ },
+ {
+  "style": "pr",
+  "area": "blue",
+  "code": "D",
+  "name": "公益社団法人シルバー人材センター",
+  "genreId": "goods-info",
+  "link": ""
+ },
+ {
+  "style": "pr",
+  "area": "blue",
+  "code": "E",
+  "name": "公益社団法人シルバー人材センター",
+  "genreId": "goods-info",
+  "link": ""
+ },
+ {
+  "style": "pr",
+  "area": "blue",
+  "code": "F",
+  "name": "社会福祉法人羽村市社会福祉協議会",
+  "genreId": "goods-info",
+  "link": ""
+ },
+ {
+  "style": "pr",
+  "area": "blue",
+  "code": "G",
+  "name": "社会福祉法人羽村市社会福祉協議会",
+  "genreId": "goods-info",
+  "link": ""
+ },
+ {
+  "style": "pr",
+  "area": "blue",
+  "code": "H",
+  "name": "青梅間税会",
+  "genreId": "goods-info",
+  "link": ""
+ },
+ {
+  "style": "pr",
+  "area": "blue",
+  "code": "I",
+  "name": "青梅間税会",
+  "genreId": "goods-info",
+  "link": ""
+ },
+ {
+  "style": "pr",
+  "area": "blue",
+  "code": "J",
+  "name": "公益社団法人 青梅法人会",
+  "genreId": "goods-info",
+  "link": ""
+ },
+ {
+  "style": "pr",
+  "area": "blue",
+  "code": "K",
+  "name": "公益社団法人 青梅法人会",
+  "genreId": "goods-info",
+  "link": ""
+ },
+ {
+  "style": "pr",
+  "area": "blue",
+  "code": "L",
+  "name": "東京羽村ライオンズクラブ",
+  "genreId": "goods-info",
+  "link": ""
+ },
+ {
+  "style": "pr",
+  "area": "blue",
+  "code": "M",
+  "name": "東京羽村ライオンズクラブ",
+  "genreId": "goods-info",
+  "link": ""
+ },
+ {
+  "style": "pr",
+  "area": "blue",
+  "code": "N",
+  "name": "羽村市総務課",
+  "genreId": "goods-info",
+  "link": ""
+ },
+ {
+  "style": "pr",
+  "area": "blue",
+  "code": "O",
+  "name": "羽村市総務課",
+  "genreId": "goods-info",
+  "link": ""
+ },
+ {
+  "style": "pr",
+  "area": "blue",
+  "code": "P",
+  "name": "羽村市高齢福祉介護課",
+  "genreId": "goods-info",
+  "link": ""
+ },
+ {
+  "style": "pr",
+  "area": "blue",
+  "code": "Q",
+  "name": "羽村市動物公園",
+  "genreId": "goods-info",
+  "link": ""
+ },
+ {
+  "style": "pr",
+  "area": "blue",
+  "code": "R",
+  "name": "羽村市動物公園",
+  "genreId": "goods-info",
+  "link": ""
+ },
+ {
+  "style": "pr",
+  "area": "blue",
+  "code": "S",
+  "name": "羽村市民生委員児童委員協議会（羽村市福祉健康部社会福祉課）",
+  "genreId": "goods-info",
+  "link": ""
+ },
+ {
+  "style": "pr",
+  "area": "blue",
+  "code": "T",
+  "name": "西多摩地区保護司会羽村分区（羽村市福祉健康部社会福祉課）",
+  "genreId": "goods-info",
+  "link": ""
+ },
+ {
+  "style": "pr",
+  "area": "blue",
+  "code": "U",
+  "name": "羽村市観光協会",
+  "genreId": "goods-info",
+  "link": ""
+ },
+ {
+  "style": "pr",
+  "area": "blue",
+  "code": "V",
+  "name": "羽村市上下水道部／羽村市建築課",
+  "genreId": "goods-info",
+  "link": ""
+ },
+ {
+  "style": "pr",
+  "area": "blue",
+  "code": "W",
+  "name": "東京都電気工事組合 青梅地区青年部",
+  "genreId": "goods-taiken",
+  "link": ""
+ },
+ {
+  "style": "pr",
+  "area": "blue",
+  "code": "X",
+  "name": "福生警察署管内防犯協会",
+  "genreId": "goods-info",
+  "link": ""
+ },
+ {
+  "style": "pr",
+  "area": "blue",
+  "code": "Y",
+  "name": "特定非営利活動法人 市民パトロールセンターはむら",
+  "genreId": "goods-info",
+  "link": ""
+ },
+ {
+  "style": "pr",
+  "area": "blue",
+  "code": "Z",
+  "name": "羽村市生活環境課",
+  "genreId": "goods-info",
+  "link": ""
+ },
+ {
+  "style": "pr",
+  "area": "blue",
+  "code": "AA",
+  "name": "羽村市環境政策課",
+  "genreId": "goods-info",
+  "link": ""
+ },
+ {
+  "style": "pr",
+  "area": "blue",
+  "code": "BB",
+  "name": "羽村市環境政策課",
+  "genreId": "goods-info",
+  "link": ""
+ },
+ {
+  "style": "pr",
+  "area": "blue",
+  "code": "CC",
+  "name": "羽村市町内会連合会",
+  "genreId": "goods-info",
+  "link": ""
+ },
+ {
+  "style": "pr",
+  "area": "blue",
+  "code": "DD",
+  "name": "羽村市町内会連合会",
+  "genreId": "goods-info",
+  "link": ""
+ },
+ {
+  "style": "pr",
+  "area": "blue",
+  "code": "EE",
+  "name": "羽村市地域振興課",
+  "genreId": "goods-info",
+  "link": ""
+ },
+ {
+  "style": "pr",
+  "area": "blue",
+  "code": "FF",
+  "name": "はむら魅力発見プロジェクト（目白大学×水色デザイン×アカデメイア×羽村市）",
+  "genreId": "goods-info",
+  "link": ""
+ },
+ {
+  "style": "pr",
+  "area": "blue",
+  "code": "GG",
+  "name": "はむら魅力発見プロジェクト（目白大学×水色デザイン×アカデメイア×羽村市）",
+  "genreId": "goods-info",
+  "link": ""
+ },
+ {
+  "style": "pr",
+  "area": "blue",
+  "code": "HH",
+  "name": "多摩ケーブルネットワーク株式会社",
+  "genreId": "goods-info",
+  "link": ""
+ },
+ {
+  "style": "pr",
+  "area": "blue",
+  "code": "II",
+  "name": "多摩ケーブルネットワーク株式会社",
+  "genreId": "goods-info",
+  "link": ""
+ },
+ {
+  "style": "pr",
+  "area": "blue",
+  "code": "JJ",
+  "name": "三多摩健康友の会多摩川支部",
+  "genreId": "goods-info",
+  "link": ""
+ },
+ {
+  "style": "pr",
+  "area": "blue",
+  "code": "KK",
+  "name": "三多摩健康友の会多摩川支部",
+  "genreId": "goods-info",
+  "link": ""
+ },
+ {
+  "style": "pr",
+  "area": "blue",
+  "code": "LL",
+  "name": "羽村市防衛協会",
+  "genreId": "goods-info",
+  "link": ""
+ },
+ {
+  "style": "pr",
+  "area": "blue",
+  "code": "MM",
+  "name": "羽村市防衛協会",
+  "genreId": "goods-info",
+  "link": ""
+ },
+ {
+  "style": "pr",
+  "area": "blue",
+  "code": "NN",
+  "name": "東京消防庁 福生消防署 羽村出張所",
+  "genreId": "goods-taiken",
+  "link": ""
+ },
+ {
+  "style": "pr",
+  "area": "blue",
+  "code": "OO",
+  "name": "東京消防庁 福生消防署 羽村出張所",
+  "genreId": "goods-taiken",
+  "link": ""
+ },
+ {
+  "style": "pr",
+  "area": "blue",
+  "code": "PP",
+  "name": "羽村市防災安全課",
+  "genreId": "goods-info",
+  "link": ""
+ },
+ {
+  "style": "pr",
+  "area": "blue",
+  "code": "QQ",
+  "name": "羽村市防災安全課",
+  "genreId": "goods-info",
+  "link": ""
+ },
+ {
+  "style": "pr",
+  "area": "blue",
+  "code": "RR",
+  "name": "羽村市都市計画課",
+  "genreId": "goods-info",
+  "link": ""
+ },
+ {
+  "style": "pr",
+  "area": "blue",
+  "code": "SS",
+  "name": "羽村市選挙管理委員会",
+  "genreId": "goods-info",
+  "link": ""
+ },
+ {
+  "style": "pr",
+  "area": "blue",
+  "code": "TT",
+  "name": "羽村市選挙管理委員会",
+  "genreId": "goods-info",
+  "link": ""
+ },
+ {
+  "style": "pr",
+  "area": "blue",
+  "code": "UU",
+  "name": "羽村市創業支援スペースiサロン",
+  "genreId": "goods-info",
+  "link": ""
+ },
+ {
+  "style": "pr",
+  "area": "blue",
+  "code": "VV",
+  "name": "羽村市創業支援スペースiサロン",
+  "genreId": "goods-info",
+  "link": ""
+ },
+ {
+  "style": "pr",
+  "area": "blue",
+  "code": "WW",
+  "name": "丸順商事有限会社",
+  "genreId": "goods-info",
+  "link": ""
+ }
+]

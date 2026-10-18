@@ -6,7 +6,7 @@ import { matchesSpotQuery } from '../../shared/utils/spotSearch';
 import { getCurrentProgramStatus, getStageStatusText, getTimetableForToday } from '../../shared/utils/timetable';
 import { MOCK_VENUE_HOTSPOTS } from '../../mocks/venueHotspots';
 import { BOOTHS_BY_VENUE } from '../../mocks/booths';
-import { STORES_BY_VENUE, storeSpotId } from '../../mocks/stores';
+import { STORES, storeSpotId } from '../../mocks/stores';
 import VenueHeader from './components/VenueHeader';
 import MapCanvas from './components/MapCanvas';
 import SearchSheet from './components/SearchSheet';
@@ -40,7 +40,7 @@ export default function HomeScreen() {
 
   const currentMap = maps.find((venueMap) => venueMap.id === currentMapId) ?? null;
   const currentBooths = currentMap?.venueId != null ? (BOOTHS_BY_VENUE[currentMap.venueId] ?? []) : [];
-  const currentStores = currentMap?.venueId != null ? (STORES_BY_VENUE[currentMap.venueId] ?? []) : [];
+  const currentStores = currentMap?.venueId != null ? STORES : [];
 
   // 「全体」地図（venueId未設定）は全スポットを表示。会場別の地図はその会場番号のスポットだけに絞り込む。
   const mapSpots = useMemo(() => {
