@@ -1,11 +1,8 @@
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 
 type DevClockContextValue = {
-  /** 「今」の時刻。開発用スライダーで仮の時刻に切り替えていればそちらを返す */
+  /** 「今」の時刻（端末の時計。30秒ごとに更新） */
   now: Date;
-  /** 開発用の仮の時刻（分単位、0時からの経過分）。未使用時はnull */
-  devOverrideMinutes: number | null;
-  setDevOverrideMinutes: (minutes: number | null) => void;
 };
 
 const DevClockContext = createContext<DevClockContextValue | null>(null);
@@ -13,32 +10,19 @@ const DevClockContext = createContext<DevClockContextValue | null>(null);
 const LIVE_INTERVAL_MS = 30_000;
 
 /**
- * アプリ全体で共有する「今の時刻」。
- * 本番では端末の時計をそのまま使うが、開発中はスライダーで仮の時刻に切り替えられるようにする。
+ * アプリ全体で共有する「今の時刻」。端末の時計をそのまま使う。
  * イベント一覧のタイムテーブルと地図の吹き出しが同じ時刻を参照することで、表示がズレないようにする。
+ * （開発中に時刻を動かすスライダーは本番前に削除した。名前は既存の参照箇所に合わせて DevClock のまま）
  */
 export function DevClockProvider({ children }: { children: ReactNode }) {
-  const [liveNow, setLiveNow] = useState(() => new Date());
-  const [devOverrideMinutes, setDevOverrideMinutes] = useState<number | null>(null);
+  const [now, setNow] = useState(() => new Date());
 
   useEffect(() => {
-    const timer = setInterval(() => setLiveNow(new Date()), LIVE_INTERVAL_MS);
+    const timer = setInterval(() => setNow(new Date()), LIVE_INTERVAL_MS);
     return () => clearInterval(timer);
   }, []);
 
-  const now = useMemo(() => {
-    if (devOverrideMinutes == null) return liveNow;
-    const overridden = new Date(liveNow);
-    overridden.setHours(Math.floor(devOverrideMinutes / 60), devOverrideMinutes % 60, 0, 0);
-    return overridden;
-  }, [liveNow, devOverrideMinutes]);
-
-  const value = useMemo(
-    () => ({ now, devOverrideMinutes, setDevOverrideMinutes }),
-    [now, devOverrideMinutes],
-  );
-
-  return <DevClockContext.Provider value={value}>{children}</DevClockContext.Provider>;
+  return <DevClockContext.Provider value={{ now }}>{children}</DevClockContext.Provider>;
 }
 
 export function useClock(): DevClockContextValue {

@@ -3,7 +3,6 @@ import { useSpots, useTimetable } from '../../../api';
 import { useClock } from '../../../shared/context/DevClockContext';
 import { getCurrentProgramStatus, getStageStatusText, toMinutes } from '../../../shared/utils/timetable';
 import type { StageKey, StageProgram } from '../../../shared/types';
-import DevTimeSlider from './DevTimeSlider';
 
 const STAGE_NAMES: Record<StageKey, string> = { main: 'メインステージ', sub: 'サブステージ' };
 const DAY_ACTIVE_CLASS = ['bg-brand-blue text-white', 'bg-brand-red text-white'];
@@ -27,7 +26,7 @@ function minutesToLabel(minutes: number): string {
 export default function StageTimetable() {
   const { timetable, isLoading: isLoadingTimetable } = useTimetable();
   const { spots, isLoading: isLoadingSpots } = useSpots();
-  const { now, devOverrideMinutes, setDevOverrideMinutes } = useClock();
+  const { now } = useClock();
   const [dayIndex, setDayIndex] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
   const hasAutoScrolled = useRef(false);
@@ -136,15 +135,6 @@ export default function StageTimetable() {
           )}
         </div>
       </div>
-
-      {import.meta.env.DEV && (
-        <DevTimeSlider
-          minMinutes={TIMELINE_START_MIN}
-          maxMinutes={TIMELINE_END_MIN}
-          value={devOverrideMinutes ?? nowMinutes}
-          onChange={setDevOverrideMinutes}
-        />
-      )}
     </div>
   );
 }
