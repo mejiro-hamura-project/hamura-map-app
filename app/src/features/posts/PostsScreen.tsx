@@ -1,63 +1,70 @@
 import { useEffect, useMemo, useState } from 'react';
-import { usePosts, useSpots, useUsers } from '../../api';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { usePosts, useSpots } from '../../api';
 import type { Post } from '../../shared/types';
+import { getDeviceUserId } from '../../shared/utils/deviceUser';
+import { findStoreBySpotId } from '../../mocks/stores';
+import { resolveAuthorNickname } from '../../shared/utils/postAuthor';
 import { spotDisplayName } from '../../shared/utils/spotSearch';
 import FeedItem from './components/FeedItem';
 import PostFilterFab from './components/PostFilterFab';
 import PostFilterSheet from './components/PostFilterSheet';
 import PostCreateFab from './components/PostCreateFab';
 import PostCreateSheet from './components/PostCreateSheet';
-
-// ログイン機能がまだ無いため、自分の投稿は固定のこのユーザーとして扱う（mocks/users.ts参照）
-const CURRENT_USER_ID = 'user-you';
+import { POSTS_ROUTE_STATE_KEY } from './routeState';
 
 export default function PostsScreen() {
-  const { posts: fetchedPosts, isLoading } = usePosts();
+  // 口コミと「いいね」はアプリ全体で共有（シート連携があればシートの内容・数）
+  const { posts, likedPostIds, isLoading, addPost, toggleLike } = usePosts();
   const { spots } = useSpots();
-  const { users } = useUsers();
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [likedPostIds, setLikedPostIds] = useState<Set<string>>(new Set());
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [selectedTagIds, setSelectedTagIds] = useState<Set<string>>(new Set());
-  const [selectedSpotIds, setSelectedSpotIds] = useState<Set<string>>(new Set());
+  // 投稿画面を開いたときに最初から選んでおく投稿先（地図の店の詳細の「口コミを書く」から来たとき）
+  const [initialCreateSpotId, setInitialCreateSpotId] = useState<string | null>(null);
+  const location = useLocation();
+  const navigate = useNavigate();
 
+  // 地図の「口コミを書く」から来たら、その店を投稿先に選んだ状態で投稿画面を開く。
+  // 開いたら location.state を消し、再読み込みや「戻る」で投稿画面が開き直さないようにする
   useEffect(() => {
-    setPosts(fetchedPosts);
-  }, [fetchedPosts]);
+    const spotId = (location.state as Record<string, unknown> | null)?.[POSTS_ROUTE_STATE_KEY];
+    if (typeof spotId !== 'string') return;
+    setInitialCreateSpotId(spotId);
+    setIsCreateOpen(true);
+    navigate(location.pathname, { replace: true, state: null });
+  }, [location.state, location.pathname, navigate]);
+  const [selectedGenreIds, setSelectedGenreIds] = useState<Set<string>>(new Set());
+  const [selectedSpotIds, setSelectedSpotIds] = useState<Set<string>>(new Set());
 
   const shopSpots = useMemo(() => spots.filter((spot) => spot.categoryId !== 'stamp-qr'), [spots]);
 
-  const visiblePosts = useMemo(() => {
-    if (selectedTagIds.size === 0 && selectedSpotIds.size === 0) return posts;
-    return posts.filter((post) => {
-      const spot = spots.find((s) => s.id === post.spotId);
-      const matchesTag = selectedTagIds.size === 0 || (spot ? spot.tagIds.some((tagId) => selectedTagIds.has(tagId)) : false);
-      const matchesSpot = selectedSpotIds.size === 0 || selectedSpotIds.has(post.spotId);
-      return matchesTag && matchesSpot;
-    });
-  }, [posts, spots, selectedTagIds, selectedSpotIds]);
-
-  function handleToggleLike(postId: string) {
-    const willLike = !likedPostIds.has(postId);
-    setPosts((prevPosts) =>
-      prevPosts.map((post) =>
-        post.id === postId ? { ...post, likeCount: post.likeCount + (willLike ? 1 : -1) } : post,
-      ),
-    );
-    setLikedPostIds((prev) => {
-      const next = new Set(prev);
-      if (willLike) next.add(postId);
-      else next.delete(postId);
-      return next;
-    });
+  // 投稿先は本物のSpotデータとは限らない（ブースの店は疑似スポット）。
+  // 本物のSpotで見つからなければ、ブースの店データからも名前・ジャンルを探す。
+  function resolvePostTarget(spotId: string): { name: string; genreId: string | undefined } {
+    const spot = spots.find((s) => s.id === spotId);
+    if (spot) return { name: spotDisplayName(spot.name), genreId: spot.genreId };
+    const store = findStoreBySpotId(spotId);
+    if (store) return { name: store.name, genreId: store.genreId };
+    return { name: '', genreId: undefined };
   }
 
-  function handleToggleTag(tagId: string) {
-    setSelectedTagIds((prev) => {
+  const visiblePosts = useMemo(() => {
+    if (selectedGenreIds.size === 0 && selectedSpotIds.size === 0) return posts;
+    return posts.filter((post) => {
+      const { genreId } = resolvePostTarget(post.spotId);
+      // 投稿自体はジャンルを持たないため、投稿先の店（スポット）のジャンルをたどって判定する
+      const matchesGenre = selectedGenreIds.size === 0 || (genreId ? selectedGenreIds.has(genreId) : false);
+      const matchesSpot = selectedSpotIds.size === 0 || selectedSpotIds.has(post.spotId);
+      return matchesGenre && matchesSpot;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [posts, spots, selectedGenreIds, selectedSpotIds]);
+
+  function handleToggleGenre(genreId: string) {
+    setSelectedGenreIds((prev) => {
       const next = new Set(prev);
-      if (next.has(tagId)) next.delete(tagId);
-      else next.add(tagId);
+      if (next.has(genreId)) next.delete(genreId);
+      else next.add(genreId);
       return next;
     });
   }
@@ -71,17 +78,17 @@ export default function PostsScreen() {
     });
   }
 
-  function handleCreatePost(input: { spotId: string; caption: string; imageUrl: string | null }) {
+  function handleCreatePost(input: { spotId: string; caption: string }) {
     const newPost: Post = {
-      id: `post-${Date.now()}`,
-      userId: CURRENT_USER_ID,
+      id: `post-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      userId: getDeviceUserId(),
       spotId: input.spotId,
       caption: input.caption,
-      images: input.imageUrl ? [input.imageUrl] : [],
+      images: [],
       likeCount: 0,
       createdAt: new Date().toISOString(),
     };
-    setPosts((prevPosts) => [newPost, ...prevPosts]);
+    addPost(newPost, resolvePostTarget(input.spotId).name);
   }
 
   return (
@@ -95,38 +102,51 @@ export default function PostsScreen() {
           </p>
         ) : (
           visiblePosts.map((post) => {
-            const spot = spots.find((s) => s.id === post.spotId);
-            const user = users.find((u) => u.id === post.userId);
+            const { name: spotName } = resolvePostTarget(post.spotId);
             return (
               <FeedItem
                 key={post.id}
                 post={post}
-                authorNickname={user?.nickname ?? '名無しさん'}
-                spotName={spot ? spotDisplayName(spot.name) : ''}
+                authorNickname={resolveAuthorNickname(post)}
+                spotName={spotName}
                 liked={likedPostIds.has(post.id)}
-                onToggleLike={() => handleToggleLike(post.id)}
+                onToggleLike={() => toggleLike(post.id)}
               />
             );
           })
         )}
       </div>
 
-      <PostFilterFab activeCount={selectedTagIds.size + selectedSpotIds.size} onClick={() => setIsFilterOpen(true)} />
-      <PostCreateFab onClick={() => setIsCreateOpen(true)} />
+      <PostFilterFab activeCount={selectedGenreIds.size + selectedSpotIds.size} onClick={() => setIsFilterOpen(true)} />
+      <PostCreateFab
+        onClick={() => {
+          setInitialCreateSpotId(null);
+          setIsCreateOpen(true);
+        }}
+      />
 
       {isFilterOpen && (
         <PostFilterSheet
           shops={shopSpots}
-          selectedTagIds={selectedTagIds}
+          selectedGenreIds={selectedGenreIds}
           selectedSpotIds={selectedSpotIds}
-          onToggleTag={handleToggleTag}
+          onClear={() => {
+            setSelectedGenreIds(new Set());
+            setSelectedSpotIds(new Set());
+          }}
+          onToggleGenre={handleToggleGenre}
           onToggleSpot={handleToggleSpot}
           onClose={() => setIsFilterOpen(false)}
         />
       )}
 
       {isCreateOpen && (
-        <PostCreateSheet shops={shopSpots} onSubmit={handleCreatePost} onClose={() => setIsCreateOpen(false)} />
+        <PostCreateSheet
+          shops={shopSpots}
+          initialSpotId={initialCreateSpotId}
+          onSubmit={handleCreatePost}
+          onClose={() => setIsCreateOpen(false)}
+        />
       )}
     </div>
   );

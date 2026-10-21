@@ -1,0 +1,34 @@
+[
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "1",
+  "name": "テスト店",
+  "genreId": "",
+  "link": ""
+ },
+ {
+  "style": "pink",
+  "area": "pink",
+  "code": "1",
+  "name": "テスト店",
+  "genreId": "",
+  "link": ""
+ },
+ {
+  "style": "pr",
+  "area": "blue",
+  "code": "キ1",
+  "name": "羽村ゼミ",
+  "genreId": "food-sonota",
+  "link": ""
+ },
+ {
+  "style": "band",
+  "area": "green",
+  "code": "1",
+  "name": "目白",
+  "genreId": "",
+  "link": ""
+ }
+]

@@ -2,6 +2,10 @@ import { findGenreById } from '../../../shared/taxonomy';
 import { findStore } from '../../../mocks/stores';
 import type { Booth, Store } from '../../../shared/types';
 
+// 店一覧で店名の下に説明（販売品目）も並べて出す色。飲食・特産品は「何が買えるか」が店選びの決め手になるため。
+// 紹介PRなどは説明が長いので一覧には出さず、店をタップした詳細ポップアップでだけ見せる。
+const STYLES_WITH_DETAIL_IN_LIST: ReadonlySet<Booth['style']> = new Set(['pink', 'orange']);
+
 type BoothCodesPopupProps = {
   booth: Booth;
   stores: Store[];
@@ -11,7 +15,7 @@ type BoothCodesPopupProps = {
 
 /**
  * ブースをタップしたときに出す、そのブースの記号一覧。
- * 記号に対応する店データが見つかれば「記号＋ジャンルのアイコン＋店名」を表示し、
+ * 記号に対応する店データが見つかれば「記号＋ジャンルのアイコン＋店名」（飲食・特産品は販売品目も）を表示し、
  * タップすると店の詳細ポップアップを開く。見つからない記号は「準備中」の表示のまま。
  */
 export default function BoothCodesPopup({ booth, stores, onSelectStore, onClose }: BoothCodesPopupProps) {
@@ -56,7 +60,12 @@ export default function BoothCodesPopup({ booth, stores, onSelectStore, onClose 
                   {code}
                 </span>
                 {genre && <img src={genre.iconUrl} alt="" className="h-4 w-4" />}
-                <span className="text-xs font-bold">{store.name}</span>
+                <span className="flex min-w-0 flex-col">
+                  <span className="text-xs font-bold">{store.name}</span>
+                  {store.detail && STYLES_WITH_DETAIL_IN_LIST.has(booth.style) && (
+                    <span className="truncate text-[10px] text-[#6b7178]">{store.detail}</span>
+                  )}
+                </span>
               </button>
             );
           })}

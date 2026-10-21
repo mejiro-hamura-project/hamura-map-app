@@ -13,6 +13,8 @@ export const CATEGORIES: Category[] = [
   { id: 'sub-stage', name: 'サブステージ', color: '#e08a2c' },
   { id: 'play-land', name: 'プレイランド', color: '#2fa98a' },
   { id: 'specialty', name: '特産品販売コーナー', color: '#e8534b' },
+  // 地図に印刷された展示・体験の区画（農業展・建設業ブース・テニス体験など）。会場図の緑枠ラベルの色に合わせている
+  { id: 'exhibit', name: '展示・体験コーナー', color: '#2f8f57' },
   // スタンプラリーのQR設置場所（Spot種別＝スタンプQR）の表示用カテゴリ
   { id: 'stamp-qr', name: 'スタンプQR', color: '#8f80d6' },
 ];

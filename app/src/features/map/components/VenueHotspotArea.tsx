@@ -7,8 +7,7 @@ type VenueHotspotAreaProps = {
 };
 
 /**
- * 「全体」地図の上に置く、会場（第1〜第3）のタップ範囲。本番では見た目は透明。
- * 開発中だけ、範囲を確認しやすいようにうっすら枠を表示する。
+ * 「全体」地図の上に置く、会場（第1〜第4）のタップ範囲。見た目は開発中も含めて常に透明。
  */
 export default function VenueHotspotArea({ hotspot, label, onTap }: VenueHotspotAreaProps) {
   return (
@@ -16,9 +15,7 @@ export default function VenueHotspotArea({ hotspot, label, onTap }: VenueHotspot
       type="button"
       onClick={onTap}
       aria-label={`${label}を拡大`}
-      className={`absolute z-[4] ${
-        import.meta.env.DEV ? 'border-2 border-dashed border-brand-blue/50 bg-brand-blue/10' : ''
-      }`}
+      className="absolute z-[4]"
       style={{
         left: `${hotspot.x}%`,
         top: `${hotspot.y}%`,
