@@ -4,21 +4,22 @@ import { useLocation, useNavigate, useOutletContext } from 'react-router-dom';
 import confetti from 'canvas-confetti';
 import Header from '../components/Header';
 import PageContainer from '../components/PageContainer';
-import { getCourseById } from '../data/checkpoints';
+import { TOTAL_STAMPS, getCourseById } from '../data/checkpoints';
 import type { UseStampRally } from '../hooks/useStampRally';
 import { useDisplayMessages } from '../i18n/useDisplayMessages';
+import { FLOW_STEP_BY_SCREEN } from '../howtoSteps';
 
 interface RevealLocationState {
   checkpointId?: number;
 }
 
 const SPARKLE_POSITIONS = [
-  { top: '2%', left: '10%', delay: '0s', size: 'text-2xl' },
-  { top: '8%', left: '80%', delay: '0.15s', size: 'text-3xl' },
-  { top: '65%', left: '4%', delay: '0.3s', size: 'text-xl' },
-  { top: '70%', left: '86%', delay: '0.45s', size: 'text-2xl' },
-  { top: '-4%', left: '45%', delay: '0.6s', size: 'text-xl' },
-  { top: '55%', left: '92%', delay: '0.75s', size: 'text-lg' },
+  { top: '2%', left: '10%', delay: '0s', size: 'text-[1.5rem]' },
+  { top: '8%', left: '80%', delay: '0.15s', size: 'text-[1.875rem]' },
+  { top: '65%', left: '4%', delay: '0.3s', size: 'text-[1.25rem]' },
+  { top: '70%', left: '86%', delay: '0.45s', size: 'text-[1.5rem]' },
+  { top: '-4%', left: '45%', delay: '0.6s', size: 'text-[1.25rem]' },
+  { top: '55%', left: '92%', delay: '0.75s', size: 'text-[1.125rem]' },
 ];
 
 const FESTIVAL_COLORS = ['#f5a623', '#e8524a', '#e060a8', '#8b7ed8', '#4cb37e'];
@@ -31,7 +32,7 @@ const HANDOFF_DELAY_MS = 650;
 export default function StampRevealScreen() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { registration, courseId } = useOutletContext<UseStampRally>();
+  const { registration, courseId, collectedCount } = useOutletContext<UseStampRally>();
   const m = useDisplayMessages(registration);
   const state = (location.state ?? {}) as RevealLocationState;
   const checkpoint = (courseId !== null ? getCourseById(courseId)?.checkpoints : undefined)?.find(
@@ -134,50 +135,59 @@ export default function StampRevealScreen() {
 
   return (
     <PageContainer>
-      <Header />
+      <Header step={FLOW_STEP_BY_SCREEN.reveal} />
+      {/* 高さが足りない画面（横向きのスマホ等）では演出ごとスクロールでき、上下が切れない。
+          中身は上下の空白を 7:13 に分けて、やや上寄せで配置する（justify-center だとスクロール時に上が切れるため）。 */}
       <main
-        className="relative flex min-h-0 flex-1 flex-col items-center justify-center gap-6 overflow-hidden px-6 pb-8 text-center"
+        className="relative flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto px-6 pb-8 text-center [@media(max-height:480px)]:pb-2 before:grow-[7] before:content-[''] after:grow-[13] after:content-['']"
         onClick={proceed}
       >
-        <div className="flex flex-col items-center gap-2">
-          <span
-            className="animate-stamp-title rounded-full bg-stamprally-collected px-4 py-1 text-sm font-bold text-white"
-            style={{ animationDelay: '0.15s' }}
-          >
-            {m.reveal.stampGet}
-          </span>
-          <p className="animate-stamp-title text-xl font-bold text-stamprally-collected">{m.reveal.title}</p>
-        </div>
-
-        <div className="relative flex h-40 w-40 items-center justify-center">
-          <span
-            className="animate-stamp-ring absolute inset-0 rounded-full border-4 border-stamprally-collected"
-            style={{ animationDelay: '0.2s' }}
-          />
-          <span
-            className="animate-stamp-ring absolute inset-0 rounded-full border-4 border-stamprally-collected"
-            style={{ animationDelay: '0.9s' }}
-          />
-
-          {SPARKLE_POSITIONS.map((s, i) => (
+        <div className="flex flex-col items-center gap-6 [@media(max-height:640px)]:gap-3 [@media(max-height:400px)]:gap-2!">
+          <div className="flex flex-col items-center gap-2 [@media(max-height:400px)]:gap-1">
             <span
-              key={i}
-              className={`animate-stamp-sparkle absolute ${s.size}`}
-              style={{ top: s.top, left: s.left, animationDelay: s.delay }}
+              className="animate-stamp-title rounded-full bg-stamprally-collected-strong px-4 py-1 text-sm font-bold text-white"
+              style={{ animationDelay: '0.15s' }}
             >
-              ✨
+              {m.reveal.stampGet}
             </span>
-          ))}
-
-          <div
-            ref={iconRef}
-            className="animate-stamp-pop relative flex h-40 w-40 items-center justify-center rounded-full border-4 border-stamprally-collected bg-[#fff3e0] text-6xl font-bold text-stamprally-collected"
-          >
-            {checkpoint.char}
+            <p className="animate-stamp-title text-[1.875rem] leading-tight font-extrabold text-stamprally-collected-strong [@media(max-height:400px)]:text-[1.625rem]">{m.reveal.title}</p>
           </div>
-        </div>
 
-        <p className="text-xs text-[#999]">{m.reveal.tapHint}</p>
+          <div className="relative flex h-40 w-40 items-center justify-center [@media(max-height:640px)]:h-28 [@media(max-height:640px)]:w-28 [@media(max-height:400px)]:h-20! [@media(max-height:400px)]:w-20!">
+            <span
+              className="animate-stamp-ring absolute inset-0 rounded-full border-4 border-sr-red"
+              style={{ animationDelay: '0.2s' }}
+            />
+            <span
+              className="animate-stamp-ring absolute inset-0 rounded-full border-4 border-sr-red"
+              style={{ animationDelay: '0.9s' }}
+            />
+
+            {SPARKLE_POSITIONS.map((s, i) => (
+              <span
+                key={i}
+                className={`animate-stamp-sparkle absolute ${s.size}`}
+                style={{ top: s.top, left: s.left, animationDelay: s.delay }}
+              >
+                ✨
+              </span>
+            ))}
+
+            <div
+              ref={iconRef}
+              className="animate-stamp-pop relative flex h-40 w-40 items-center justify-center [@media(max-height:640px)]:h-28 [@media(max-height:640px)]:w-28 [@media(max-height:640px)]:text-5xl [@media(max-height:400px)]:h-20! [@media(max-height:400px)]:w-20! [@media(max-height:400px)]:text-4xl! rounded-full border-4 border-sr-red bg-sr-red-soft text-6xl font-bold text-stamprally-collected-strong"
+            >
+              {checkpoint.char}
+            </div>
+          </div>
+
+          {/* 取得済み数は遷移前に addStamp で確定しているので、既存の値をそのまま表示する。 */}
+          <p className="text-lg font-bold text-sr-ink [@media(max-height:400px)]:text-base">
+            {m.reveal.progress.replace('{n}', String(collectedCount)).replace('{total}', String(TOTAL_STAMPS))}
+          </p>
+
+          <p className="text-sm text-sr-sub">{m.reveal.tapHint}</p>
+        </div>
       </main>
     </PageContainer>
   );

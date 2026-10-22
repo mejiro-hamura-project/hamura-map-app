@@ -1,11 +1,12 @@
 import { storage } from '../../../shared/storage/storage';
-import { EMPTY_STATE, loadState, STORAGE_KEY } from '../lib/stateStorage';
-import { useCallback, useEffect, useState } from 'react';
+import { loadState, STORAGE_KEY } from '../lib/stateStorage';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { Registration, StampRallyState } from '../types';
-import { TOTAL_STAMPS, getCourseById } from '../data/checkpoints';
+import { TOTAL_STAMPS } from '../data/checkpoints';
+import { createDevActions } from '../dev/devActions';
 
 // 参加者番号（この端末でスタンプラリーを開始した順の通し番号）専用のカウンター。
-// participantごとの状態（STORAGE_KEY）とは別に持ち、resetAll/resetProgressで
+// participantごとの状態（STORAGE_KEY）とは別に持ち、DEVパネルのリセット（resetAll/resetProgress）で
 // 消えないようにする（同じ端末で次に登録する人が「続きの番号」になるため）。
 const COUNTER_KEY = 'stampRally.participantCounter.v1';
 
@@ -65,16 +66,6 @@ export function useStampRally() {
     );
   }, []);
 
-  // テスト用: 現在のコースのスタンプをすべて取得済みにする。
-  const testCompleteAllStamps = useCallback(() => {
-    setState((prev) => {
-      if (prev.courseId === null) return prev;
-      const course = getCourseById(prev.courseId);
-      if (!course) return prev;
-      return { ...prev, collectedIds: course.checkpoints.map((c) => c.id) };
-    });
-  }, []);
-
   const setPhraseSlots = useCallback((slots: (number | null)[]) => {
     setState((prev) => ({ ...prev, phraseSlots: slots }));
   }, []);
@@ -89,21 +80,10 @@ export function useStampRally() {
     setState((prev) => ({ ...prev, prizeExchanged: true }));
   }, []);
 
-  // テスト用: スタンプ・お題・交換の進行状況だけを初期化する。
-  // 参加者情報（登録内容）は削除しない。
-  const resetProgress = useCallback(() => {
-    setState((prev) => ({
-      ...prev,
-      collectedIds: [],
-      phraseSlots: new Array(TOTAL_STAMPS).fill(null),
-      phraseSolved: false,
-      prizeExchanged: false,
-    }));
-  }, []);
-
-  const resetAll = useCallback(() => {
-    setState(EMPTY_STATE);
-  }, []);
+  // 開発モード専用のテスト操作（DEVパネルからだけ使う。処理は dev/devActions.ts）。
+  // import.meta.env.DEV はビルド時に false へ置き換わるため、本番ビルドでは null になり、
+  // テスト操作の処理そのものがバンドルに含まれない。
+  const devActions = useMemo(() => (import.meta.env.DEV ? createDevActions(setState) : null), []);
 
   const isCollected = useCallback(
     (id: number) => state.collectedIds.includes(id),
@@ -126,12 +106,10 @@ export function useStampRally() {
     isComplete,
     register,
     addStamp,
-    testCompleteAllStamps,
     setPhraseSlots,
     solvePhrase,
     exchangePrize,
-    resetProgress,
-    resetAll,
+    devActions,
     isCollected,
   };
 }

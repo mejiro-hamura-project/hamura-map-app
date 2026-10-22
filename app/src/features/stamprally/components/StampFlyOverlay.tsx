@@ -58,7 +58,7 @@ export default function StampFlyOverlay({ char, from, to, onDone }: StampFlyOver
       }
     >
       <div
-        className={`flex h-full w-full items-center justify-center rounded-full border-4 border-stamprally-collected bg-[#fff3e0] text-5xl font-bold text-stamprally-collected ${
+        className={`flex h-full w-full items-center justify-center rounded-full border-4 border-sr-red bg-sr-red-soft text-5xl font-bold text-stamprally-collected-strong ${
           phase === 'flying' ? 'animate-stamp-fly-to-slot' : 'animate-stamp-land-bounce'
         }`}
       >
