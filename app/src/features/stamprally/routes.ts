@@ -12,13 +12,12 @@ export const STAMP_RALLY_ROUTES = {
   result: '/stamprally/result',
 } as const;
 
-const FULL_SCREEN_ROUTES: readonly string[] = [
-  STAMP_RALLY_ROUTES.camera,
-  STAMP_RALLY_ROUTES.reveal,
-  STAMP_RALLY_ROUTES.exchange,
-  STAMP_RALLY_ROUTES.result,
-];
-
+/**
+ * 共通の下部ナビゲーションを出さない（全画面表示にする）画面か。表示の判定だけで、
+ * URL・画面遷移には関与しない。本番運用では下部ナビゲーションを使わないため、
+ * スタンプラリーの全画面（/stamprally 配下）を全画面表示にする。
+ */
 export function isStampRallyFullScreen(pathname: string): boolean {
-  return FULL_SCREEN_ROUTES.includes(pathname.replace(/\/+$/, ''));
+  const path = pathname.replace(/\/+$/, '');
+  return path === STAMP_RALLY_ROUTES.entry || path.startsWith(`${STAMP_RALLY_ROUTES.entry}/`);
 }

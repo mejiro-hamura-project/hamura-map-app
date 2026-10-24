@@ -6,6 +6,9 @@ import PageContainer from '../components/PageContainer';
 import Button from '../components/Button';
 import StampGrid from '../components/StampGrid';
 import StampFlyOverlay from '../components/StampFlyOverlay';
+import QrLocationMap from '../components/QrLocationMap';
+import { FLOW_STEP_BY_SCREEN } from '../howtoSteps';
+import { BUTTON_ICONS } from '../buttonIcons';
 import type { UseStampRally } from '../hooks/useStampRally';
 import { TOTAL_STAMPS, getCourseById } from '../data/checkpoints';
 import { useDisplayMessages } from '../i18n/useDisplayMessages';
@@ -36,14 +39,10 @@ export default function RallyScreen() {
     isComplete,
     phraseSolved,
     prizeExchanged,
-    addStamp,
-    testCompleteAllStamps,
-    resetProgress,
   } = useOutletContext<UseStampRally>();
   const m = useDisplayMessages(registration);
 
   const checkpoints = courseId !== null ? (getCourseById(courseId)?.checkpoints ?? []) : [];
-  const nextUncollected = checkpoints.find((cp) => !collectedIds.includes(cp.id));
 
   const slotRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [flight, setFlight] = useState<Flight | null>(null);
@@ -80,96 +79,91 @@ export default function RallyScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.state]);
 
-  const loadTestQr = () => {
-    if (!nextUncollected) return;
-    // 実際のカメラ画面(CameraScreen)と同じ判定関数・状態更新を通す
-    // （重複チェックは「未取得のものだけを選ぶ」ことで自然に満たされる）。
-    addStamp(nextUncollected.id);
-    navigate(STAMP_RALLY_ROUTES.reveal, { state: { checkpointId: nextUncollected.id } });
-  };
+  // 取得演出から戻った直後だけ「○を獲得しました」を添える（飛行演出が終わってから表示）。
+  const justCollectedId = (location.state as RallyLocationState | null)?.justCollectedId;
+  const justCollectedChar = !flight
+    ? checkpoints.find((c) => c.id === justCollectedId && collectedIds.includes(c.id))?.char
+    : undefined;
 
   return (
     <PageContainer>
-      <Header />
-      <main className="flex min-h-0 flex-1 flex-col gap-8 overflow-y-auto px-6 pb-8">
-        <div className="text-center">
-          {participantNumber !== null && (
-            <p className="mb-1 text-xs font-bold text-[#999]">
-              {m.rally.participantNumberLabel} No.{participantNumber}
+      <Header
+        step={
+          phraseSolved
+            ? FLOW_STEP_BY_SCREEN.afterPhraseSolved
+            : isComplete
+              ? FLOW_STEP_BY_SCREEN.rallyComplete
+              : FLOW_STEP_BY_SCREEN.rallyCollecting
+        }
+      />
+      {/* 1画面に収める：上に参加者番号・取得数・スタンプ枠、残りの高さはすべて地図。
+          高さの低い横向きでは、地図を左、参加者番号・スタンプ枠を右に並べる。
+          次にする操作は上部の操作指示に出すため、ここでは繰り返さない。 */}
+      <main className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto px-4 pb-2 [@media(max-height:480px)]:flex-row">
+        <div className="flex shrink-0 flex-col gap-2 [@media(max-height:480px)]:order-last [@media(max-height:480px)]:w-36 [@media(max-height:480px)]:justify-center">
+          <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 rounded-xl border border-sr-line bg-white px-3 py-1">
+            {participantNumber !== null && (
+              <p className="text-xs font-bold text-sr-sub">
+                {m.rally.participantNumberLabel} <span className="text-sm">No.{participantNumber}</span>
+              </p>
+            )}
+            {/* 取得数：「スタンプ」の説明は小さく、「3 / 7」の数値は約1.5倍・太字・濃い緑で目立たせる。 */}
+            <p className="flex items-baseline gap-1.5 whitespace-nowrap text-sm font-bold text-sr-ink [@media(max-height:480px)]:text-xs">
+              {m.rally.countShort}
+              <span className="text-[1.75rem] leading-none font-extrabold text-sr-green-strong [@media(max-height:480px)]:text-[1.5rem]">
+                {collectedCount}
+                <span className="text-xl [@media(max-height:480px)]:text-lg"> / {TOTAL_STAMPS}</span>
+              </span>
             </p>
-          )}
-          <p className="text-sm font-bold text-[#4a4038]">{m.rally.countLabel}</p>
-          <p className="text-2xl font-bold text-stamprally-collected">
-            {collectedCount} <span className="text-base text-[#4a4038]">/ {TOTAL_STAMPS}</span>
-          </p>
+          </div>
+
+          <StampGrid
+            collectedIds={collectedIds}
+            checkpoints={checkpoints}
+            totalSlots={TOTAL_STAMPS}
+            hiddenSlotIndex={flight?.slotIndex ?? null}
+            slotRefs={slotRefs}
+          />
         </div>
 
-        <StampGrid
-          collectedIds={collectedIds}
+        <QrLocationMap
           checkpoints={checkpoints}
-          totalSlots={TOTAL_STAMPS}
-          hiddenSlotIndex={flight?.slotIndex ?? null}
-          slotRefs={slotRefs}
+          collectedIds={collectedIds}
+          title={m.rally.qrMapTitle}
+          collectedLabel={m.rally.qrCollected}
+          notCollectedLabel={m.rally.qrNotCollected}
+          resetLabel={m.rally.qrMapReset}
+          overlay={
+            // 取得演出から戻った直後だけ「○を獲得しました」を地図の下端に重ねて出す（レイアウトは動かさない）。
+            justCollectedChar && !phraseSolved ? (
+              <p
+                aria-live="polite"
+                className="absolute bottom-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-stamprally-collected-strong px-3 py-1 text-sm font-extrabold text-white shadow"
+              >
+                {m.rally.justCollected.replace('{char}', justCollectedChar)}
+              </p>
+            ) : undefined
+          }
         />
-
-        {isComplete && !phraseSolved && (
-          <div className="rounded-xl border-2 border-stamprally-collected bg-[#fff3e0] px-4 py-3 text-center">
-            <p className="text-sm font-bold text-stamprally-collected">{m.rally.completeBanner1}</p>
-          </div>
-        )}
-
-        {phraseSolved && !prizeExchanged && (
-          <div className="rounded-xl border-2 border-stamprally-collected bg-[#fff3e0] px-4 py-3 text-center text-sm font-bold text-stamprally-collected">
-            {m.rally.phraseSolvedBanner}
-          </div>
-        )}
-
-        {prizeExchanged && (
-          <div className="rounded-xl bg-[#fdecea] px-4 py-3 text-center text-sm font-bold text-stamprally-exchanged">
-            {m.rally.exchangedBanner}
-          </div>
-        )}
-
-        {/* デモ用アプリのため、テスト用ボタンは常時表示（本番用の出し分けはしない）。 */}
-        <div className="mt-2 flex flex-col gap-2 rounded-xl border border-dashed border-[#ccc] p-3">
-          <p className="text-center text-xs font-bold text-[#999]">デモ用のテストボタン</p>
-          <button
-            type="button"
-            onClick={resetProgress}
-            className="min-h-[44px] rounded-full border border-[#999] px-4 text-sm font-bold text-[#666]"
-          >
-            テスト用進行状況リセット
-          </button>
-          <button
-            type="button"
-            onClick={loadTestQr}
-            disabled={!nextUncollected}
-            className="min-h-[44px] rounded-full border border-[#999] px-4 text-sm font-bold text-[#666] disabled:opacity-40"
-          >
-            テスト用QRを読み込む
-          </button>
-          <button
-            type="button"
-            onClick={testCompleteAllStamps}
-            disabled={isComplete}
-            className="min-h-[44px] rounded-full border border-[#999] px-4 text-sm font-bold text-[#666] disabled:opacity-40"
-          >
-            テスト用スタンプラリーを完成させる
-          </button>
-        </div>
       </main>
 
-      <div className="sticky bottom-0 shrink-0 border-t border-[#eee] bg-white px-6 py-4">
+      <div className="sticky bottom-0 shrink-0 bg-sr-bg px-4 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] [@media(max-height:480px)]:pt-1.5 [@media(max-height:480px)]:pb-[max(0.375rem,env(safe-area-inset-bottom))]">
         {isComplete && !phraseSolved ? (
-          <Button variant="exchange-link" onClick={() => navigate(STAMP_RALLY_ROUTES.challenge)}>
+          <Button variant="exchange-link" icon={BUTTON_ICONS.arrange} className="min-h-[52px]! text-[1rem]! [@media(max-height:480px)]:min-h-[44px]!" onClick={() => navigate(STAMP_RALLY_ROUTES.challenge)}>
             {m.rally.challengeCta}
           </Button>
         ) : phraseSolved && !prizeExchanged ? (
-          <Button variant="exchange-link" onClick={() => navigate(STAMP_RALLY_ROUTES.exchange)}>
+          <Button variant="exchange-link" icon={BUTTON_ICONS.prize} className="min-h-[52px]! text-[1rem]! [@media(max-height:480px)]:min-h-[44px]!" onClick={() => navigate(STAMP_RALLY_ROUTES.exchange)}>
             {m.rally.exchangeCta}
           </Button>
+        ) : isComplete ? (
+          // 交換済み：以前は押せないカメラボタンを出していた。操作できない点は同じまま、
+          // 紛らわしくないよう「交換済み」の表示に置き換える。
+          <p className="flex min-h-[52px] items-center justify-center rounded-full border border-sr-green bg-sr-green-soft px-6 text-[1rem] font-semibold text-sr-green-strong [@media(max-height:480px)]:min-h-[44px]">
+            ✓ {m.exchange.done}
+          </p>
         ) : (
-          <Button variant="camera" onClick={() => navigate(STAMP_RALLY_ROUTES.camera)} disabled={isComplete}>
+          <Button variant="camera" className="min-h-[52px]! text-[1rem]! [@media(max-height:480px)]:min-h-[44px]!" onClick={() => navigate(STAMP_RALLY_ROUTES.camera)}>
             {m.rally.cameraCta}
           </Button>
         )}

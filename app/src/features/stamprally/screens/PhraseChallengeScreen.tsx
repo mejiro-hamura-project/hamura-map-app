@@ -12,6 +12,8 @@ import { shuffle } from '../lib/random';
 import { syncProgress } from '../lib/sheetApi';
 import { isElementaryMode } from '../i18n/elementaryMode';
 import { useDisplayMessages } from '../i18n/useDisplayMessages';
+import { FLOW_STEP_BY_SCREEN } from '../howtoSteps';
+import { BUTTON_ICONS } from '../buttonIcons';
 
 export default function PhraseChallengeScreen() {
   const navigate = useNavigate();
@@ -98,27 +100,39 @@ export default function PhraseChallengeScreen() {
 
   return (
     <PageContainer>
-      <Header />
-      <main className="flex min-h-0 flex-1 flex-col items-center gap-6 overflow-y-auto px-4 pb-8 text-center">
+      <Header step={result === 'correct' ? FLOW_STEP_BY_SCREEN.afterPhraseSolved : FLOW_STEP_BY_SCREEN.challenge} />
+      {/* 1画面に収める配置（表示だけ。並べ替え・判定・遷移の処理は変えない）。
+          上下の空白は 7:13 に分けて、やや上寄せにする（進捗バーの下が空きすぎないように）。 */}
+      <div aria-hidden="true" className="grow-[7]" />
+      <main className="flex min-h-0 flex-initial flex-col items-center gap-2 overflow-y-auto px-4 pb-2 text-center [@media(max-height:480px)]:gap-1">
         {result === 'correct' ? (
-          <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-4">
-            <p className="text-xl font-bold text-stamprally-collected">{m.challenge.correctTitle}</p>
-            <p className="text-4xl font-bold tracking-widest text-stamprally-collected sm:text-5xl">
+          <div className="my-auto flex w-full flex-col items-center gap-2">
+            <p className="flex items-center gap-2 text-[1.875rem] leading-tight font-extrabold text-sr-green-strong [@media(max-height:480px)]:text-[1.625rem]">
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-sr-green-strong text-[1rem] text-white [@media(max-height:480px)]:h-6 [@media(max-height:480px)]:w-6 [@media(max-height:480px)]:text-[0.875rem]" aria-hidden="true">
+                ✓
+              </span>
+              {m.challenge.correctTitle}
+            </p>
+            <p className="text-[clamp(1.75rem,10vw,2.5rem)] leading-tight font-bold tracking-wider text-sr-green-strong [@media(max-height:480px)]:text-2xl">
               {getCorrectPhrase(courseId)}
             </p>
-            <p className="text-sm text-[#4a4038]">{m.challenge.correctBody}</p>
+            <p className="text-sm text-sr-ink">{m.challenge.correctBody}</p>
 
-            {/* お題（答え）の紹介文・写真。文言は変換せずそのまま表示する。 */}
+            {/* 次の操作（景品交換）は上部の操作指示「⑤ スタッフに見せて景品と交換！」と下のボタンで案内する。 */}
+
+            {/* お題（答え）の紹介文・写真。文言は変換せずそのまま表示する。
+                写真を上（中央）、説明文をその下（左揃え）に縦に並べる。写真は縦横比を保ち、切り抜かない。
+                1画面に収まるよう、写真の高さは画面の高さに合わせて抑える。 */}
             {answer && (
-              <div className="mt-2 w-full max-w-sm rounded-xl border border-[#eee] bg-[#faf8f4] p-4 text-left">
+              <div className="flex w-full max-w-sm flex-col items-center gap-2 rounded-xl border border-sr-line bg-white p-3 text-left">
                 {answerImage && (
                   <img
                     src={answerImage}
                     alt={answer.text}
-                    className="mb-3 w-full rounded-lg object-cover"
+                    className="h-[clamp(64px,calc(100dvh-495px),180px)] w-auto max-w-full shrink-0 rounded-lg object-contain [@media(max-height:480px)]:h-14"
                   />
                 )}
-                <p className="whitespace-pre-line text-sm leading-relaxed text-[#4a4038]">
+                <p className="w-full min-w-0 whitespace-pre-line text-xs leading-snug text-sr-ink">
                   {answer.description}
                 </p>
               </div>
@@ -127,12 +141,17 @@ export default function PhraseChallengeScreen() {
         ) : (
           <>
             <div>
-              <p className="text-lg font-bold text-[#2f2a24]">{m.challenge.title}</p>
-              <p className="mt-1 text-sm leading-relaxed text-[#4a4038]">{m.challenge.instruction}</p>
+              <p className="text-[1.625rem] leading-tight font-extrabold text-sr-ink [@media(max-height:480px)]:sr-only">{m.challenge.title}</p>
+              {/* 不正解のときは、説明の位置に不正解の表示を出す（高さを変えずに1画面に収めるため） */}
+              {result === 'wrong' ? (
+                <p className="mt-0.5 rounded-lg bg-sr-red-soft px-2 py-0.5 text-sm font-bold leading-snug text-sr-red-strong">✕ {m.challenge.wrong}</p>
+              ) : (
+                <p className="mt-0.5 text-sm leading-snug text-sr-ink">{m.challenge.instruction}</p>
+              )}
             </div>
 
-            {/* お題（キーワード）は画面いっぱいに大きく表示する */}
-            <div className="flex w-full flex-wrap justify-center gap-2">
+            {/* お題（キーワード）の7枠は横一列。画面幅に合わせて縮める */}
+            <div className="grid w-full grid-cols-7 justify-items-center gap-1">
               {slots.map((checkpointId, i) => {
                 const checkpoint = checkpoints.find((c) => c.id === checkpointId);
                 return (
@@ -141,10 +160,10 @@ export default function PhraseChallengeScreen() {
                     type="button"
                     onClick={() => clearSlot(i)}
                     disabled={!checkpoint}
-                    className={`flex h-16 w-16 items-center justify-center rounded-xl border-2 text-3xl font-bold sm:h-20 sm:w-20 sm:text-4xl ${
+                    className={`flex aspect-square w-full max-w-14 items-center justify-center rounded-xl border-2 text-[1.5rem] font-bold [@media(max-height:480px)]:max-w-9 [@media(max-height:480px)]:text-[1.125rem] ${
                       checkpoint
-                        ? 'border-stamprally-collected bg-[#fff3e0] text-stamprally-collected'
-                        : 'border-dashed border-[#ccc] bg-white text-[#ccc]'
+                        ? 'border-sr-red bg-sr-red-soft text-sr-red-strong'
+                        : 'border-dashed border-sr-line bg-sr-muted text-sr-line'
                     }`}
                   >
                     {checkpoint?.char ?? ''}
@@ -153,18 +172,16 @@ export default function PhraseChallengeScreen() {
               })}
             </div>
 
-            {result === 'wrong' && <p className="text-sm font-bold text-stamprally-notice">{m.challenge.wrong}</p>}
-
-            <div className="w-full border-t border-[#eee] pt-4">
-              <p className="mb-2 text-sm font-bold text-[#4a4038]">{m.challenge.available}</p>
-              <div className="flex flex-wrap justify-center gap-2">
+            <div className="w-full border-t border-sr-line pt-2 [@media(max-height:480px)]:pt-1">
+              <p className="mb-1 text-sm font-bold text-sr-ink [@media(max-height:480px)]:mb-0.5 [@media(max-height:480px)]:text-xs">{m.challenge.available}</p>
+              <div className="flex flex-wrap justify-center gap-1">
                 {availableTiles.map((checkpoint) => (
                   <button
                     key={checkpoint.id}
                     type="button"
                     data-testid={`tile-${checkpoint.id}`}
                     onClick={() => placeTile(checkpoint.id)}
-                    className="flex h-14 w-14 items-center justify-center rounded-lg border-2 border-[#ddd] bg-[#f7f3ec] text-2xl font-bold text-[#4a4038] active:scale-95"
+                    className="flex aspect-square w-[calc((100%-1.5rem)/7)] max-w-14 items-center justify-center rounded-lg border border-sr-line bg-white text-[1.5rem] font-bold text-sr-ink shadow-[0_2px_0_#dcd9cc] active:translate-y-px active:shadow-none [@media(max-height:480px)]:max-w-9 [@media(max-height:480px)]:text-[1.125rem]"
                   >
                     {checkpoint.char}
                   </button>
@@ -172,11 +189,13 @@ export default function PhraseChallengeScreen() {
               </div>
             </div>
 
-            <div className="w-full rounded-xl border border-[#eee] bg-[#faf8f4] px-4 py-3 text-left">
-              <p className="mb-2 text-xs font-bold text-[#4a4038]">{m.challenge.answersHintLabel}</p>
-              <ul className="space-y-1 text-sm text-[#4a4038]">
+            <div className="flex w-full flex-wrap items-center gap-1 rounded-xl border border-sr-line bg-white px-3 py-1.5 text-left [@media(max-height:480px)]:py-1">
+              <p className="mr-1 text-xs font-bold text-sr-ink">{m.challenge.answersHintLabel}</p>
+              <ul className="contents">
                 {hintAnswers.map((text, i) => (
-                  <li key={i}>・{text}</li>
+                  <li key={i} className="rounded-full border border-sr-line bg-white px-2 py-0.5 text-xs text-sr-ink">
+                    {text}
+                  </li>
                 ))}
               </ul>
             </div>
@@ -184,17 +203,18 @@ export default function PhraseChallengeScreen() {
         )}
       </main>
 
-      <div className="sticky bottom-0 shrink-0 border-t border-[#eee] bg-white px-6 py-4">
+      <div className="sticky bottom-0 shrink-0 bg-sr-bg px-5 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] [@media(max-height:480px)]:pt-1.5 [@media(max-height:480px)]:pb-[max(0.375rem,env(safe-area-inset-bottom))]">
         {result === 'correct' ? (
-          <Button variant="exchange-link" onClick={() => navigate(STAMP_RALLY_ROUTES.exchange)}>
+          <Button variant="exchange-link" icon={BUTTON_ICONS.prize} className="min-h-[52px]! text-[1rem]! [@media(max-height:480px)]:min-h-[44px]!" onClick={() => navigate(STAMP_RALLY_ROUTES.exchange)}>
             {m.challenge.exchangeCta}
           </Button>
         ) : (
-          <Button variant="cta" onClick={checkAnswer} disabled={!isFull}>
+          <Button variant="cta" icon={BUTTON_ICONS.check} onClick={checkAnswer} disabled={!isFull}>
             {m.challenge.checkCta}
           </Button>
         )}
       </div>
+      <div aria-hidden="true" className="grow-[13]" />
     </PageContainer>
   );
 }

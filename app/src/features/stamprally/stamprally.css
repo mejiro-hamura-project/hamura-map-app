@@ -1,3 +1,71 @@
+/* スタンプラリー画面専用の色トークン（共通の index.css には置かない）。
+   デザインA案（やさしくシンプル）の指定色。アプリアイコンの花の色に合わせている。
+   - 指定色：赤 #e95f68 / 緑 #6faf70 / 黄 #f4c64e / 青緑 #35b3b8 / 背景 #fffdf8 / 本文 #315563 / 枠線 #dcdccf
+   - *-strong：小さい文字や白文字用に、指定色を読みやすい濃さにした版（白・#fffdf8 に対して 4.5:1 以上）
+     ※主ボタンは指定の赤 #e95f68 に白の太字19px（大きな文字の基準 3:1 以上）。青緑のボタンは
+       #35b3b8 だと白文字が読めないため、同系色の #2a9ca1（太字19pxで 3:1 以上）を使う。
+   - *-soft  ：カードや案内の淡い背景 */
+@theme {
+  --color-sr-red: #e95f68;
+  --color-sr-red-strong: #c7414b;
+  --color-sr-red-soft: #fdeff0;
+  --color-sr-green: #6faf70;
+  --color-sr-green-strong: #3f7f45;
+  --color-sr-green-soft: #eef6ee;
+  --color-sr-yellow: #f4c64e;
+  --color-sr-yellow-soft: #fdf6dd;
+  --color-sr-teal: #35b3b8;
+  --color-sr-teal-button: #2a9ca1;
+  --color-sr-teal-strong: #1f7f84;
+  --color-sr-teal-soft: #e7f6f6;
+  /* QRコード設置場所ボタン（QRコード読み取りボタンの赤と区別する青緑） */
+  --color-sr-teal-location: #238f96;
+  --color-sr-bg: #fffdf8;
+  --color-sr-ink: #315563;
+  --color-sr-sub: #5a7379;
+  --color-sr-line: #dcdccf;
+  --color-sr-muted: #f3f2ea;
+
+  /* 以前からの名前（画面側で使用中）。A案の配色に合わせた値にする。 */
+  --color-stamprally-collected-strong: #c7414b;
+  --color-stamprally-camera-strong: #1f7f84;
+  --color-stamprally-exchange-link-strong: #c7414b;
+
+  /* 進捗バー（StepProgress）の状態色：完了＝緑、操作中＝赤、未着手＝灰色 */
+  --color-stamprally-step-done: #3f7f45;
+  --color-stamprally-step-current: #c7414b;
+  --color-stamprally-step-current-soft: #fdeff0;
+  --color-stamprally-step-todo: #ffffff;
+  --color-stamprally-step-todo-ink: #5a7379;
+  --color-stamprally-step-line: #dcdccf;
+}
+
+/* スタンプラリー画面の文字サイズ。スマートフォンで読みやすい大きさ（本文16px・補足14px前後）にそろえる。
+   Tailwind の text-xs〜text-3xl はこの変数を使うため、スタンプラリーの画面の中（.stamprally）だけで値を上書きする。
+   画面のタイトル・大見出しは各画面で個別に大きさを指定しているため、ここの値には左右されない。
+   文字の大小の差（見出し＞本文＞補足）は保つ。共通の index.css やほかの画面には影響しない。 */
+.stamprally {
+  --text-xs: 0.875rem; /* 補足・注釈・ラベル 14px */
+  --text-xs--line-height: 1.5;
+  --text-sm: 1rem; /* 本文・説明文 16px */
+  --text-sm--line-height: 1.55;
+  --text-base: 1.0625rem; /* 入力欄・強調した本文 17px */
+  --text-base--line-height: 1.5;
+  --text-lg: 1.125rem; /* 18px */
+  --text-lg--line-height: 1.45;
+  --text-xl: 1.25rem; /* 20px */
+  --text-xl--line-height: 1.4;
+  --text-2xl: 1.5rem; /* 24px */
+  --text-2xl--line-height: 1.3;
+  --text-3xl: 1.875rem; /* 30px */
+  --text-3xl--line-height: 1.2;
+  /* 文字サイズを指定していない文字（遊び方の各手順の見出しなど）は本文と同じ 16px */
+  font-size: 1rem;
+  line-height: 1.55;
+  /* 文字が大きくなり折り返しが増えるため、日本語は語句の切れ目で折り返す（対応していないブラウザでは通常の折り返し） */
+  word-break: auto-phrase;
+}
+
 /* 景品交換のスタッフ専用「長押し」エリア。長押し中にテキスト選択やブラウザの
    コンテキストメニューが出て誤操作・体験の妨げにならないようにするだけの表示調整。 */
 .stamprally .staff-long-press {
