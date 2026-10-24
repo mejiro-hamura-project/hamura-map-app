@@ -1,0 +1,23 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  // LOCAL ONLY: no Cloudflare database ID or remote binding.
+  "name": "hamura-posts-local",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-09-26",
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "single-page-application",
+    "binding": "ASSETS",
+    "run_worker_first": ["/api", "/api/*"]
+  },
+  "vars": {
+    "POSTS_ENABLED": "true",
+    "RALLY_SYNC_ENABLED": "true"
+  },
+  "d1_databases": [{
+    "binding": "DB",
+    "database_name": "hamura-posts-local",
+    "migrations_dir": "migrations",
+    "remote": false
+  }]
+}

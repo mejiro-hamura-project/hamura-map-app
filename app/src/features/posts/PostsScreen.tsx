@@ -1,10 +1,8 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { usePosts, useSpots } from '../../api';
-import type { Post } from '../../shared/types';
-import { getDeviceUserId } from '../../shared/utils/deviceUser';
-import { findStoreBySpotId } from '../../mocks/stores';
-import { resolveAuthorNickname } from '../../shared/utils/postAuthor';
+import { usePosts } from '../../api';
+import { createPost } from '../../api/usePosts';
+import { POST_TARGETS } from '../../shared/postTargets';
 import { spotDisplayName } from '../../shared/utils/spotSearch';
 import FeedItem from './components/FeedItem';
 import PostFilterFab from './components/PostFilterFab';
@@ -14,9 +12,6 @@ import PostCreateSheet from './components/PostCreateSheet';
 import { POSTS_ROUTE_STATE_KEY } from './routeState';
 
 export default function PostsScreen() {
-  // 口コミと「いいね」はアプリ全体で共有（シート連携があればシートの内容・数）
-  const { posts, likedPostIds, isLoading, addPost, toggleLike } = usePosts();
-  const { spots } = useSpots();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   // 投稿画面を開いたときに最初から選んでおく投稿先（地図の店の詳細の「口コミを書く」から来たとき）
@@ -28,37 +23,26 @@ export default function PostsScreen() {
   // 開いたら location.state を消し、再読み込みや「戻る」で投稿画面が開き直さないようにする
   useEffect(() => {
     const spotId = (location.state as Record<string, unknown> | null)?.[POSTS_ROUTE_STATE_KEY];
-    if (typeof spotId !== 'string') return;
+    if (typeof spotId !== 'string' || !POST_TARGETS.some((spot) => spot.id === spotId)) return;
     setInitialCreateSpotId(spotId);
     setIsCreateOpen(true);
-    navigate(location.pathname, { replace: true, state: null });
-  }, [location.state, location.pathname, navigate]);
+    navigate(location.pathname + location.search, { replace: true, state: null });
+  }, [location.state, location.pathname, location.search, navigate]);
   const [selectedGenreIds, setSelectedGenreIds] = useState<Set<string>>(new Set());
-  const [selectedSpotIds, setSelectedSpotIds] = useState<Set<string>>(new Set());
+  const [selectedSpotIds, setSelectedSpotIds] = useState<Set<string>>(() => {
+    const id = new URLSearchParams(location.search).get('spotId');
+    return new Set(id && POST_TARGETS.some((spot) => spot.id === id) ? [id] : []);
+  });
+  const [submitted, setSubmitted] = useState('');
+  const { posts, isLoading, error, acceptingPosts, nextCursor, refresh, loadMore } = usePosts(
+    [...selectedSpotIds].sort().join(','), [...selectedGenreIds].sort().join(','),
+  );
 
-  const shopSpots = useMemo(() => spots.filter((spot) => spot.categoryId !== 'stamp-qr'), [spots]);
-
-  // 投稿先は本物のSpotデータとは限らない（ブースの店は疑似スポット）。
-  // 本物のSpotで見つからなければ、ブースの店データからも名前・ジャンルを探す。
-  function resolvePostTarget(spotId: string): { name: string; genreId: string | undefined } {
-    const spot = spots.find((s) => s.id === spotId);
-    if (spot) return { name: spotDisplayName(spot.name), genreId: spot.genreId };
-    const store = findStoreBySpotId(spotId);
-    if (store) return { name: store.name, genreId: store.genreId };
-    return { name: '', genreId: undefined };
-  }
-
-  const visiblePosts = useMemo(() => {
-    if (selectedGenreIds.size === 0 && selectedSpotIds.size === 0) return posts;
-    return posts.filter((post) => {
-      const { genreId } = resolvePostTarget(post.spotId);
-      // 投稿自体はジャンルを持たないため、投稿先の店（スポット）のジャンルをたどって判定する
-      const matchesGenre = selectedGenreIds.size === 0 || (genreId ? selectedGenreIds.has(genreId) : false);
-      const matchesSpot = selectedSpotIds.size === 0 || selectedSpotIds.has(post.spotId);
-      return matchesGenre && matchesSpot;
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [posts, spots, selectedGenreIds, selectedSpotIds]);
+  useEffect(() => {
+    const id = new URLSearchParams(location.search).get('spotId');
+    setSelectedSpotIds(new Set(id && POST_TARGETS.some((spot) => spot.id === id) ? [id] : []));
+    setSelectedGenreIds(new Set());
+  }, [location.search]);
 
   function handleToggleGenre(genreId: string) {
     setSelectedGenreIds((prev) => {
@@ -78,56 +62,47 @@ export default function PostsScreen() {
     });
   }
 
-  function handleCreatePost(input: { spotId: string; caption: string }) {
-    const newPost: Post = {
-      id: `post-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-      userId: getDeviceUserId(),
-      spotId: input.spotId,
-      caption: input.caption,
-      images: [],
-      likeCount: 0,
-      createdAt: new Date().toISOString(),
-    };
-    addPost(newPost, resolvePostTarget(input.spotId).name);
+  async function handleCreatePost(input: { spotId: string; caption: string }, key: string) {
+    const post = await createPost(input, key);
+    setSubmitted(`投稿しました：${post.caption}`);
+    // 条件変更時はusePostsのeffectで新着を取得。それ以外は明示的に更新する。
+    if (selectedGenreIds.size || selectedSpotIds.size) {
+      setSelectedGenreIds(new Set());
+      setSelectedSpotIds(new Set());
+    } else {
+      await refresh();
+    }
   }
 
   return (
     <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
-      <div className="flex-1 overflow-y-auto">
-        {isLoading ? (
-          <p className="p-6 text-center text-sm text-sub">読み込み中...</p>
-        ) : visiblePosts.length === 0 ? (
-          <p className="p-6 text-center text-sm text-sub">
-            {posts.length === 0 ? 'まだ投稿がありません' : '条件に一致する投稿はありません'}
-          </p>
-        ) : (
-          visiblePosts.map((post) => {
-            const { name: spotName } = resolvePostTarget(post.spotId);
-            return (
-              <FeedItem
-                key={post.id}
-                post={post}
-                authorNickname={resolveAuthorNickname(post)}
-                spotName={spotName}
-                liked={likedPostIds.has(post.id)}
-                onToggleLike={() => toggleLike(post.id)}
-              />
-            );
-          })
+      <div className="min-h-0 flex-1 overflow-y-auto pb-20">
+        <button type="button" disabled={isLoading} onClick={() => { setSubmitted(''); void refresh(); }} className="m-3 text-sm text-brand-blue">更新</button>
+        {!isLoading && !acceptingPosts && <p className="px-4 text-sm text-sub">現在、投稿受付を停止しています。投稿は保存できません。</p>}
+        {submitted && <p role="status" className="px-4 text-sm text-brand-blue">{submitted}</p>}
+        {error && <p role="alert" className="p-4 text-sm text-red-700">投稿を取得できませんでした。{error} 「更新」で再試行できます。</p>}
+        {isLoading && <p className="p-6 text-center text-sm text-sub">読み込み中...</p>}
+        {!isLoading && !error && posts.length === 0 && (
+          <p className="p-6 text-center text-sm text-sub">{selectedGenreIds.size || selectedSpotIds.size ? '条件に一致する投稿はありません' : 'まだ投稿がありません'}</p>
         )}
+        {posts.map((post) => (
+          <FeedItem key={post.id} post={post} authorNickname="来場者"
+            spotName={spotDisplayName(POST_TARGETS.find((spot) => spot.id === post.spotId)?.name ?? '')} />
+        ))}
+        {nextCursor && <button type="button" disabled={isLoading} onClick={() => void loadMore()} className="m-4 text-sm text-brand-blue">もっと読む</button>}
       </div>
 
       <PostFilterFab activeCount={selectedGenreIds.size + selectedSpotIds.size} onClick={() => setIsFilterOpen(true)} />
-      <PostCreateFab
+      {acceptingPosts && <PostCreateFab
         onClick={() => {
           setInitialCreateSpotId(null);
           setIsCreateOpen(true);
         }}
-      />
+      />}
 
       {isFilterOpen && (
         <PostFilterSheet
-          shops={shopSpots}
+          shops={POST_TARGETS}
           selectedGenreIds={selectedGenreIds}
           selectedSpotIds={selectedSpotIds}
           onClear={() => {
@@ -142,8 +117,10 @@ export default function PostsScreen() {
 
       {isCreateOpen && (
         <PostCreateSheet
-          shops={shopSpots}
+          shops={POST_TARGETS}
           initialSpotId={initialCreateSpotId}
+          acceptingPosts={acceptingPosts}
+          isLoading={isLoading}
           onSubmit={handleCreatePost}
           onClose={() => setIsCreateOpen(false)}
         />

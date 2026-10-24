@@ -6,6 +6,7 @@ export default function PostCreateFab({ onClick }: PostCreateFabProps) {
   return (
     <button
       type="button"
+      aria-label="投稿する"
       onClick={onClick}
       className="absolute bottom-4 right-5 z-20 flex h-[54px] w-[54px] items-center justify-center rounded-full bg-brand-blue shadow-lg"
     >

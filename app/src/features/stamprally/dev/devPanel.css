@@ -1,0 +1,147 @@
+/* 開発者用操作パネル専用のスタイル（開発モードでのみ読み込まれる。本番ビルドには含まれない）。
+   通常画面のレイアウトに影響しないよう、すべて position: fixed の重ね表示にしている。
+   アプリ本体の列（最大420px・中央寄せ）の右上に合わせて配置する。 */
+.sr-dev-handle,
+.sr-dev-panel {
+  position: fixed;
+  top: 6px;
+  right: max(6px, calc(50vw - 210px + 6px));
+  z-index: 300;
+  font-family: inherit;
+}
+
+.sr-dev-handle {
+  padding: 2px 8px;
+  border: 1px solid #dcd9cc;
+  border-radius: 999px;
+  background: rgba(255, 253, 248, 0.8);
+  color: #687875;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  opacity: 0.7;
+  cursor: pointer;
+}
+
+.sr-dev-handle:hover,
+.sr-dev-handle:focus-visible {
+  opacity: 1;
+}
+
+.sr-dev-panel {
+  width: min(360px, calc(100vw - 12px));
+  max-height: calc(100dvh - 12px);
+  overflow-y: auto;
+  padding: 12px;
+  border: 2px solid #facc15;
+  border-radius: 12px;
+  background: #111827;
+  color: #f9fafb;
+  font-size: 13px;
+  line-height: 1.5;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+}
+
+.sr-dev-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 6px;
+  border-bottom: 1px dashed #facc15;
+  color: #facc15;
+  font-size: 14px;
+}
+
+.sr-dev-close {
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 999px;
+  background: #374151;
+  color: #f9fafb;
+  cursor: pointer;
+}
+
+.sr-dev-section {
+  margin-top: 12px;
+}
+
+.sr-dev-section h3 {
+  margin: 0 0 6px;
+  color: #fde68a;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.sr-dev-row,
+.sr-dev-col {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.sr-dev-col {
+  flex-direction: column;
+}
+
+.sr-dev-panel button:not(.sr-dev-close),
+.sr-dev-panel select {
+  min-height: 40px;
+  flex: 1;
+  padding: 6px 10px;
+  border: 1px solid #4b5563;
+  border-radius: 8px;
+  background: #1f2937;
+  color: #f9fafb;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.sr-dev-panel select {
+  flex: 2;
+}
+
+.sr-dev-panel button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.sr-dev-panel .sr-dev-danger {
+  border-color: #f87171;
+  color: #fecaca;
+}
+
+.sr-dev-current {
+  margin: 0;
+  font-weight: 700;
+}
+
+.sr-dev-note {
+  margin: 6px 0 0;
+  color: #d1d5db;
+  font-size: 12px;
+}
+
+.sr-dev-warn {
+  margin: 8px 0 0;
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: #7c2d12;
+  color: #ffedd5;
+  font-size: 12px;
+}
+
+.sr-dev-state {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.sr-dev-message {
+  margin: 12px 0 0;
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: #1e3a8a;
+  color: #dbeafe;
+  font-size: 12px;
+}

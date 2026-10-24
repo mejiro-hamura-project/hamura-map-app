@@ -29,7 +29,7 @@ export interface Course {
 
 export interface StampRallyState {
   registration: Registration | null;
-  /** 個人情報を含まない、参加者を識別するための内部ID（サーバー同期の突合キー）。 */
+  /** 口コミと共通の匿名UUID（D1同期の突合キー）。 */
   participantId: string | null;
   /** この端末（ブラウザ）でスタンプラリーを開始した順に1から付与する番号。サーバーは使わない。 */
   participantNumber: number | null;
@@ -42,4 +42,6 @@ export interface StampRallyState {
   prizeExchanged: boolean;
   /** 参加登録が完了した日時（ISO 8601 / UTC）。 */
   startedAt: string | null;
+  /** 景品交換を初めて確定した日時（ISO 8601 / UTC）。未交換の場合は null。 */
+  exchangedAt: string | null;
 }

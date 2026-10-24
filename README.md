@@ -2,9 +2,9 @@
 
 地図・イベント・投稿・スタンプラリーを1つのWebアプリとして提供する、市民祭りアプリの正本repositoryです。チーム共通の正本は `main`、現在の実装の正本は `app/` です。
 
-公開URL：**https://hamura-map-app.academeia.workers.dev/**
+Cloudflare通常公開URL（Production）：**https://hamura-map-app.academeia.workers.dev/**。イベント正式版の公開可否は別途運営側で判断します。実際の配信commitはCloudflareで確認してください。
 
-Stamp Rallyの一体化とCloudflare Workersへの公開は完了し、スマートフォン実機で基本動作を確認済みです（運営からの確認報告）。PWA/offlineの最終受入、GAS / Google Sheets実接続、出展者データ統合、複数OS・端末での網羅的な実機試験は残っています。
+従来版のCloudflare公開とスマートフォン実機での基本動作は運営から確認報告があります。2026-10-25の統合版では地図・イベント・口コミ・スタンプラリーを統合し、口コミ／参加登録の保存先をD1へ統一しました。**実Cloudflare D1は未接続**で投稿受付・ラリー補助記録は無効です。統合最新版の実機iPhone／Android、PWA/offline、実D1接続と正式公開の受入は残っています。
 
 ## 主な作業場所
 
@@ -18,7 +18,7 @@ Stamp Rallyの一体化とCloudflare Workersへの公開は完了し、スマー
 | QR生成 | `app/scripts/stamprally/` |
 | Cloudflare設定 | `app/wrangler.jsonc` |
 
-Stamp Rallyの正式な開発場所は `app/src/features/stamprally/` です。旧runtimeは削除済みで、復元が必要な場合はGit履歴を参照します。rootのHTML・JSXやdocs内のプロトタイプは過去の試作資料です。
+Stamp Rallyの正式な開発場所は `app/src/features/stamprally/` です。旧runtimeは削除済みで、復元が必要な場合はGit履歴を参照します。リポジトリ直下にあった電卓・おみくじ・ルーレット・タイマーの無関係な試作品は整理し、必要時はGit履歴から参照します。`docs/`内の初期仕様・UIプロトタイプは履歴資料として残しています。
 
 ## ローカル起動
 
@@ -50,13 +50,16 @@ Stamp Rallyを変更した場合は `npm run test:stamprally` も実行します
 
 ## 設定と関連docs
 
-`VITE_SHEET_WEBHOOK_URL` が未設定でも登録から景品交換まで利用できます。進行状況は同じoriginのブラウザストレージに保存します。設定例は `app/.env.example`。実際の環境変数やWebhook URLはcommitしません。
+**引継ぎの入口は [開発・運用引継ぎ（2026-10-25）](docs/handover-20261025.md) です。** 佐々木さんの地図等（PR #6）、長谷川さんのスタンプラリーUI（PR #7）、共通フッター、共通匿名UUID、口コミ・ラリーD1（PR #8）をmainへ統合します。D1未接続・受付停止が既定で、地図・イベント・ラリーは継続利用できます。[共通ID・D1運用手順](docs/anonymous-id-d1-operations.md) と [今回の検証記録](docs/anonymous-id-d1-validation.md) を参照してください。
 
-Cloudflare Workers Static Assetsは `app/dist` のみを公開します。Production branchは `main`、Root directoryは `app`、Build commandは `npm run build`、Deploy commandは `npx wrangler deploy` です。通常のfeature開発ではCloudflare設定を変更する必要はありません。
+GAS通信は廃止しました。共通IDとラリー進行は同じoriginのブラウザストレージへ保存し、登録・交換のD1通信は非同期です。保存先未接続・オフラインでもラリーを続行できます。実DB ID・secret・実データはcommitしません。
+
+Cloudflare Workerは `/api/*` を処理し、その他を `app/dist` の静的配信へ渡します。Production branchは `main`、Root directoryは `app`、Build commandは `npm run build`、Deploy commandは `npx wrangler deploy` です。通常のfeature開発ではCloudflare設定を変更する必要はありません。
 
 - [共同開発の進め方](docs/development-workflow.md)
 - [Stamp Rally統合・地図連携](docs/integration-notes.md)
-- [任意のSheets連携・GASコード例](docs/stamprally/sheet-sync.md)
+- [共通匿名ID・D1導入・手動管理・CSV出力](docs/anonymous-id-d1-operations.md)
+- [旧Sheets連携・GASの履歴](docs/stamprally/sheet-sync.md)
 - [Cloudflareの公開構成・検証手順](docs/cloudflare-workers-static-assets.md)
 - [Migration Plan（設計履歴）](docs/plans/stamp-rally-unification-v1.md)
 - [Phase 1・2の実装履歴と後続状況](docs/plans/stamp-rally-unification-v1-implementation-notes.md)

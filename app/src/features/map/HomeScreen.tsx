@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useMaps, usePosts, useSpots, useTimetable } from '../../api';
+import { useMaps, useSpots, useTimetable } from '../../api';
 import type { Booth, Spot, Store } from '../../shared/types';
 import { useClock } from '../../shared/context/DevClockContext';
 import { matchesSpotQuery } from '../../shared/utils/spotSearch';
@@ -18,7 +18,6 @@ export default function HomeScreen() {
   const { maps, isLoading: isLoadingMaps } = useMaps();
   const { spots, isLoading: isLoadingSpots } = useSpots();
   const { timetable } = useTimetable();
-  const { posts } = usePosts();
   const { now } = useClock();
   const [currentMapId, setCurrentMapId] = useState<string | null>(null);
   const [selectedSpotId, setSelectedSpotId] = useState<string | null>(null);
@@ -237,7 +236,6 @@ export default function HomeScreen() {
         stores={currentStores}
         selectedBooth={selectedBooth}
         selectedStoreSpot={selectedStoreSpot}
-        posts={posts}
         selectedSpot={selectedSpot}
         onSpotTap={setSelectedSpotId}
         onCloseSpot={() => setSelectedSpotId(null)}

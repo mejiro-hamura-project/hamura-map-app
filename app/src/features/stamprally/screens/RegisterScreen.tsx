@@ -6,9 +6,11 @@ import PageContainer from '../components/PageContainer';
 import Button from '../components/Button';
 import { issueNextParticipantNumber, type UseStampRally } from '../hooks/useStampRally';
 import type { Gender, Registration, StudentCategory } from '../types';
-import { syncRegistrationToSheet } from '../lib/sheetApi';
 import { pickRandomCourseId } from '../data/checkpoints';
 import { useI18n } from '../i18n/useI18n';
+import Sprig from '../components/Sprig';
+import { BUTTON_ICONS } from '../buttonIcons';
+import { FLOW_STEP_BY_SCREEN } from '../howtoSteps';
 import {
   MIN_AGE,
   MAX_AGE,
@@ -108,142 +110,153 @@ export default function RegisterScreen() {
       studentCategory: isStudent && studentCategory !== '' ? studentCategory : undefined,
     };
 
-    const participantId = crypto.randomUUID();
     // 参加者番号（この端末でスタンプラリーを開始した順の通し番号）。サーバーは使わず、
     // この端末のlocalStorageだけで1から採番する。
     const participantNumber = issueNextParticipantNumber();
-    const startedAt = new Date().toISOString();
     const courseId = pickRandomCourseId(isStudent && studentCategory === 'elementary');
 
-    // 登録自体はlocalStorageだけで完結する。Googleスプレッドシートへの送信は
-    // 「あれば送る」ベストエフォートで、URL未設定・通信失敗のいずれでも
-    // 参加登録の成否には一切影響しない。
-    register(registration, participantId, participantNumber, courseId, startedAt);
-    syncRegistrationToSheet(registration, participantNumber);
+    // 登録自体はlocalStorageだけで完結し、D1への送信成否では進行を止めない。
+    register(registration, participantNumber, courseId);
     navigate(STAMP_RALLY_ROUTES.rally);
   };
 
-  const fieldClass = (invalid: boolean) =>
-    `w-full rounded-xl border px-4 py-3 text-base focus:outline-none ${
-      invalid ? 'border-stamprally-notice focus:border-stamprally-notice' : 'border-[#ddd] focus:border-stamprally-register'
+  // デザインA案の入力欄。filled（選択済み）は表示だけの区別で、入力チェック・登録処理には関わらない。
+  const fieldClass = (invalid: boolean, filled = false) =>
+    `w-full min-w-0 rounded-xl border px-3 py-2.5 text-base text-sr-ink focus:outline-none focus:ring-2 focus:ring-sr-teal/30 ${
+      invalid
+        ? 'border-sr-red bg-white focus:border-sr-red'
+        : filled
+          ? 'border-sr-green bg-sr-green-soft focus:border-sr-teal'
+          : 'border-sr-line bg-white focus:border-sr-teal'
     }`;
 
   return (
     <PageContainer>
-      <Header />
-      <main className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto px-6 pb-8">
-        <div className="rounded-2xl border-2 border-[#e0c94f] bg-[#fdf9e6] px-4 py-3">
-          <h1 className="text-center text-lg font-bold text-[#8a7412]">{m.register.title}</h1>
+      <Header step={FLOW_STEP_BY_SCREEN.register} />
+      {/* 1画面に収める配置（各入力欄の中身・並び順・処理は従来どおり）。
+          高さ600px以下では見出しを省き（上部の操作指示「① 参加登録をしよう！」が同じ役割）、
+          入力欄を2列に並べる。 */}
+      {/* 内容全体を、中央より画面の高さの約5%上に置く（下側にだけ10dvh分の余白を足す）。
+          進捗バーとの間は最低12px空ける。下の余白は高さが足りないときに真っ先に縮み、入力欄やボタンを押し出さない。 */}
+      <div aria-hidden="true" className="min-h-3 grow" />
+      <main className="flex min-h-0 flex-initial flex-col gap-3 overflow-y-auto px-5 pb-2">
+        <div className="py-0.5 [@media(max-height:600px)]:sr-only">
+          <h1 className="flex items-center justify-center gap-2 text-center text-[clamp(1.5rem,7.5vw,1.875rem)] leading-tight font-extrabold tracking-wide text-sr-ink">
+            <Sprig />
+            {/* 見出しの文言はそのまま */}
+            <span className="min-w-0 text-balance">{m.register.title}</span>
+            <Sprig flip />
+          </h1>
         </div>
 
-        <label className="block">
-          <span className="mb-1 block text-sm font-bold text-[#4a4038]">
-            {m.register.nicknameLabel}
-          </span>
-          <input
-            type="text"
-            value={nickname}
-            onChange={(e) => setNickname(e.target.value)}
-            placeholder={m.register.nicknamePlaceholder}
-            className={fieldClass(false)}
-          />
-        </label>
-
-        <label className="block">
-          <span className="mb-1 block text-sm font-bold text-[#4a4038]">
-            {m.register.genderLabel} <span className="text-stamprally-notice">{m.register.required}</span>
-          </span>
-          <select
-            value={gender}
-            onChange={(e) => setGender(e.target.value as Gender)}
-            className={fieldClass(genderInvalid)}
-          >
-            <option value="">{m.register.selectPlaceholder}</option>
-            {GENDER_VALUES.map((value) => (
-              <option key={value} value={value}>
-                {m.register.gender[value]}
-              </option>
-            ))}
-          </select>
-          {genderInvalid && (
-            <p className="mt-1 text-xs font-bold text-stamprally-notice">{m.register.genderError}</p>
-          )}
-        </label>
-
-        <label className="block">
-          <span className="mb-1 block text-sm font-bold text-[#4a4038]">
-            {m.register.ageLabel} <span className="text-stamprally-notice">{m.register.required}</span>
-          </span>
-          <input
-            type="number"
-            inputMode="numeric"
-            min={MIN_AGE}
-            max={MAX_AGE}
-            step={1}
-            value={ageInput}
-            onChange={(e) => setAgeInput(e.target.value)}
-            placeholder={m.register.agePlaceholder}
-            className={fieldClass(ageInvalid)}
-          />
-          {ageInvalid && <p className="mt-1 text-xs font-bold text-stamprally-notice">{m.register.ageError}</p>}
-        </label>
-
-        <label className="block">
-          <span className="mb-1 block text-sm font-bold text-[#4a4038]">
-            {m.register.isStudentLabel}{' '}
-            <span className="text-stamprally-notice">{m.register.required}</span>
-          </span>
-          <select
-            value={isStudent === '' ? '' : isStudent ? 'yes' : 'no'}
-            onChange={(e) => handleIsStudentChange(e.target.value === 'yes')}
-            className={fieldClass(isStudentInvalid)}
-          >
-            <option value="">{m.register.selectPlaceholder}</option>
-            <option value="yes">{m.register.isStudentYes}</option>
-            <option value="no">{m.register.isStudentNo}</option>
-          </select>
-          {isStudentInvalid && (
-            <p className="mt-1 text-xs font-bold text-stamprally-notice">{m.register.isStudentError}</p>
-          )}
-        </label>
-
-        {isStudent === true && (
-          <label className="block">
-            <span className="mb-1 block text-sm font-bold text-[#4a4038]">
-              {m.register.studentCategoryLabel}{' '}
-              <span className="text-stamprally-notice">{m.register.required}</span>
+        <div className="grid grid-cols-1 gap-x-3 gap-y-2 [@media(max-height:480px)]:grid-cols-2 [@media(max-height:480px)]:gap-y-1.5">
+          <label className="block min-w-0">
+            <span className="mb-0.5 block text-sm font-bold text-sr-ink">
+              {m.register.nicknameLabel}
+            </span>
+            <input
+              type="text"
+              value={nickname}
+              onChange={(e) => setNickname(e.target.value)}
+              placeholder={m.register.nicknamePlaceholder}
+              className={fieldClass(false)}
+            />
+          </label>
+          <label className="block min-w-0">
+            <span className="mb-0.5 block text-sm font-bold text-sr-ink">
+              {m.register.genderLabel} <span className="text-sr-red-strong">{m.register.required}</span>
             </span>
             <select
-              value={studentCategory}
-              onChange={(e) => setStudentCategory(e.target.value as StudentCategory)}
-              className={fieldClass(studentCategoryInvalid || ageCategoryMismatch)}
+              value={gender}
+              onChange={(e) => setGender(e.target.value as Gender)}
+              className={fieldClass(genderInvalid, gender !== '')}
             >
               <option value="">{m.register.selectPlaceholder}</option>
-              {STUDENT_CATEGORY_VALUES.map((value) => (
+              {GENDER_VALUES.map((value) => (
                 <option key={value} value={value}>
-                  {m.register.studentCategory[value]}
+                  {m.register.gender[value]}
                 </option>
               ))}
             </select>
-            {studentCategoryInvalid && (
-              <p className="mt-1 text-xs font-bold text-stamprally-notice">
-                {m.register.studentCategoryError}
-              </p>
-            )}
-            {!studentCategoryInvalid && ageCategoryMismatch && (
-              <p className="mt-1 text-xs font-bold text-stamprally-notice">
-                {ageStudentCategoryErrorMessage(parsedAge!, studentCategory as StudentCategory)}
-              </p>
+            {genderInvalid && (
+              <p className="mt-1 text-xs font-bold text-sr-red-strong">{m.register.genderError}</p>
             )}
           </label>
-        )}
+          <label className="block min-w-0">
+            <span className="mb-0.5 block text-sm font-bold text-sr-ink">
+              {m.register.ageLabel} <span className="text-sr-red-strong">{m.register.required}</span>
+            </span>
+            <input
+              type="number"
+              inputMode="numeric"
+              min={MIN_AGE}
+              max={MAX_AGE}
+              step={1}
+              value={ageInput}
+              onChange={(e) => setAgeInput(e.target.value)}
+              placeholder={m.register.agePlaceholder}
+              className={fieldClass(ageInvalid)}
+            />
+            {ageInvalid && <p className="mt-1 text-xs font-bold text-sr-red-strong">{m.register.ageError}</p>}
+          </label>
+          <label className="block min-w-0">
+            <span className="mb-0.5 block text-sm font-bold text-sr-ink">
+              {m.register.isStudentLabel}{' '}
+              <span className="text-sr-red-strong">{m.register.required}</span>
+            </span>
+            <select
+              value={isStudent === '' ? '' : isStudent ? 'yes' : 'no'}
+              onChange={(e) => handleIsStudentChange(e.target.value === 'yes')}
+              className={fieldClass(isStudentInvalid, isStudent !== '')}
+            >
+              <option value="">{m.register.selectPlaceholder}</option>
+              <option value="yes">{m.register.isStudentYes}</option>
+              <option value="no">{m.register.isStudentNo}</option>
+            </select>
+            {isStudentInvalid && (
+              <p className="mt-1 text-xs font-bold text-sr-red-strong">{m.register.isStudentError}</p>
+            )}
+          </label>
+          {isStudent === true && (
+            <label className="block min-w-0 [@media(max-height:480px)]:col-span-2">
+              <span className="mb-0.5 block text-sm font-bold text-sr-ink">
+                {m.register.studentCategoryLabel}{' '}
+                <span className="text-sr-red-strong">{m.register.required}</span>
+              </span>
+              <select
+                value={studentCategory}
+                onChange={(e) => setStudentCategory(e.target.value as StudentCategory)}
+                className={fieldClass(studentCategoryInvalid || ageCategoryMismatch, studentCategory !== '')}
+              >
+                <option value="">{m.register.selectPlaceholder}</option>
+                {STUDENT_CATEGORY_VALUES.map((value) => (
+                  <option key={value} value={value}>
+                    {m.register.studentCategory[value]}
+                  </option>
+                ))}
+              </select>
+              {studentCategoryInvalid && (
+                <p className="mt-1 text-xs font-bold text-sr-red-strong">
+                  {m.register.studentCategoryError}
+                </p>
+              )}
+              {!studentCategoryInvalid && ageCategoryMismatch && (
+                <p className="mt-1 text-xs font-bold text-sr-red-strong">
+                  {ageStudentCategoryErrorMessage(parsedAge!, studentCategory as StudentCategory)}
+                </p>
+              )}
+            </label>
+          )}
+        </div>
       </main>
 
-      <div className="sticky bottom-0 shrink-0 border-t border-[#eee] bg-white px-6 py-4">
-        <Button variant="register" onClick={handleSubmit} disabled={formHasError}>
+      <div className="sticky bottom-0 shrink-0 bg-sr-bg px-5 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] [@media(max-height:480px)]:pt-1.5 [@media(max-height:480px)]:pb-[max(0.375rem,env(safe-area-inset-bottom))]">
+        <Button variant="register" icon={BUTTON_ICONS.register} onClick={handleSubmit} disabled={formHasError}>
           {m.register.submit}
         </Button>
       </div>
+      <div aria-hidden="true" className="grow" />
+      <div aria-hidden="true" className="h-[10dvh] shrink-[100000]" />
     </PageContainer>
   );
 }

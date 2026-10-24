@@ -23,7 +23,9 @@ export default function StampGrid({
   const charById = new Map(checkpoints.map((c) => [c.id, c.char]));
 
   return (
-    <div className="grid grid-cols-3 justify-items-center gap-4">
+    // 7つの枠を横一列に並べ、画面幅に合わせて縮める（最大48px）。高さの低い横向きでは、
+    // 地図の横に置くため4列で折り返す。
+    <div className="grid grid-cols-7 justify-items-center gap-1 [@media(max-height:480px)]:grid-cols-4">
       {Array.from({ length: totalSlots }, (_, index) => {
         // 枠は獲得した順番（左→右）に埋まる。特定のチェックポイントに紐づく
         // 固定位置ではない。
@@ -36,10 +38,10 @@ export default function StampGrid({
               if (slotRefs) slotRefs.current[index] = el;
             }}
             data-stamp-slot-index={index}
-            className={`flex h-16 w-16 items-center justify-center rounded-full border-2 text-xl font-bold ${
+            className={`flex aspect-square w-full max-w-12 items-center justify-center rounded-full border-2 text-[1.125rem] font-bold [@media(max-height:480px)]:text-[1rem] ${
               collected
-                ? 'border-stamprally-collected bg-[#fff3e0] text-stamprally-collected'
-                : 'border-[#ddd] bg-[#f3f3f3] text-[#ccc]'
+                ? 'border-sr-red bg-sr-red-soft text-stamprally-collected-strong'
+                : 'border-sr-line bg-sr-muted text-sr-sub'
             }`}
           >
             {collected ? charById.get(checkpointId) : '?'}

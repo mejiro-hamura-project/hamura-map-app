@@ -1,3 +1,5 @@
+> 履歴資料: 2026-10-25の共通匿名ID・D1統一で運用を変更しました。現在の統合PreviewではGAS通信を使いません。現行の設定・保存・管理手順は [共通ID・D1運用手順](anonymous-id-d1-operations.md) を参照してください。以下は変更前の仕様・検証記録です。
+
 # 統合appをCloudflare Workers Static Assetsで公開する
 
 公開する正本は `app/` の1つのSPAです。`app/wrangler.jsonc` はWorker名を `hamura-map-app`、配信する静的ファイルを `./dist`、存在しないパスの処理を `single-page-application` に指定します。Worker entry scriptは追加していません。地図・イベント・投稿・スタンプラリーは同じoriginで動きます。

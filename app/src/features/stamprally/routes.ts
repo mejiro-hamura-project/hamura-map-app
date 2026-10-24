@@ -11,14 +11,3 @@ export const STAMP_RALLY_ROUTES = {
   exchange: '/stamprally/exchange',
   result: '/stamprally/result',
 } as const;
-
-const FULL_SCREEN_ROUTES: readonly string[] = [
-  STAMP_RALLY_ROUTES.camera,
-  STAMP_RALLY_ROUTES.reveal,
-  STAMP_RALLY_ROUTES.exchange,
-  STAMP_RALLY_ROUTES.result,
-];
-
-export function isStampRallyFullScreen(pathname: string): boolean {
-  return FULL_SCREEN_ROUTES.includes(pathname.replace(/\/+$/, ''));
-}

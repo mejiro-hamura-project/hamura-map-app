@@ -1,4 +1,5 @@
-import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { useEffect } from 'react';
 import BottomNav from './shared/ui/BottomNav';
 import { MapProviderRoot } from './shared/map';
 import { DevClockProvider } from './shared/context/DevClockContext';
@@ -6,7 +7,7 @@ import HomeScreen from './features/map/HomeScreen';
 import EventsScreen from './features/events/EventsScreen';
 import StampRallyScreen from './features/stamprally/StampRallyScreen';
 import PostsScreen from './features/posts/PostsScreen';
-import { isStampRallyFullScreen, STAMP_RALLY_ROUTES } from './features/stamprally/routes';
+import { STAMP_RALLY_ROUTES } from './features/stamprally/routes';
 import StampRallyLayout from './features/stamprally/StampRallyLayout';
 import NoticeScreen from './features/stamprally/screens/NoticeScreen';
 import HowToPlayScreen from './features/stamprally/screens/HowToPlayScreen';
@@ -18,9 +19,15 @@ import PhraseChallengeScreen from './features/stamprally/screens/PhraseChallenge
 import ExchangeScreen from './features/stamprally/screens/ExchangeScreen';
 import { StampRallyReadProvider } from './shared/integrations/stampRally';
 import { stampRallyReadPort } from './features/stamprally/integrations/readPort';
+import { flushParticipantSync } from './features/stamprally/lib/participantSync';
 
 function AppShell() {
-  const { pathname } = useLocation();
+  useEffect(() => {
+    const flush = () => void flushParticipantSync();
+    flush();
+    window.addEventListener('online', flush);
+    return () => window.removeEventListener('online', flush);
+  }, []);
 
   return (
     <div className="mx-auto flex h-dvh max-w-[420px] flex-col bg-bg">
@@ -45,7 +52,7 @@ function AppShell() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
-      {!isStampRallyFullScreen(pathname) && <BottomNav />}
+      <BottomNav />
     </div>
   );
 }

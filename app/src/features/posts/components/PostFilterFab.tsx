@@ -7,6 +7,7 @@ export default function PostFilterFab({ activeCount, onClick }: PostFilterFabPro
   return (
     <button
       type="button"
+      aria-label="投稿を絞り込む"
       onClick={onClick}
       className="absolute bottom-4 left-5 z-20 flex h-[54px] w-[54px] items-center justify-center rounded-full border border-line bg-card shadow-lg"
     >
