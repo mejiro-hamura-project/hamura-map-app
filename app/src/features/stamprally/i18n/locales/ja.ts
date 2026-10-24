@@ -21,7 +21,7 @@ export const ja = {
     title: '注意事項',
     safetyHeading: '安全に関するお願い',
     safetyBody:
-      '境内は多くの参拝者で賑わいます。走ったり、他の参拝者にぶつかったりしないよう、周囲に十分ご注意のうえお楽しみください。スマートフォンの画面を見ながらの歩行は大変危険ですので、必ず立ち止まってご利用ください。',
+      '会場内は多くの参加者で賑わいます。走ったり、他の参加者にぶつかったりしないよう、周囲に十分ご注意のうえお楽しみください。スマートフォンの画面を見ながらの歩行は大変危険ですので、必ず立ち止まってご利用ください。',
     privacyHeading: '個人情報について',
     privacyBody:
       'ご登録いただいた情報は、本イベントの運営および景品交換の確認のためにのみ使用し、それ以外の目的では使用いたしません。第三者への提供は行いません。',
@@ -78,8 +78,8 @@ export const ja = {
     // 他言語ファイルとの互換性維持のためキー自体は残している。
     steps: [
       {
-        title: '境内のQRコードを探そう！',
-        body: '境内のあちこちに、スタンプラリー専用のQRコードがかくれているよ。探してみよう！',
+        title: '会場内のQRコードを探そう！',
+        body: '会場内のあちこちに、スタンプラリー専用のQRコードがかくれているよ。探してみよう！',
       },
       {
         title: 'カメラで読み取ろう！',
@@ -154,7 +154,7 @@ export const ja = {
     countShort: 'スタンプ',
     completeBanner1: '7つのスタンプがすべて揃いました！',
     completeBanner2: '正しい並び順を考えて、お題に挑戦してください。',
-    phraseSolvedBanner: 'お題が完成しました！本殿で景品と交換してください。',
+    phraseSolvedBanner: 'お題が完成しました！画面をスタッフに見せて、景品と交換してください。',
     exchangedBanner: '景品交換はすでに完了しています',
     challengeCta: '文字を並べる',
     exchangeCta: '景品交換へ進む',
@@ -255,7 +255,7 @@ export const jaElementaryOverride = {
     countShort: 'スタンプ',
     completeBanner1: '7つ あつまったよ！',
     completeBanner2: '正しい 並び順を 考えて、お題に 挑戦しよう。',
-    phraseSolvedBanner: 'お題が できたよ！本殿で こうかんしよう',
+    phraseSolvedBanner: 'お題が できたよ！がめんを スタッフに 見せて、景品と こうかんしよう。',
     exchangedBanner: '景品交換は もう おわっています',
     challengeCta: 'もじを ならべる',
     exchangeCta: '景品交換へ すすむ',

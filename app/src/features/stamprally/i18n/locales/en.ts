@@ -20,7 +20,7 @@ const en: PartialMessages = {
     title: 'Please Note',
     safetyHeading: 'Safety request',
     safetyBody:
-      'The shrine grounds get crowded with visitors. Please watch your surroundings and avoid running or bumping into others. Walking while looking at your phone is very dangerous, so please stop before using the app.',
+      'The event venue gets crowded with participants. Please watch your surroundings and avoid running or bumping into others. Walking while looking at your phone is very dangerous, so please stop before using the app.',
     privacyHeading: 'About personal information',
     privacyBody:
       'The information you register is used only for running this event, confirming prize exchanges, and statistics. It is not used for any other purpose and is never shared with third parties.',
@@ -36,8 +36,8 @@ const en: PartialMessages = {
     imagePlaceholder: 'Image placeholder',
     steps: [
       {
-        title: 'Find the QR codes around the grounds!',
-        body: 'Stamp rally QR codes are hidden all around the shrine grounds. Go find them!',
+        title: 'Find the QR codes around the event venue!',
+        body: 'Stamp rally QR codes are hidden around the event venue. Go find them!',
       },
       {
         title: 'Scan them with your camera!',
@@ -49,7 +49,7 @@ const en: PartialMessages = {
       },
       {
         title: 'Complete the phrase and exchange it!',
-        body: 'Once you have all 7, head to the main hall. Show your screen to a staff member to get your prize!',
+        body: 'Once you have all 7, complete the phrase and show your screen to a staff member to get your prize!',
       },
     ],
   },
@@ -100,7 +100,7 @@ const en: PartialMessages = {
     countShort: 'Stamps',
     completeBanner1: 'You collected all 7 stamps!',
     completeBanner2: 'Work out the right order and take on the phrase challenge.',
-    phraseSolvedBanner: 'You completed the phrase! Exchange it at the main hall.',
+    phraseSolvedBanner: 'You completed the phrase! Show your screen to a staff member to exchange it for a prize.',
     exchangedBanner: 'Your prize exchange is complete.',
     challengeCta: 'Take on the phrase challenge',
     exchangeCta: 'Go to prize exchange',
@@ -153,7 +153,7 @@ const en: PartialMessages = {
     title2: 'Completion Prize — Exchange Desk',
     numberLabel: 'Exchange number',
     staffNotice1: 'Once staff have checked it, pick up your prize!',
-    staffNotice2: 'Please hand your phone to a staff member.',
+    staffNotice2: 'Please show this screen to a staff member.',
     staffNotice3: 'Only staff can finalize the prize exchange.',
     longPressHint: '(Staff: press and hold this box to open the exchange confirmation)',
     exchangeButton: 'Exchange',

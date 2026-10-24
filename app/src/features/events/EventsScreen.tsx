@@ -38,7 +38,7 @@ export default function EventsScreen() {
           ) : items.length === 0 ? (
             <p className="p-6 text-center text-sm text-sub">このカテゴリの情報はまだありません</p>
           ) : (
-            items.map((spot, index) => <EventListItem key={spot.id} index={index + 1} spot={spot} />)
+            items.map((spot) => <EventListItem key={spot.id} spot={spot} />)
           )}
         </div>
       )}
