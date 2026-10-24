@@ -2,7 +2,7 @@
 
 地図・イベント・投稿・スタンプラリーを1つのWebアプリとして提供する、市民祭りアプリの正本repositoryです。チーム共通の正本は `main`、現在の実装の正本は `app/` です。
 
-公開URL：**https://hamura-map-app.academeia.workers.dev/**
+Cloudflare通常公開URL（Production）：**https://hamura-map-app.academeia.workers.dev/**。イベント正式版の公開可否は別途運営側で判断します。実際の配信commitはCloudflareで確認してください。
 
 Stamp Rallyの一体化とCloudflare Workersへの公開は完了し、スマートフォン実機で基本動作を確認済みです（運営からの確認報告）。PWA/offlineの最終受入、GAS / Google Sheets実接続、出展者データ統合、複数OS・端末での網羅的な実機試験は残っています。
 
@@ -18,7 +18,7 @@ Stamp Rallyの一体化とCloudflare Workersへの公開は完了し、スマー
 | QR生成 | `app/scripts/stamprally/` |
 | Cloudflare設定 | `app/wrangler.jsonc` |
 
-Stamp Rallyの正式な開発場所は `app/src/features/stamprally/` です。旧runtimeは削除済みで、復元が必要な場合はGit履歴を参照します。rootのHTML・JSXやdocs内のプロトタイプは過去の試作資料です。
+Stamp Rallyの正式な開発場所は `app/src/features/stamprally/` です。旧runtimeは削除済みで、復元が必要な場合はGit履歴を参照します。リポジトリ直下にあった電卓・おみくじ・ルーレット・タイマーの無関係な試作品は整理し、必要時はGit履歴から参照します。`docs/`内の初期仕様・UIプロトタイプは履歴資料として残しています。
 
 ## ローカル起動
 
@@ -50,7 +50,7 @@ Stamp Rallyを変更した場合は `npm run test:stamprally` も実行します
 
 ## 設定と関連docs
 
-`integration/stamp-rally-preview` は全画面共通フッター、共通匿名UUID、口コミ・ラリー補助記録のD1保存を統合した検証用ブランチです。D1は未接続・受付停止が既定で、地図・イベント・ラリーは継続利用できます。[共通ID・D1運用手順](docs/anonymous-id-d1-operations.md) と [今回の検証記録](docs/anonymous-id-d1-validation.md) を参照してください。
+**引継ぎの入口は [開発・運用引継ぎ（2026-10-25）](docs/handover-20261025.md) です。** 佐々木さんの地図等（PR #6）、長谷川さんのスタンプラリーUI（PR #7）、共通フッター、共通匿名UUID、口コミ・ラリーD1（PR #8）をmainへ統合します。D1未接続・受付停止が既定で、地図・イベント・ラリーは継続利用できます。[共通ID・D1運用手順](docs/anonymous-id-d1-operations.md) と [今回の検証記録](docs/anonymous-id-d1-validation.md) を参照してください。
 
 GAS通信は廃止しました。共通IDとラリー進行は同じoriginのブラウザストレージへ保存し、登録・交換のD1通信は非同期です。保存先未接続・オフラインでもラリーを続行できます。実DB ID・secret・実データはcommitしません。
 
