@@ -1,67 +1,49 @@
-# CLAUDE.md — 市民祭りデジタルパンフレットアプリ
+# CLAUDE.md — 市民祭りデジタルパンフレットアプリ（2026-10-25更新）
 
-Claude Code用のプロジェクトガイド（各セッション冒頭で読み込まれます）。
-詳細な仕様は `docs/市民祭りアプリ_仕様書.md` を参照。大きな話はそちらを都度読むこと。
+このリポジトリで開発する際に参照するプロジェクトガイドです。**現在の実装と残作業は [開発・運用引継ぎ](docs/handover-20261025.md) を優先**し、`docs/`の初期仕様・UIプロトタイプ・旧GAS手順は設計履歴として参照してください。
 
-## プロジェクト概要
-- 東京都某市の市民祭り向けデジタルパンフレット。**スマホのブラウザで開くWebアプリ（PWA）**。
-- 機能：ホーム地図／検索／イベント一覧／スタンプラリー（**実装済み**）／投稿（口コミ）。
-- 将来：市全体の「マップ型SNS」へ運用移行。祭り固有を隔離し、汎用データモデルで作る。
+## 正本と公開境界
 
-## 現在の実装状況（重要）
-- ✅ **スタンプラリー本体：実装済み**（注意事項→遊び方→参加登録→QR収集→合言葉→景品交換）。**原則として作り替えない**。
-- ✅ **統合appの正本は `app/`**。スタンプラリーは `app/src/features/stamprally/`。ホーム地図・スタンプQR表示・検索・イベント一覧・投稿はモックデータで実装済み。
-- ⛏ **残作業**：バックエンド・データ基盤、出展者データ統合、任意GAS / Sheets実接続、PWA/offline最終受入。現行の共同開発手順は `docs/development-workflow.md` を参照。
-- **着手前に必ず既存のスタンプラリー実装を読む**こと。その技術選定・状態管理・命名に合わせる。
+- Repository: `mejiro-hamura-project/hamura-map-app`、チーム共通の正本は`main`。
+- 動くアプリの正本: `app/`。rootのHTMLや過去のzip/別repoは正本ではない。
+- React + Vite + TypeScript + Tailwind + PWA。Cloudflare Workers Static Assets + Worker REST API + D1。
+- 通常公開環境は`main`をProduction branchとしてビルドする設定。mainの変更で公開デプロイが動き得る。正式イベント利用の受入とは別。
+- ローカル起動: `cd app && npm ci && npm run dev`。build: `npm run build`、lint: `npm run lint`。詳細は[共同開発手順](docs/development-workflow.md)。
 
-## 技術スタック
-- フロント：React + Vite + TypeScript、PWA（**既存コードに準拠**。相違があれば既存優先）。
-- スタイル：既存に合わせる。デザイントークン（色・タイポ・余白）は1箇所に集約。
-- 地図：**ImageMap**（イラスト地図画像＋画像座標オーバーレイ。例：leafletの画像オーバーレイ）。将来 **GeoMap**（実地図タイル／MapLibre 等）へ差し替え可能な抽象化を必ず入れる。
-- QR：既存スタンプラリーが使っている読み取り実装に合わせる（新規に別実装を作らない）。
-- バック：REST または GraphQL + RDB（PostgreSQL、位置は PostGIS 想定）。初期はモック／ローカルJSONでも可。
+## 実装済み機能
 
-## アーキテクチャ原則（必守）
-1. 「**地図 × スポット × 投稿**」を土台に。祭り固有名をDB型名/APIに使わず、汎用名（`Spot / Event / Category / Tag / Post / User`）で統一。
-2. 地図は **MapProvider** で抽象化（ImageMap/GeoMap 差し替え可）。スポットは**画像座標と緯度経度の両方**を保持可能に。
-3. フィルター/カテゴリは**単一の共通マスタ**。地図検索・イベント一覧・投稿フィルターで共有（二重定義禁止）。
-4. 祭り固有データは `Event` 配下に隔離。
-5. `User` は最初から用意（Phase 1はニックネーム最小、投稿の作者に紐づけ）。
+- ホーム地図・会場画像・店舗/ブース・イベント/演目・検索・ポップアップ: `app/src/features/map/`、`events/`、`app/src/mocks/`。
+- 全画面共通フッター4メニュー: `app/src/App.tsx`、`app/src/shared/ui/BottomNav.tsx`。
+- スタンプラリー: `app/src/features/stamprally/`。注意事項→参加登録→QR収集→合言葉→景品交換。進捗は`stampRally.v2`に端末保存。QR7種と5コースを維持。
+- 口コミ: `app/src/features/posts/`、`app/src/api/usePosts.ts`。投稿・閲覧・絞り込み・再送重複防止。**「いいね」と写真投稿は採用しない**。
+- 共通匿名ID: `app/src/shared/utils/deviceUser.ts`、`app.anonymousId.v1`。口コミ・ラリーは同じUUID v4を使用（ログイン・本人認証ではない）。
+- Worker+D1: `app/worker/index.ts`、`app/migrations/0001_posts.sql`／`0002_participants.sql`。口コミとラリー参加・交換日時を扱い、個別スタンプ取得履歴はD1へ送らない。
+- **GAS・Google Sheetsへの送信は現行アプリから撤去済み**。旧GAS手順は履歴として残す。
+- D1が未接続でも地図・イベント・ラリーは継続利用可能。`POSTS_ENABLED=false`／`RALLY_SYNC_ENABLED=false`が初期設定で、投稿受付・ラリー補助同期は停止。
 
-## コアデータモデル（要点。詳細は仕様書6章）
-- `Spot`: id, name, categoryId, tagIds[], description, images[], mapId, x, y, lat?, lng?, schedule?, eventId, stampCheckpointId?
-- `Category` / `Tag`（共通タクソノミー）
-- `Post`: id, userId, spotId, caption, images[], likeCount, createdAt
-- `User`: id, nickname（Phase2で認証・プロフィール・フォロー）
-- `Event` / `Map`（会場・地図アセット、画像座標のキャリブレーション）
-- **スタンプQRの設置場所も `Spot`（種別＝スタンプQR）** として `mapId/x/y`（＋任意で緯度経度）と `stampCheckpointId` で扱う。
+## アーキテクチャ／作業上の注意
 
-## スタンプQR地図表示 ↔ 既存スタンプラリーの連携契約（唯一のスタンプ改修）
-- 既存スタンプラリーは「7つのチェックポイント定義（QR識別子 ↔ 合言葉の文字 ↔ 並び順）」と「取得済み状態」を保持しているはず。
-- 地図側はこれを**読み取り専用で参照**してマーカー描画・状態同期を行う。**状態を二重管理しない**。
-- 取得状態が localStorage 等にある場合も、**既存の公開I/F（セレクタ/フック）経由で参照**する。無ければ既存側に**読み取り用の最小I/Fだけ追加**（内部ロジックは非改変）。
-- 「カメラで読み取る」導線は**既存スタンプラリーのカメラ起動を呼び出す**（新規にカメラ実装を作らない）。
+1. 現行の型・命名・データ・UIを確認してから改修し、スタンプラリー本体を不用意に作り直さない。カメラ読み取り、状態保存、PR #7のUI、フッター、進捗復帰の動作を維持する。
+2. 地図×スポット×投稿の共通モデル、`MapProvider`、共有タクソノミーとストレージ窓口を使用。ブラウザストレージをfeature内で直接操作せず`shared/storage`を経由する。
+3. 現行データは`app/src/mocks/`の店舗・会場・演目・地図資産。`docs/stores.json`や古い仕様書は現行データの正本ではない。QRの印刷と設置位置は別途確認する。
+4. 口コミはD1保存が成功したときだけ成功表示。APIは同一origin、`/api/*`をPWAキャッシュ対象外にする。匿名UUIDをHMAC化して頻度制限（60秒5件）、公開APIに秘密・内部キーを出さない。
+5. スタンプラリーは端末内で完結させ、補助D1同期は失敗しても利用者を止めない。景品交換の正式管理は現地の紙／Googleフォーム。個別スタンプ履歴のサーバー保存は不要。
+6. D1作成・migration・binding・secret・運営非表示・データ保存期限の手順は[現行運用文書](docs/anonymous-id-d1-operations.md)。実secret、DB ID、個人情報、CSV・バックアップをGitに入れない。
+7. 共同作業では`app/src/App.tsx`、`app/src/shared/`、`app/vite.config.ts`、`app/wrangler.jsonc`、`app/package*.json`などの共有箇所の変更を明示し、必ず最新mainとの差分を調べる。
+8. 原則は最新mainから作業branch→テスト→PR→統合。学生の既存PRのコミットがすでに統合済みなら二重にマージしない。`main`をforce pushしない。
+9. 変更後は`npm run build`／`npm run lint`、関連する`test:stamprally`、`test:identity`、`check:worker`、`test:posts:unit`、`test:posts:integration`を適切に実行。成功済みの無関係なテストを無意味に繰り返さない。
 
-## ディレクトリ構成（提案。既存に合わせて調整）
-- `src/features/{map, search, events, stamprally(既存), posts}/`
-- `src/shared/{types, taxonomy(共通フィルター), map(MapProvider), ui, storage}/`
-- `src/api/` または `src/mocks/`
-- `docs/`（仕様書・スタンプラリー元仕様・UIプロトタイプを配置）
+## 未完了・運営への引継ぎ
 
-## 規約
-- TypeScript strict。命名・整形は既存に合わせる（Lint/Prettier があれば従う）。
-- 文言・色・カテゴリ/タグは**定数に集約**（差し替え容易に）。UIは日本語。
-- **ブラウザストレージ直叩き禁止** → 共有storageユーティリティ経由。
-- コミットは機能単位。PR前に**ビルド・型チェック・テスト**を通す。
+- 大嶋先生のCloudflareアカウントと正式URLの確定、D1実DB接続・migrations・secret・フラグ有効化。
+- iPhone Safari／Android Chromeでの画面・セーフエリア・キーボード・実カメラ・PWA更新の受入。
+- 長谷川さんのUIの余白・スクロール調整、佐々木さんの地図PNG・店舗／イベント情報、QR設置位置の最終確認。
+- 投稿の手動非表示担当、参加者の登録データ保持期間・削除日、実DBからのCSV出力・運用。
 
-## やらないこと（Don't）
-- 既存スタンプラリーの内部ロジックを作り替えない（**連携I/Fの追加に留める**）。
-- 祭り固有名をデータ型/テーブル/APIに埋め込まない。
-- フィルター/カテゴリを画面ごとに個別定義しない（共通マスタのみ）。
-- 実イラストマップ画像・QRの中身・APIキー等の**素材/秘匿情報を仮置きして本実装に混ぜない**（設定/環境変数で外出し）。
+## 文書の参照順
 
-## 参照
-- 詳細仕様：`docs/市民祭りアプリ_仕様書.md`（機能・データ・移行方針）
-- スタンプラリー元仕様：`docs/stamp_rally_prompt.md`（実装済み機能の元仕様）
-- UIプロトタイプ：`docs/市民祭りアプリ_UIプロトタイプ.html`（配色・画面・遷移の見本）
-- 開発手順：`docs/市民祭りアプリ_開発手順書.md`（マイルストーン）
+1. [開発・運用引継ぎ](docs/handover-20261025.md) — 現在の全体像
+2. [D1運用手順](docs/anonymous-id-d1-operations.md) — DB・投稿管理・CSV・削除
+3. [統合検証記録](docs/anonymous-id-d1-validation.md) — 検証済みと未検証
+4. [共同開発手順](docs/development-workflow.md) — Git・PR・テスト
+5. 旧[仕様書](docs/市民祭りアプリ_仕様書.md)・[UIプロトタイプ](docs/市民祭りアプリ_UIプロトタイプ.html)・[初期開発手順](docs/市民祭りアプリ_開発手順書.md)・[元スタンプ仕様](docs/stamp_rally_prompt.md) — 必要時に履歴としてのみ参照
