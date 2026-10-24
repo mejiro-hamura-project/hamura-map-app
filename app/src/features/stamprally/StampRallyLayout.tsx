@@ -16,7 +16,7 @@ const INTRO_ROUTES: readonly string[] = [
   STAMP_RALLY_ROUTES.register,
 ];
 
-/** 子画面の切替やBottomNavの表示切替でも、この1つの状態を保持する。 */
+/** 子画面で状態を共有し、フッターから戻った際は保存済みの進捗を読み込む。 */
 export default function StampRallyLayout() {
   const stampRally = useStampRally();
   const { pathname } = useLocation();

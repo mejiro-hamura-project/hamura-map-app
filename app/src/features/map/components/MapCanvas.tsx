@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import type { Booth, Post, Spot, Store, VenueHotspot, VenueMap } from '../../../shared/types';
+import type { Booth, Spot, Store, VenueHotspot, VenueMap } from '../../../shared/types';
 import ZoomPanView from '../../../shared/ui/ZoomPanView';
 import StageNowBubble from './StageNowBubble';
 import VenueHotspotArea from './VenueHotspotArea';
@@ -47,8 +47,6 @@ type MapCanvasProps = {
   selectedBooth: Booth | null;
   /** ブースの店一覧からタップされた店の詳細。無ければ詳細ポップアップは出さない */
   selectedStoreSpot: Spot | null;
-  /** 店の詳細ポップアップに口コミを出すための投稿一覧 */
-  posts?: Post[];
   onSpotTap: (spotId: string) => void;
   onCloseSpot: () => void;
   onOpenSearch: () => void;
@@ -77,7 +75,6 @@ export default function MapCanvas({
   stores = [],
   selectedBooth,
   selectedStoreSpot,
-  posts = [],
   onSpotTap,
   onCloseSpot,
   onOpenSearch,
@@ -204,7 +201,7 @@ export default function MapCanvas({
       {selectedSpot &&
         (isSelectedQr
           ? isAllVenues && <QrPopup spot={selectedSpot} onClose={onCloseSpot} />
-          : <SpotPopup spot={selectedSpot} posts={posts} onClose={onCloseSpot} />)}
+          : <SpotPopup spot={selectedSpot} onClose={onCloseSpot} />)}
       {selectedBooth && (
         <BoothCodesPopup
           booth={selectedBooth}
@@ -213,7 +210,7 @@ export default function MapCanvas({
           onClose={onCloseBooth}
         />
       )}
-      {selectedStoreSpot && <SpotPopup spot={selectedStoreSpot} posts={posts} onClose={onCloseStoreSpot} />}
+      {selectedStoreSpot && <SpotPopup spot={selectedStoreSpot} onClose={onCloseStoreSpot} />}
       <SearchFab onClick={onOpenSearch} />
     </div>
   );

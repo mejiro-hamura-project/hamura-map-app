@@ -1,18 +1,17 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { findCategoryById, findGenreById, findTagById } from '../../../shared/taxonomy';
-import type { Post, Spot } from '../../../shared/types';
+import type { Spot } from '../../../shared/types';
 import { rememberRecentSpot } from '../../../shared/utils/recentSpots';
 import { POSTS_ROUTE_STATE_KEY } from '../../posts/routeState';
 import SpotPostList from './SpotPostList';
 
 type SpotPopupProps = {
   spot: Spot;
-  posts: Post[];
   onClose: () => void;
 };
 
-export default function SpotPopup({ spot, posts, onClose }: SpotPopupProps) {
+export default function SpotPopup({ spot, onClose }: SpotPopupProps) {
   const category = findCategoryById(spot.categoryId);
   const genre = findGenreById(spot.genreId);
   const tags = spot.tagIds.map((tagId) => findTagById(tagId)).filter((tag) => tag !== undefined);
@@ -68,7 +67,7 @@ export default function SpotPopup({ spot, posts, onClose }: SpotPopupProps) {
           ))}
         </div>
       )}
-      <SpotPostList spotId={spot.id} posts={posts} />
+      <SpotPostList spotId={spot.id} />
       <button
         type="button"
         onClick={handleWriteReview}

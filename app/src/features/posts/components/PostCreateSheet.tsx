@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import type { Spot } from '../../../shared/types';
 import { matchesSpotQuery } from '../../../shared/utils/spotSearch';
 import { getRecentSpotIds } from '../../../shared/utils/recentSpots';
@@ -8,12 +8,14 @@ type PostCreateSheetProps = {
   shops: Spot[];
   /** 最初から選んでおく投稿先（地図の店の詳細の「口コミを書く」から開いたとき） */
   initialSpotId?: string | null;
-  onSubmit: (input: { spotId: string; caption: string }) => void;
+  acceptingPosts: boolean;
+  isLoading: boolean;
+  onSubmit: (input: { spotId: string; caption: string }, key: string) => Promise<void>;
   onClose: () => void;
 };
 
-// 本文の上限。シート（Apps Script）側でも同じ長さで切り詰める。docs/posts/posts-sheet.md 参照
-const MAX_CAPTION_LENGTH = 200;
+// Workerと同じUnicodeコードポイント単位で数える。
+const MAX_CAPTION_LENGTH = 500;
 // 投稿先の候補を出す最大件数（地図の検索と同じ）
 const MAX_CANDIDATES = 10;
 
@@ -23,12 +25,16 @@ const MAX_CANDIDATES = 10;
  * 名前を入力したら、その候補を出す（全店を並べると感想の入力欄が画面の下に押し出されるため）。
  * 選んだら候補を閉じて「投稿先：○○」の1行にまとめ、すぐ下の感想欄に進めるようにする。
  */
-export default function PostCreateSheet({ shops, initialSpotId = null, onSubmit, onClose }: PostCreateSheetProps) {
+export default function PostCreateSheet({ shops, initialSpotId = null, acceptingPosts, isLoading, onSubmit, onClose }: PostCreateSheetProps) {
   const [query, setQuery] = useState('');
   const [selectedSpotId, setSelectedSpotId] = useState<string | null>(initialSpotId);
   // 開いたときの「最近見た」を使う（開いている間に並びが変わらないようにする）
   const [recentSpotIds] = useState(getRecentSpotIds);
   const [caption, setCaption] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState('');
+  const inFlight = useRef(false);
+  const attempt = useRef<{ body: string; key: string } | null>(null);
 
   const trimmedQuery = query.trim();
   const candidates = trimmedQuery
@@ -38,12 +44,26 @@ export default function PostCreateSheet({ shops, initialSpotId = null, onSubmit,
   const recentShops = recentSpotIds
     .map((id) => shops.find((shop) => shop.id === id))
     .filter((shop): shop is Spot => shop !== undefined);
-  const canSubmit = Boolean(selectedShop) && caption.trim().length > 0;
+  const captionLength = [...caption].length;
+  const canSubmit = acceptingPosts && Boolean(selectedShop) && caption.trim().length > 0 && captionLength <= MAX_CAPTION_LENGTH && !isSubmitting;
 
-  function handleSubmit() {
-    if (!selectedSpotId || !canSubmit) return;
-    onSubmit({ spotId: selectedSpotId, caption: caption.trim() });
-    onClose();
+  async function handleSubmit() {
+    if (!selectedSpotId || !canSubmit || inFlight.current) return;
+    const input = { spotId: selectedSpotId, caption: caption.trim() };
+    const body = JSON.stringify(input);
+    if (attempt.current?.body !== body) attempt.current = { body, key: crypto.randomUUID() };
+    inFlight.current = true;
+    setIsSubmitting(true);
+    setError('');
+    try {
+      await onSubmit(input, attempt.current.key);
+      onClose();
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : '投稿できませんでした');
+    } finally {
+      inFlight.current = false;
+      setIsSubmitting(false);
+    }
   }
 
   function handleChangeTarget() {
@@ -56,6 +76,7 @@ export default function PostCreateSheet({ shops, initialSpotId = null, onSubmit,
       <div className="flex items-center gap-2.5 border-b border-line bg-card px-3.5 py-3">
         <button
           type="button"
+          disabled={isSubmitting}
           onClick={onClose}
           className="flex items-center gap-1 rounded-full border border-line px-3 py-1.5 text-xs font-bold text-ink"
         >
@@ -68,6 +89,9 @@ export default function PostCreateSheet({ shops, initialSpotId = null, onSubmit,
       </div>
 
       <div className="flex-1 overflow-y-auto pb-4">
+        {!isLoading && !acceptingPosts && <p role="alert" className="mx-4 mt-3 text-sm text-red-700">現在、投稿受付を停止しています。投稿は保存できません。</p>}
+        {error && <p role="alert" className="mx-4 mt-3 text-sm text-red-700">{error} 入力を保持しています。</p>}
+        <fieldset disabled={isSubmitting} className="min-w-0">
         <div className="mt-4 px-4 text-xs font-extrabold tracking-wide text-sub">① 投稿先</div>
         {selectedShop ? (
           <div className="mx-4 mt-2 flex items-center gap-2 rounded-xl border-[1.5px] border-brand-blue bg-brand-blue-soft px-3.5 py-2.5">
@@ -119,19 +143,19 @@ export default function PostCreateSheet({ shops, initialSpotId = null, onSubmit,
         <div className="mx-4 mb-1.5 mt-5 flex items-baseline justify-between text-xs font-extrabold tracking-wide text-sub">
           <span>② 感想</span>
           <span className="font-bold tabular-nums">
-            {caption.length}／{MAX_CAPTION_LENGTH}
+            {captionLength}／{MAX_CAPTION_LENGTH}
           </span>
         </div>
         <div className="mx-4">
           <textarea
             value={caption}
             onChange={(e) => setCaption(e.target.value)}
-            maxLength={MAX_CAPTION_LENGTH}
             rows={4}
             placeholder="感想を書く…"
             className="w-full resize-none rounded-xl border border-line bg-card px-3 py-2.5 text-sm outline-none"
           />
         </div>
+        </fieldset>
       </div>
 
       <button
@@ -140,7 +164,7 @@ export default function PostCreateSheet({ shops, initialSpotId = null, onSubmit,
         disabled={!canSubmit}
         className="mx-4 mb-4 rounded-full bg-brand-blue py-3.5 text-center text-sm font-extrabold text-white disabled:cursor-not-allowed disabled:opacity-40"
       >
-        {selectedShop ? '投稿する' : '投稿先を選んでください'}
+        {isSubmitting ? '送信中…' : selectedShop ? '投稿する' : '投稿先を選んでください'}
       </button>
     </div>
   );

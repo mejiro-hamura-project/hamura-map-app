@@ -50,6 +50,8 @@ Stamp Rallyを変更した場合は `npm run test:stamprally` も実行します
 
 ## 設定と関連docs
 
+`integration/stamp-rally-preview` はD1投稿APIと全画面共通フッターを統合した検証用ブランチです。D1は未接続・投稿受付停止が既定で、地図・イベント・スタンプラリーは継続利用できます。[統合記録](docs/posts-d1-footer-integration.md) と [D1導入手順](docs/posts-d1-local-handoff.md) を参照してください。旧GAS投稿用の `VITE_POSTS_API_URL` は使いません。
+
 `VITE_SHEET_WEBHOOK_URL` が未設定でも登録から景品交換まで利用できます。進行状況は同じoriginのブラウザストレージに保存します。設定例は `app/.env.example`。実際の環境変数やWebhook URLはcommitしません。
 
 Cloudflare Workers Static Assetsは `app/dist` のみを公開します。Production branchは `main`、Root directoryは `app`、Build commandは `npm run build`、Deploy commandは `npx wrangler deploy` です。通常のfeature開発ではCloudflare設定を変更する必要はありません。
