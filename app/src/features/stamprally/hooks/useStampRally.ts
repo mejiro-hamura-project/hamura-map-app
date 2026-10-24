@@ -1,9 +1,11 @@
 import { storage } from '../../../shared/storage/storage';
 import { loadState, STORAGE_KEY } from '../lib/stateStorage';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Registration, StampRallyState } from '../types';
 import { TOTAL_STAMPS } from '../data/checkpoints';
 import { createDevActions } from '../dev/devActions';
+import { getAnonymousId } from '../../../shared/utils/deviceUser';
+import { createParticipantSnapshot, queueParticipantSync } from '../lib/participantSync';
 
 // 参加者番号（この端末でスタンプラリーを開始した順の通し番号）専用のカウンター。
 // participantごとの状態（STORAGE_KEY）とは別に持ち、DEVパネルのリセット（resetAll/resetProgress）で
@@ -31,29 +33,29 @@ export function issueNextParticipantNumber(): number {
 
 export function useStampRally() {
   const [state, setState] = useState<StampRallyState>(loadState);
+  const stateRef = useRef(state);
+  stateRef.current = state;
 
   useEffect(() => {
     storage.set(STORAGE_KEY, state);
   }, [state]);
 
-  // participantId・courseId・startedAt・participantNumber は呼び出し元（登録画面）で
-  // 1回だけ渡す。?? で既存値を優先するため、誤って複数回呼ばれても上書きされない。
+  // 匿名IDと開始日時はこのhookで一度だけ確定する。共通匿名IDは口コミと同じものを使う。
   const register = useCallback(
-    (
-      registration: Registration,
-      participantId: string,
-      participantNumber: number,
-      courseId: number,
-      startedAt: string,
-    ) => {
-      setState((prev) => ({
-        ...prev,
+    (registration: Registration, participantNumber: number, courseId: number) => {
+      const current = stateRef.current;
+      const nextState: StampRallyState = {
+        ...current,
         registration,
-        participantId: prev.participantId ?? participantId,
-        participantNumber: prev.participantNumber ?? participantNumber,
-        courseId: prev.courseId ?? courseId,
-        startedAt: prev.startedAt ?? startedAt,
-      }));
+        participantId: current.participantId ?? getAnonymousId(),
+        participantNumber: current.participantNumber ?? participantNumber,
+        courseId: current.courseId ?? courseId,
+        startedAt: current.startedAt ?? new Date().toISOString(),
+      };
+      stateRef.current = nextState;
+      setState(nextState);
+      const snapshot = createParticipantSnapshot(nextState);
+      if (snapshot) void queueParticipantSync(snapshot);
     },
     [],
   );
@@ -74,10 +76,19 @@ export function useStampRally() {
     setState((prev) => ({ ...prev, phraseSolved: true }));
   }, []);
 
-  // 景品交換の確定（ローカル状態）。Googleスプレッドシートへの保存が成功した
-  // 後に呼び出し元（景品交換画面）から呼ばれる。
+  // 景品交換はローカルで先に確定し、初回時刻を保持したままD1へ非同期送信する。
   const exchangePrize = useCallback(() => {
-    setState((prev) => ({ ...prev, prizeExchanged: true }));
+    const current = stateRef.current;
+    if (current.prizeExchanged) return;
+    const nextState: StampRallyState = {
+      ...current,
+      prizeExchanged: true,
+      exchangedAt: current.exchangedAt ?? new Date().toISOString(),
+    };
+    stateRef.current = nextState;
+    setState(nextState);
+    const snapshot = createParticipantSnapshot(nextState);
+    if (snapshot) void queueParticipantSync(snapshot);
   }, []);
 
   // 開発モード専用のテスト操作（DEVパネルからだけ使う。処理は dev/devActions.ts）。
@@ -102,6 +113,7 @@ export function useStampRally() {
     phraseSolved: state.phraseSolved,
     prizeExchanged: state.prizeExchanged,
     startedAt: state.startedAt,
+    exchangedAt: state.exchangedAt,
     collectedCount: state.collectedIds.length,
     isComplete,
     register,

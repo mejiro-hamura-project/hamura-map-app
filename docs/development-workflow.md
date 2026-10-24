@@ -86,6 +86,6 @@ Deploy command: npx wrangler deploy
 
 ## 8. 環境変数・機密情報
 
-設定例は `app/.env.example`、ローカルの実値は `app/.env.local` などに置きます。`.env`、Webhook URL、API key、token、credentialの実値をソース・ログ・文書・commitへ含めないでください。
+統合PreviewはGASからD1へ移行し、公開フロントエンド用の外部連携URLは使いません。対象Worker環境でDB binding、共通secret、口コミとラリーの受付フラグを設定します。実DB ID・secret・実データをGitやログへ追加しないでください。
 
-`VITE_SHEET_WEBHOOK_URL` はbuild-time設定です。変更後はViteの再起動または再ビルドが必要で、runtime Worker bindingだけでは反映されません。`VITE_*` はブラウザへ配信される成果物に含まれるため、秘密の認証情報を設定しないでください。未設定でもラリーは端末内の保存で動作します。[Sheets連携説明](stamprally/sheet-sync.md) を参照してください。
+[共通ID・D1運用手順](anonymous-id-d1-operations.md) に、ローカル検証、後日の接続、非表示・再公開、JSON/CSV出力、アクセス制限・終了後の削除手順を記載しています。旧GAS文書は履歴として参照します。

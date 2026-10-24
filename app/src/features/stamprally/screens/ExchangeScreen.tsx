@@ -9,13 +9,12 @@ import { getCorrectPhrase } from '../data/checkpoints';
 import type { UseStampRally } from '../hooks/useStampRally';
 import { useDisplayMessages } from '../i18n/useDisplayMessages';
 import { useLongPress } from '../hooks/useLongPress';
-import { syncExchangeToSheet, syncProgress } from '../lib/sheetApi';
 import { FLOW_STEP_BY_SCREEN } from '../howtoSteps';
 import { BUTTON_ICONS } from '../buttonIcons';
 
 export default function ExchangeScreen() {
   const navigate = useNavigate();
-  const { registration, phraseSolved, prizeExchanged, exchangePrize, courseId, participantId, participantNumber } =
+  const { registration, phraseSolved, prizeExchanged, exchangePrize, courseId, participantNumber } =
     useOutletContext<UseStampRally>();
   const m = useDisplayMessages(registration);
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -44,14 +43,8 @@ export default function ExchangeScreen() {
 
   const handleConfirm = () => {
     if (prizeExchanged) return; // 二重交換防止
-    // 交換の確定はlocalStorageだけで完結する。Googleスプレッドシートへの送信は
-    // 「あれば送る」ベストエフォートで、URL未設定・通信失敗のいずれでも
-    // 交換自体の成否には一切影響しない。
+    // 交換の確定はlocalStorageだけで完結し、D1への送信成否では進行を止めない。
     exchangePrize();
-    if (participantId) {
-      syncExchangeToSheet(participantId);
-      syncProgress(participantId, m.exchange.done);
-    }
     setConfirmOpen(false);
   };
 

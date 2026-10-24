@@ -9,6 +9,9 @@
     "binding": "ASSETS",
     "run_worker_first": ["/api", "/api/*"]
   },
-  "vars": { "POSTS_ENABLED": "false" },
+  "vars": {
+    "POSTS_ENABLED": "false",
+    "RALLY_SYNC_ENABLED": "false"
+  },
   "previews": {}
 }

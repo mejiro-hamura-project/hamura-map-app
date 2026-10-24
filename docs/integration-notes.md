@@ -1,3 +1,5 @@
+> 履歴資料: 2026-10-25の共通匿名ID・D1統一で運用を変更しました。現在の統合PreviewではGAS通信を使いません。現行の設定・保存・管理手順は [共通ID・D1運用手順](anonymous-id-d1-operations.md) を参照してください。以下は変更前の仕様・検証記録です。
+
 # 統合スタンプラリーと地図の連携
 
 Status: COMPLETED（一体化・旧runtime整理）。現在の実装の正本は `app/src/features/stamprally/` です。旧runtimeは削除済みで、比較・復元にはGit履歴を使います。

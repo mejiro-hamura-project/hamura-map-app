@@ -50,15 +50,16 @@ Stamp Rallyを変更した場合は `npm run test:stamprally` も実行します
 
 ## 設定と関連docs
 
-`integration/stamp-rally-preview` はD1投稿APIと全画面共通フッターを統合した検証用ブランチです。D1は未接続・投稿受付停止が既定で、地図・イベント・スタンプラリーは継続利用できます。[統合記録](docs/posts-d1-footer-integration.md) と [D1導入手順](docs/posts-d1-local-handoff.md) を参照してください。旧GAS投稿用の `VITE_POSTS_API_URL` は使いません。
+`integration/stamp-rally-preview` は全画面共通フッター、共通匿名UUID、口コミ・ラリー補助記録のD1保存を統合した検証用ブランチです。D1は未接続・受付停止が既定で、地図・イベント・ラリーは継続利用できます。[共通ID・D1運用手順](docs/anonymous-id-d1-operations.md) と [今回の検証記録](docs/anonymous-id-d1-validation.md) を参照してください。
 
-`VITE_SHEET_WEBHOOK_URL` が未設定でも登録から景品交換まで利用できます。進行状況は同じoriginのブラウザストレージに保存します。設定例は `app/.env.example`。実際の環境変数やWebhook URLはcommitしません。
+GAS通信は廃止しました。共通IDとラリー進行は同じoriginのブラウザストレージへ保存し、登録・交換のD1通信は非同期です。保存先未接続・オフラインでもラリーを続行できます。実DB ID・secret・実データはcommitしません。
 
-Cloudflare Workers Static Assetsは `app/dist` のみを公開します。Production branchは `main`、Root directoryは `app`、Build commandは `npm run build`、Deploy commandは `npx wrangler deploy` です。通常のfeature開発ではCloudflare設定を変更する必要はありません。
+Cloudflare Workerは `/api/*` を処理し、その他を `app/dist` の静的配信へ渡します。Production branchは `main`、Root directoryは `app`、Build commandは `npm run build`、Deploy commandは `npx wrangler deploy` です。通常のfeature開発ではCloudflare設定を変更する必要はありません。
 
 - [共同開発の進め方](docs/development-workflow.md)
 - [Stamp Rally統合・地図連携](docs/integration-notes.md)
-- [任意のSheets連携・GASコード例](docs/stamprally/sheet-sync.md)
+- [共通匿名ID・D1導入・手動管理・CSV出力](docs/anonymous-id-d1-operations.md)
+- [旧Sheets連携・GASの履歴](docs/stamprally/sheet-sync.md)
 - [Cloudflareの公開構成・検証手順](docs/cloudflare-workers-static-assets.md)
 - [Migration Plan（設計履歴）](docs/plans/stamp-rally-unification-v1.md)
 - [Phase 1・2の実装履歴と後続状況](docs/plans/stamp-rally-unification-v1-implementation-notes.md)

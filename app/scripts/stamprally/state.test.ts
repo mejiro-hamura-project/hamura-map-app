@@ -17,6 +17,7 @@ beforeEach(() => {
       localStorage: {
         getItem: (key: string) => values.get(key) ?? null,
         setItem: (key: string, value: string) => { values.set(key, value); },
+        removeItem: (key: string) => { values.delete(key); },
       },
     },
   });
@@ -24,7 +25,7 @@ beforeEach(() => {
 
 afterEach(() => { Reflect.deleteProperty(globalThis, 'window'); });
 
-test('current v1 fixture keeps registration, progress, course IDs and exchange state', () => {
+test('current v2 fixture keeps registration, progress, course IDs and exchange timestamps', () => {
   const fixture: StampRallyState = {
     registration,
     participantId: 'fixture-id',
@@ -35,14 +36,16 @@ test('current v1 fixture keeps registration, progress, course IDs and exchange s
     phraseSolved: false,
     prizeExchanged: false,
     startedAt: '2026-09-28T00:00:00.000Z',
+    exchangedAt: null,
   };
   values.set(STORAGE_KEY, JSON.stringify(fixture));
   assert.deepEqual(loadState(), fixture);
-  values.set(STORAGE_KEY, JSON.stringify({ ...fixture, phraseSolved: true, prizeExchanged: true }));
-  assert.equal(loadState().prizeExchanged, true);
+  const exchangedAt = '2026-09-28T01:00:00.000Z';
+  values.set(STORAGE_KEY, JSON.stringify({ ...fixture, phraseSolved: true, prizeExchanged: true, exchangedAt }));
+  assert.equal(loadState().exchangedAt, exchangedAt);
 });
 
-test('older incomplete v1 fixtures are read without inventing a course or rewriting storage', () => {
+test('incomplete v2 fixtures are read without inventing a course or rewriting storage', () => {
   const raw = JSON.stringify({ registration, collectedIds: [1], phraseSlots: [1] });
   values.set(STORAGE_KEY, raw);
   const state = loadState();
@@ -51,6 +54,15 @@ test('older incomplete v1 fixtures are read without inventing a course or rewrit
   assert.deepEqual(state.phraseSlots, [1, null, null, null, null, null, null]);
   assert.equal(values.get(STORAGE_KEY), raw);
   assert.equal(createStampRallyReadPort().getCheckpointStatuses(), null);
+});
+
+test('legacy v1 state is not migrated or deleted', () => {
+  const legacyKey = 'stampRally.v1';
+  const raw = JSON.stringify({ registration, courseId: 1, collectedIds: [1] });
+  values.set(legacyKey, raw);
+  assert.deepEqual(loadState(), EMPTY_STATE);
+  assert.equal(values.get(legacyKey), raw);
+  assert.equal(values.has(STORAGE_KEY), false);
 });
 
 test('empty and malformed storage retain the legacy empty fallback', () => {
@@ -87,15 +99,18 @@ test('read adapter rereads persisted progress instead of owning a second state',
   assert.equal(port.getCheckpointStatuses()?.[0].collected, false);
 });
 
-test('participant counter keeps its raw format independently of main state and sync queue', () => {
+test('participant counter keeps its raw format independently of main state and both sync queue keys', () => {
   const counterKey = 'stampRally.participantCounter.v1';
-  const queueKey = 'stampRally.sheetSyncQueue.v1';
+  const oldQueueKey = 'stampRally.sheetSyncQueue.v1';
+  const d1QueueKey = 'stampRally.d1Sync.v1';
   values.set(counterKey, '12');
-  values.set(queueKey, '[{"participantNumber":11}]');
+  values.set(oldQueueKey, '[{"participantNumber":11}]');
+  values.set(d1QueueKey, '{"anonymousId":"queued"}');
   assert.equal(issueNextParticipantNumber(), 12);
   assert.equal(values.get(counterKey), '13');
   values.set(STORAGE_KEY, JSON.stringify(EMPTY_STATE));
   assert.equal(issueNextParticipantNumber(), 13);
   assert.equal(values.get(counterKey), '14');
-  assert.equal(values.get(queueKey), '[{"participantNumber":11}]');
+  assert.equal(values.get(oldQueueKey), '[{"participantNumber":11}]');
+  assert.equal(values.get(d1QueueKey), '{"anonymousId":"queued"}');
 });

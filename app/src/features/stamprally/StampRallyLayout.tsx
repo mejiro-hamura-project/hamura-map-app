@@ -1,8 +1,7 @@
-import { lazy, Suspense, useEffect } from 'react';
+import { lazy, Suspense } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useStampRally } from './hooks/useStampRally';
 import { I18nProvider } from './i18n/context';
-import { flushQueuedSync } from './lib/sheetApi';
 import { STAMP_RALLY_ROUTES } from './routes';
 
 // 開発者用操作パネル（開発モード専用）。import.meta.env.DEV はビルド時に定数へ置き換わるため、
@@ -20,12 +19,6 @@ const INTRO_ROUTES: readonly string[] = [
 export default function StampRallyLayout() {
   const stampRally = useStampRally();
   const { pathname } = useLocation();
-
-  useEffect(() => {
-    flushQueuedSync();
-    window.addEventListener('online', flushQueuedSync);
-    return () => window.removeEventListener('online', flushQueuedSync);
-  }, []);
 
   if (!stampRally.registration && !INTRO_ROUTES.includes(pathname.replace(/\/+$/, ''))) {
     return <Navigate to={STAMP_RALLY_ROUTES.notice} replace />;

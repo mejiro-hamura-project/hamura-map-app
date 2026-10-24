@@ -58,7 +58,6 @@ export default function DevPanel({ stampRally }: { stampRally: UseStampRally }) 
   const currentIndex = SCREENS.findIndex((s) => STAMP_RALLY_ROUTES[s.key] === path);
   const checkpoints = stampRally.courseId !== null ? (getCourseById(stampRally.courseId)?.checkpoints ?? []) : [];
   const nextUncollected = checkpoints.find((c) => !stampRally.collectedIds.includes(c.id));
-  const sheetConfigured = Boolean(import.meta.env.VITE_SHEET_WEBHOOK_URL);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -147,12 +146,6 @@ export default function DevPanel({ stampRally }: { stampRally: UseStampRally }) 
         </button>
       </div>
       <p className="sr-dev-note">本番ビルドには含まれません。{SHORTCUT_HINT}</p>
-      {sheetConfigured && (
-        <p className="sr-dev-warn">
-          スプレッドシートの送信先（VITE_SHEET_WEBHOOK_URL）が設定されています。デモで登録・正解・交換を行うと、既存の処理どおりその送信先へ送られます。
-        </p>
-      )}
-
       <section className="sr-dev-section">
         <h3>画面移動</h3>
         <p className="sr-dev-current">

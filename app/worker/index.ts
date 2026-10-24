@@ -1,16 +1,24 @@
 import { POST_TARGETS } from '../src/shared/postTargets';
 import { GENRES } from '../src/shared/taxonomy';
 import type { Post } from '../src/shared/types';
+import {
+  MAX_AGE,
+  MIN_AGE,
+  isAgeStudentCategoryValid,
+} from '../src/features/stamprally/data/ageValidation';
+import { getCourseById } from '../src/features/stamprally/data/checkpoints';
+import type { StudentCategory } from '../src/features/stamprally/types';
 
 // Worker型をブラウザアプリから独立させるため、利用するD1 APIだけを構造的に定義する。
 interface Statement {
-  bind(...values: (string | number)[]): Statement;
+  bind(...values: (string | number | null)[]): Statement;
   all<T>(): Promise<{ results: T[] }>;
 }
 export interface Env {
   ASSETS: { fetch(request: Request): Promise<Response> };
   DB?: { prepare(sql: string): Statement; batch<T>(statements: Statement[]): Promise<{ results: T[] }[]> };
   POSTS_ENABLED?: string;
+  RALLY_SYNC_ENABLED?: string;
   POST_RATE_LIMIT_SECRET?: string;
 }
 interface Row {
@@ -24,10 +32,22 @@ interface Row {
 
 const MAX_BODY_BYTES = 8192;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const ISO_TIMESTAMP = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
 const targets = new Map(POST_TARGETS.map((spot) => [spot.id, spot]));
 const genres = new Set(GENRES.map((genre) => genre.id));
-const ready = (env: Env) =>
+const genders = new Set(['male', 'female', 'other']);
+const studentCategories = new Set<StudentCategory>([
+  'elementary',
+  'juniorHigh',
+  'highSchool',
+  'university',
+]);
+const postsReady = (env: Env) =>
   Boolean(env.DB && env.POSTS_ENABLED === 'true' && (env.POST_RATE_LIMIT_SECRET?.length ?? 0) >= 32);
+const rallyReady = (env: Env) =>
+  Boolean(
+    env.DB && env.RALLY_SYNC_ENABLED === 'true' && (env.POST_RATE_LIMIT_SECRET?.length ?? 0) >= 32,
+  );
 
 function json(value: unknown, status = 200, extra: Record<string, string> = {}) {
   return new Response(JSON.stringify(value), {
@@ -79,7 +99,7 @@ async function list(url: URL, env: Env) {
         (!spotIds.length || spotIds.includes(spot.id)) &&
         (!genreIds.length || (spot.genreId && genreIds.includes(spot.genreId))),
     ).map((spot) => spot.id);
-    if (!selected.length) return json({ posts: [], nextCursor: null, acceptingPosts: ready(env) });
+    if (!selected.length) return json({ posts: [], nextCursor: null, acceptingPosts: postsReady(env) });
     // 投稿対象全体はD1のbind上限を超え得るため、JSONを一つのbind値として渡す。
     clauses.push('spot_id IN (SELECT value FROM json_each(?))');
     values.push(JSON.stringify(selected));
@@ -117,8 +137,22 @@ async function list(url: URL, env: Env) {
     posts: page.map(post),
     nextCursor:
       results.length > +limitRaw && last ? btoa(JSON.stringify([last.created_at, last.id])) : null,
-    acceptingPosts: ready(env),
+    acceptingPosts: postsReady(env),
   });
+}
+
+function writeTransportError(request: Request): Response | null {
+  const origin = request.headers.get('Origin');
+  if (
+    (origin && origin !== new URL(request.url).origin) ||
+    request.headers.get('Sec-Fetch-Site') === 'cross-site'
+  ) {
+    return error('同じサイトから送信してください。', 403);
+  }
+  if (request.headers.get('Content-Type')?.split(';')[0].trim().toLowerCase() !== 'application/json') {
+    return error('JSONで送信してください。', 415);
+  }
+  return null;
 }
 
 async function body(request: Request): Promise<unknown> {
@@ -150,38 +184,54 @@ async function body(request: Request): Promise<unknown> {
   return JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes));
 }
 
+async function internalKey(anonymousId: string, secretValue: string): Promise<string> {
+  const secret = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(secretValue),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign'],
+  );
+  const signature = await crypto.subtle.sign(
+    'HMAC',
+    secret,
+    new TextEncoder().encode(anonymousId.toLowerCase()),
+  );
+  return [...new Uint8Array(signature)]
+    .map((byte) => byte.toString(16).padStart(2, '0'))
+    .join('');
+}
+
+function parseBodyError(cause: unknown) {
+  return error(
+    cause instanceof RangeError ? '送信データが大きすぎます。' : 'JSONが不正です。',
+    cause instanceof RangeError ? 413 : 400,
+  );
+}
+
 async function create(request: Request, env: Env) {
-  if (!ready(env) || !env.DB) return error('現在、投稿の受付を停止しています。', 503);
-  const origin = request.headers.get('Origin');
-  if (
-    (origin && origin !== new URL(request.url).origin) ||
-    request.headers.get('Sec-Fetch-Site') === 'cross-site'
-  ) {
-    return error('同じサイトから投稿してください。', 403);
-  }
-  if (request.headers.get('Content-Type')?.split(';')[0].trim().toLowerCase() !== 'application/json') {
-    return error('JSONで送信してください。', 415);
-  }
+  if (!postsReady(env) || !env.DB) return error('現在、投稿の受付を停止しています。', 503);
+  const transportError = writeTransportError(request);
+  if (transportError) return transportError;
   const key = request.headers.get('Idempotency-Key') ?? '';
   if (!UUID.test(key)) return error('送信識別子が不正です。');
-  const ip = request.headers.get('CF-Connecting-IP');
-  if (!ip) return error('投稿元を確認できません。', 503);
 
   let input: unknown;
   try {
     input = await body(request);
   } catch (cause) {
-    return error(
-      cause instanceof RangeError ? '送信データが大きすぎます。' : 'JSONが不正です。',
-      cause instanceof RangeError ? 413 : 400,
-    );
+    return parseBodyError(cause);
   }
   if (!input || typeof input !== 'object' || Array.isArray(input)) {
     return error('投稿データが不正です。');
   }
   const data = input as Record<string, unknown>;
   if (
-    Object.keys(data).some((name) => name !== 'spotId' && name !== 'caption') ||
+    Object.keys(data).some(
+      (name) => name !== 'anonymousId' && name !== 'spotId' && name !== 'caption',
+    ) ||
+    typeof data.anonymousId !== 'string' ||
+    !UUID.test(data.anonymousId) ||
     typeof data.spotId !== 'string' ||
     !targets.has(data.spotId) ||
     typeof data.caption !== 'string'
@@ -202,17 +252,7 @@ async function create(request: Request, env: Env) {
     return error('本文は1〜500文字で入力してください。');
   }
 
-  const secret = await crypto.subtle.importKey(
-    'raw',
-    new TextEncoder().encode(env.POST_RATE_LIMIT_SECRET),
-    { name: 'HMAC', hash: 'SHA-256' },
-    false,
-    ['sign'],
-  );
-  const signature = await crypto.subtle.sign('HMAC', secret, new TextEncoder().encode(ip));
-  const author = [...new Uint8Array(signature)]
-    .map((byte) => byte.toString(16).padStart(2, '0'))
-    .join('');
+  const author = await internalKey(data.anonymousId, env.POST_RATE_LIMIT_SECRET!);
   const id = crypto.randomUUID();
   const now = Date.now();
 
@@ -255,20 +295,119 @@ async function create(request: Request, env: Env) {
   return json({ post: post(row) }, row.id === id ? 201 : 200);
 }
 
+function isIsoTimestamp(value: unknown): value is string {
+  if (typeof value !== 'string' || !ISO_TIMESTAMP.test(value)) return false;
+  const milliseconds = Date.parse(value);
+  return Number.isFinite(milliseconds) && new Date(milliseconds).toISOString() === value;
+}
+
+async function saveParticipant(request: Request, env: Env) {
+  if (!rallyReady(env) || !env.DB) {
+    return error('現在、スタンプラリー情報を保存できません。', 503);
+  }
+  const transportError = writeTransportError(request);
+  if (transportError) return transportError;
+
+  let input: unknown;
+  try {
+    input = await body(request);
+  } catch (cause) {
+    return parseBodyError(cause);
+  }
+  if (!input || typeof input !== 'object' || Array.isArray(input)) {
+    return error('参加者データが不正です。');
+  }
+  const data = input as Record<string, unknown>;
+  const allowed = new Set([
+    'anonymousId',
+    'registeredAt',
+    'gender',
+    'age',
+    'isStudent',
+    'studentCategory',
+    'courseId',
+    'exchangedAt',
+  ]);
+  if (
+    Object.keys(data).length !== allowed.size ||
+    Object.keys(data).some((name) => !allowed.has(name)) ||
+    typeof data.anonymousId !== 'string' ||
+    !UUID.test(data.anonymousId) ||
+    !isIsoTimestamp(data.registeredAt) ||
+    typeof data.gender !== 'string' ||
+    !genders.has(data.gender) ||
+    typeof data.age !== 'number' ||
+    !Number.isInteger(data.age) ||
+    data.age < MIN_AGE ||
+    data.age > MAX_AGE ||
+    typeof data.isStudent !== 'boolean' ||
+    typeof data.courseId !== 'number' ||
+    !Number.isInteger(data.courseId) ||
+    !getCourseById(data.courseId) ||
+    (data.exchangedAt !== null && !isIsoTimestamp(data.exchangedAt))
+  ) {
+    return error('参加者データが不正です。');
+  }
+  const category = data.studentCategory;
+  if (
+    (data.isStudent &&
+      (typeof category !== 'string' ||
+        !studentCategories.has(category as StudentCategory) ||
+        !isAgeStudentCategoryValid(data.age, category as StudentCategory))) ||
+    (!data.isStudent && category !== null) ||
+    (data.exchangedAt !== null && Date.parse(data.exchangedAt) < Date.parse(data.registeredAt))
+  ) {
+    return error('参加者データが不正です。');
+  }
+
+  const participantKey = await internalKey(data.anonymousId, env.POST_RATE_LIMIT_SECRET!);
+  await env.DB.prepare(
+    `INSERT INTO participants (
+      participant_key, registered_at, gender, age, is_student, student_category, course_id, exchanged_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    ON CONFLICT(participant_key) DO UPDATE SET
+      exchanged_at = CASE
+        WHEN excluded.exchanged_at IS NULL THEN participants.exchanged_at
+        WHEN participants.exchanged_at IS NULL THEN excluded.exchanged_at
+        WHEN excluded.exchanged_at < participants.exchanged_at THEN excluded.exchanged_at
+        ELSE participants.exchanged_at
+      END
+    RETURNING participant_key`,
+  )
+    .bind(
+      participantKey,
+      data.registeredAt,
+      data.gender,
+      data.age,
+      data.isStudent ? 1 : 0,
+      data.isStudent ? (category as StudentCategory) : null,
+      data.courseId,
+      data.exchangedAt,
+    )
+    .all<{ participant_key: string }>();
+  return json({ saved: true });
+}
+
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
     if (url.pathname !== '/api' && !url.pathname.startsWith('/api/')) {
       return env.ASSETS.fetch(request);
     }
-    if (url.pathname !== '/api/posts') return error('APIが見つかりません。', 404);
     try {
-      if (request.method === 'GET') return await list(url, env);
-      if (request.method === 'POST') return await create(request, env);
-      return json({ error: 'このメソッドは利用できません。' }, 405, { Allow: 'GET, POST' });
+      if (url.pathname === '/api/posts') {
+        if (request.method === 'GET') return await list(url, env);
+        if (request.method === 'POST') return await create(request, env);
+        return json({ error: 'このメソッドは利用できません。' }, 405, { Allow: 'GET, POST' });
+      }
+      if (url.pathname === '/api/stamprally/participant') {
+        if (request.method === 'POST') return await saveParticipant(request, env);
+        return json({ error: 'このメソッドは利用できません。' }, 405, { Allow: 'POST' });
+      }
+      return error('APIが見つかりません。', 404);
     } catch {
-      // 本文、IP、secret、D1の詳細はログへ出さない。
-      return error('投稿サービスに接続できません。時間をおいて再度お試しください。', 503);
+      // 本文、匿名ID、secret、D1の詳細はログへ出さない。
+      return error('保存サービスに接続できません。時間をおいて再度お試しください。', 503);
     }
   },
 };

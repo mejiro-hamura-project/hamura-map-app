@@ -6,7 +6,6 @@ import PageContainer from '../components/PageContainer';
 import Button from '../components/Button';
 import { issueNextParticipantNumber, type UseStampRally } from '../hooks/useStampRally';
 import type { Gender, Registration, StudentCategory } from '../types';
-import { syncRegistrationToSheet } from '../lib/sheetApi';
 import { pickRandomCourseId } from '../data/checkpoints';
 import { useI18n } from '../i18n/useI18n';
 import Sprig from '../components/Sprig';
@@ -111,18 +110,13 @@ export default function RegisterScreen() {
       studentCategory: isStudent && studentCategory !== '' ? studentCategory : undefined,
     };
 
-    const participantId = crypto.randomUUID();
     // 参加者番号（この端末でスタンプラリーを開始した順の通し番号）。サーバーは使わず、
     // この端末のlocalStorageだけで1から採番する。
     const participantNumber = issueNextParticipantNumber();
-    const startedAt = new Date().toISOString();
     const courseId = pickRandomCourseId(isStudent && studentCategory === 'elementary');
 
-    // 登録自体はlocalStorageだけで完結する。Googleスプレッドシートへの送信は
-    // 「あれば送る」ベストエフォートで、URL未設定・通信失敗のいずれでも
-    // 参加登録の成否には一切影響しない。
-    register(registration, participantId, participantNumber, courseId, startedAt);
-    syncRegistrationToSheet(registration, participantNumber);
+    // 登録自体はlocalStorageだけで完結し、D1への送信成否では進行を止めない。
+    register(registration, participantNumber, courseId);
     navigate(STAMP_RALLY_ROUTES.rally);
   };
 

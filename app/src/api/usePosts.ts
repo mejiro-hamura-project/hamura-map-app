@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Post } from '../shared/types';
+import { getAnonymousId } from '../shared/utils/deviceUser';
 
 export async function createPost(input: { spotId: string; caption: string }, key: string): Promise<Post> {
   const response = await fetch('/api/posts', {
     method: 'POST', cache: 'no-store',
     headers: { 'Content-Type': 'application/json', 'Idempotency-Key': key },
-    body: JSON.stringify(input),
+    body: JSON.stringify({ ...input, anonymousId: getAnonymousId() }),
   });
   const data = await response.json();
   if (!response.ok) throw new Error(data.error ?? '投稿できませんでした。時間をおいて再試行してください。');
@@ -59,6 +60,8 @@ export function usePosts(spotIds = '', genreIds = '') {
   }, []);
 
   useEffect(() => {
+    // 閲覧が先でも、ラリーと共通のIDを確保する。
+    getAnonymousId();
     void load();
     return cancel;
   }, [load, cancel]);

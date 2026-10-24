@@ -2,7 +2,7 @@ import type { StampRallyState } from '../types';
 import { TOTAL_STAMPS } from '../data/checkpoints';
 import { storage } from '../../../shared/storage/storage';
 
-export const STORAGE_KEY = 'stampRally.v1';
+export const STORAGE_KEY = 'stampRally.v2';
 
 export const EMPTY_STATE: StampRallyState = {
   registration: null,
@@ -14,6 +14,7 @@ export const EMPTY_STATE: StampRallyState = {
   phraseSolved: false,
   prizeExchanged: false,
   startedAt: null,
+  exchangedAt: null,
 };
 
 
@@ -36,6 +37,7 @@ export function loadState(): StampRallyState {
       phraseSolved: Boolean(parsed.phraseSolved),
       prizeExchanged: Boolean(parsed.prizeExchanged),
       startedAt: typeof parsed.startedAt === 'string' ? parsed.startedAt : null,
+      exchangedAt: typeof parsed.exchangedAt === 'string' ? parsed.exchangedAt : null,
     };
   } catch {
     return EMPTY_STATE;

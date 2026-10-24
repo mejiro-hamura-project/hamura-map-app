@@ -28,6 +28,7 @@ export function createDevActions(setState: Dispatch<SetStateAction<StampRallySta
         phraseSlots: new Array(TOTAL_STAMPS).fill(null),
         phraseSolved: false,
         prizeExchanged: false,
+        exchangedAt: null,
       }));
     },
     // テスト用: デモを最初からやり直す（このブラウザの状態をすべて初期化する）。

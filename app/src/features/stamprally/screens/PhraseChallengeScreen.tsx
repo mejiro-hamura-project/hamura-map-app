@@ -9,7 +9,6 @@ import { TOTAL_STAMPS, getCorrectPhrase, getCourseById, getAnswerForCourse } fro
 import { NORMAL_KEYWORDS, isElementaryKeyword } from '../data/answers';
 import { ANSWER_IMAGES } from '../data/answerImages';
 import { shuffle } from '../lib/random';
-import { syncProgress } from '../lib/sheetApi';
 import { isElementaryMode } from '../i18n/elementaryMode';
 import { useDisplayMessages } from '../i18n/useDisplayMessages';
 import { FLOW_STEP_BY_SCREEN } from '../howtoSteps';
@@ -20,7 +19,6 @@ export default function PhraseChallengeScreen() {
   const {
     registration,
     courseId,
-    participantId,
     collectedIds,
     isComplete,
     phraseSolved,
@@ -92,7 +90,6 @@ export default function PhraseChallengeScreen() {
     if (guess === getCorrectPhrase(courseId)) {
       setResult('correct');
       solvePhrase();
-      if (participantId) syncProgress(participantId, `${TOTAL_STAMPS}/${TOTAL_STAMPS}`);
     } else {
       setResult('wrong');
     }

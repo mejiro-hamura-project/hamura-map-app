@@ -1,4 +1,5 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { useEffect } from 'react';
 import BottomNav from './shared/ui/BottomNav';
 import { MapProviderRoot } from './shared/map';
 import { DevClockProvider } from './shared/context/DevClockContext';
@@ -18,8 +19,16 @@ import PhraseChallengeScreen from './features/stamprally/screens/PhraseChallenge
 import ExchangeScreen from './features/stamprally/screens/ExchangeScreen';
 import { StampRallyReadProvider } from './shared/integrations/stampRally';
 import { stampRallyReadPort } from './features/stamprally/integrations/readPort';
+import { flushParticipantSync } from './features/stamprally/lib/participantSync';
 
 function AppShell() {
+  useEffect(() => {
+    const flush = () => void flushParticipantSync();
+    flush();
+    window.addEventListener('online', flush);
+    return () => window.removeEventListener('online', flush);
+  }, []);
+
   return (
     <div className="mx-auto flex h-dvh max-w-[420px] flex-col bg-bg">
       <div className="flex min-h-0 flex-1 flex-col">
