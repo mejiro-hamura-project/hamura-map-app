@@ -4,7 +4,7 @@
 
 Cloudflare通常公開URL（Production）：**https://hamura-map-app.academeia.workers.dev/**。イベント正式版の公開可否は別途運営側で判断します。実際の配信commitはCloudflareで確認してください。
 
-Stamp Rallyの一体化とCloudflare Workersへの公開は完了し、スマートフォン実機で基本動作を確認済みです（運営からの確認報告）。PWA/offlineの最終受入、GAS / Google Sheets実接続、出展者データ統合、複数OS・端末での網羅的な実機試験は残っています。
+従来版のCloudflare公開とスマートフォン実機での基本動作は運営から確認報告があります。2026-10-25の統合版では地図・イベント・口コミ・スタンプラリーを統合し、口コミ／参加登録の保存先をD1へ統一しました。**実Cloudflare D1は未接続**で投稿受付・ラリー補助記録は無効です。統合最新版の実機iPhone／Android、PWA/offline、実D1接続と正式公開の受入は残っています。
 
 ## 主な作業場所
 
